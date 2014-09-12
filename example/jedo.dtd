@@ -27,7 +27,7 @@
 >
 
 <!ELEMENT insert (#PCDATA)>
-<!ATTLIST insert auto-increment CDATA #IMPLIED>
+<!ATTLIST insert get-generated-keys (true|false) #IMPLIED>
 
 <!ELEMENT update (#PCDATA)>
 
