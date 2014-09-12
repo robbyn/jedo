@@ -3,12 +3,8 @@ package org.tastfuljava.jedo.transaction;
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.logging.Logger;
 
 public class Transaction implements DataProvider {
-    private static final Logger LOG
-            = Logger.getLogger(Transaction.class.getName());
-
     private final DataProvider dp;
     private final WeakCache<Object,Object> cache = new WeakCache<>();
     private final List<Runnable> opQueue = new LinkedList<>();
