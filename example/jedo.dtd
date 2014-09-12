@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!ELEMENT mapping (class*)>
+<!ATTLIST mapping package CDATA #IMPLIED>
+
+<!ELEMENT class (id*,property*,load?,query*,insert?,update?,delete?)>
+<!ATTLIST class name CDATA #REQUIRED>
+
+<!ELEMENT id EMPTY>
+<!ATTLIST id
+    name CDATA #REQUIRED
+    column CDATA #IMPLIED
+>
+
+<!ELEMENT property EMPTY>
+<!ATTLIST property
+    name CDATA #REQUIRED
+    column CDATA #IMPLIED
+>
+
+<!ELEMENT load (#PCDATA)>
+
+<!ELEMENT query (#PCDATA)>
+<!ATTLIST query
+    name CDATA #REQUIRED
+    parameters CDATA #IMPLIED
+>
+
+<!ELEMENT insert (#PCDATA)>
+<!ATTLIST insert auto-increment CDATA #IMPLIED>
+
+<!ELEMENT update (#PCDATA)>
+
+<!ELEMENT delete (#PCDATA)>
