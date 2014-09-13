@@ -7,24 +7,16 @@ import java.util.logging.Logger;
 
 public abstract class Scope {
     private static final Logger LOG = Logger.getLogger(Scope.class.getName());
- 
-    private final Scope link;
 
-    protected Scope(Scope link) {
-        this.link = link;
+    protected Scope() {
     }
 
     public abstract Expression resolve(String name);
 
-    private Expression resolve1(String name) {
-        return link == null ? null : link.resolve(name);
-    }
-
     public static class ParameterScope extends Scope {
         private final Map<String,Expression> map = new HashMap<>();
 
-        ParameterScope(Scope link, String[] names) {
-            super(link);
+        ParameterScope(String[] names) {
             for (int i = 0; i < names.length; ++i) {
                 map.put(names[i], new Expression.ParameterExpr(i));
             }
@@ -32,8 +24,7 @@ public abstract class Scope {
 
         @Override
         public Expression resolve(String name) {
-            Expression result = map.get(name);
-            return result != null ? result : super.resolve1(name);
+            return map.get(name);
         }
     }
 
@@ -41,8 +32,7 @@ public abstract class Scope {
         private final Class<?> clazz;
         private final Expression self;
 
-        public ObjectScope(Scope link, Class<?> clazz, Expression object) {
-            super(link);
+        public ObjectScope(Class<?> clazz, Expression object) {
             this.clazz = clazz;
             this.self = object;
         }

@@ -1,6 +1,5 @@
 package org.tastfuljava.jedo.mapping;
 
-import java.beans.Expression;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -14,15 +13,11 @@ public class Statement {
     private final Expression[] params;
     private final boolean generatedKeys;
 
-    public static Statement parse(String sql, Class<?> clazz,
-            String[] paramNames) {
-        throw new UnsupportedOperationException("parse");
-    }
-
-    private Statement(String sql, Expression[] params, boolean generatedKeys) {
-        this.sql = sql;
-        this.params = params;
-        this.generatedKeys = generatedKeys;
+    private Statement(Builder builder) {
+        this.sql = builder.buf.toString();
+        this.params = builder.params.toArray(
+                new Expression[builder.params.size()]);
+        this.generatedKeys = builder.generatedKeys;
     }
 
     public List<Object> query(Connection cnt, ClassMapper cm,
@@ -52,5 +47,110 @@ public class Statement {
             }
         }
         return result;
+    }
+
+    public static class Builder {
+        private final Scope scope;
+        private boolean generatedKeys;
+        private final List<Expression> params = new ArrayList<>();
+        private final StringBuilder buf = new StringBuilder();
+        private final StringBuilder expr = new StringBuilder();
+        int st = 1;
+
+        public Builder(Class<?> clazz, String[] paramNames) {
+            this.scope = paramNames == null
+                ? new Scope.ObjectScope(clazz, Expression.THIS)
+                : new Scope.ParameterScope(paramNames);
+        }
+
+        public void setGeneratedKeys(boolean newValue) {
+            generatedKeys = newValue;
+        }
+
+        public void addChars(char[] chars, int start, int length) {
+            int end = start+length;
+            for (int i = start; i < end; ++i) {
+                char c = chars[i];
+                switch (st) {
+                    case 0:
+                        if (Character.isWhitespace(c)) {
+                            buf.append(' ');
+                            st = 1;
+                        } else if (c == '-') {
+                            st = 2;
+                        } else if (c == '$') {
+                            st = 4;
+                        } else if (c == '"') {
+                            buf.append(c);
+                            st = 6;
+                        } else if (c == '\'') {
+                            buf.append(c);
+                            st = 7;
+                        }
+                        break;
+                    case 1:
+                        if (Character.isWhitespace(c)) {
+                            // do nothing
+                        } else if (c == '-') {
+                            st = 2;
+                        } else if (c == '$') {
+                            st = 4;
+                        } else if (c == '"') {
+                            st = 6;
+                        } else if (c == '\'') {
+                            st = 7;
+                        }
+                        break;
+                    case 2:
+                        if (c == '-') {
+                            st = 3;
+                        } else {
+                            buf.append(' ');
+                        }
+                        break;
+                    case 3:
+                        if (c == '\r' || c == '\n') {
+                            st = 1;
+                        }
+                        break;
+                    case 4:
+                        if (c == '{') {
+                            st = 5;
+                            expr.setLength(0);
+                        } else {
+                            buf.append('$');
+                            buf.append(c);
+                            st = 0;
+                        }
+                        break;
+                    case 5:
+                        if (c == '}') {
+                            buf.append('?');
+                            params.add(Expression.parse(
+                                    scope, expr.toString()));
+                            st = 0;
+                        } else {
+                            expr.append(c);
+                        }
+                        break;
+                    case 6:
+                        buf.append(c);
+                        if (c == '"') {
+                            st = 0;
+                        }
+                        break;
+                    case 7:
+                        buf.append(c);
+                        if (c == '\'') {
+                            st = 0;
+                        }
+                        break;
+                }
+            }
+        }
+
+        public Statement getStatement() {
+            return new Statement(this);
+        }
     }
 }

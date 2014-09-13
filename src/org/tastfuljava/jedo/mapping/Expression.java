@@ -10,18 +10,7 @@ public abstract class Expression {
 
     public static final Expression THIS;
 
-    public static Expression parse(Class<?> thisClass, String[] paramNames,
-            String expr) {
-        Scope scope = null;
-        if (thisClass != null) {
-            scope = new Scope.ObjectScope(scope, thisClass, THIS);
-        }
-        if (paramNames != null && paramNames.length > 0) {
-            scope = new Scope.ParameterScope(scope, paramNames);
-        }
-        if (scope == null) {
-            return THIS;
-        }
+    public static Expression parse(Scope scope, String expr) {
         Expression result = null;
         for (String name: expr.split("\\.")) {
             result = scope.resolve(name);
@@ -29,7 +18,7 @@ public abstract class Expression {
                 throw new IllegalArgumentException(
                         "Could not resolve expression " + expr);
             }
-            scope = new Scope.ObjectScope(null, result.getType(), result);
+            scope = new Scope.ObjectScope(result.getType(), result);
         }
         return result;
     }

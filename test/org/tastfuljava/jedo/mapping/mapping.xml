@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE mapping PUBLIC '-//Jedo//Mapping File//EN' 'jedo.dtd'>
+<!DOCTYPE mapping PUBLIC '-//tastefuljava.org//Jedo Mapping File 1.0//EN' 'jedo.dtd'>
 <mapping package="org.tastefuljava.gianadda.domain">
     <class name="Folder">
         <id name="id" column="ID"/>

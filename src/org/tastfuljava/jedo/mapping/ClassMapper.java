@@ -117,29 +117,28 @@ public class ClassMapper {
             props.add(newPropertyMapper(field, column));
         }
 
-        public void addStatement(String type, String name,
-                String[] paramNames, String sql) {
-            Statement stmt = Statement.parse(sql, clazz, paramNames);
-            switch (type) {
-                case "query":
-                    queries.put(name, stmt);
-                    break;
-                case "load":
-                    load = stmt;
-                    break;
-                case "insert":
-                    insert = stmt;
-                    break;
-                case "update":
-                    update = stmt;
-                    break;
-                case "delete":
-                    delete = stmt;
-                    break;
-                default:
-                    throw new IllegalArgumentException(
-                            "Invalid statement type " + type);
-            }
+        public Statement.Builder newStatementBuilder(String[] paramNames) {
+            return new Statement.Builder(clazz, paramNames);
+        }
+
+        public void addQuery(String name, Statement stmt) {
+            queries.put(name, stmt);
+        }
+
+        public void setLoad(Statement stmt) {
+            load = stmt;
+        }
+
+        public void setInsert(Statement stmt) {
+            insert = stmt;
+        }
+
+        public void setUpdate(Statement stmt) {
+            update = stmt;
+        }
+
+        public void setDelete(Statement stmt) {
+            delete = stmt;
         }
 
         public ClassMapper getMapper() {

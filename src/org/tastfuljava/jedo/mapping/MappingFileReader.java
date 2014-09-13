@@ -7,12 +7,13 @@ import java.io.InputStream;
 import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
-import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.DefaultHandler;
-import org.xml.sax.helpers.XMLReaderFactory;
 
 public class MappingFileReader {
     private static final Logger LOG
@@ -41,18 +42,12 @@ public class MappingFileReader {
     public void load(InputStream in)
             throws IOException {
         try {
-            XMLReader reader = XMLReaderFactory.createXMLReader();
-            try {
-                reader.setFeature(
-                        "http://xml.org/sax/features/validation", true);
-            } catch (SAXException e) {
-            }
-
+            SAXParserFactory factory = SAXParserFactory.newInstance();
+            factory.setFeature("http://xml.org/sax/features/validation", true);
+            SAXParser parser = factory.newSAXParser();
             ParserHandler handler = new ParserHandler();
-            reader.setContentHandler(handler);
-            reader.setErrorHandler(handler);
-            reader.parse(new InputSource(in));
-        } catch (SAXException e) {
+            parser.parse(new InputSource(in), handler);
+        } catch (SAXException | ParserConfigurationException e) {
             LOG.log(Level.SEVERE, "Error reading project", e);
             throw new IOException(e.getMessage());
         }
@@ -62,9 +57,8 @@ public class MappingFileReader {
         private String packageName;
         private ClassMapper.Builder classBuilder;
         private boolean inId;
+        private Statement.Builder stmtBuilder;
         private String queryName;
-        private String[] paramNames;
-        private StringBuilder buf;
 
         @Override
         public InputSource resolveEntity(String publicId, String systemId)
@@ -109,13 +103,15 @@ public class MappingFileReader {
                 case "query":
                     queryName = attrs.getValue("name");
                     String s = attrs.getValue("parameters");
-                    paramNames = s == null
+                    String[] paramNames = s == null
                             ? EMPTY_STRING_ARRAY : s.split("[ ,]+");
+                    stmtBuilder = classBuilder.newStatementBuilder(paramNames);
+                    break;
                 case "load":
                 case "insert":
                 case "update":
                 case "delete":
-                    buf = new StringBuilder();
+                    stmtBuilder = classBuilder.newStatementBuilder(null);
                     break;
             }
         }
@@ -135,15 +131,21 @@ public class MappingFileReader {
                     inId = false;
                     break;
                 case "query":
-                case "load":
-                case "insert":
-                case "update":
-                case "delete":
-                    classBuilder.addStatement(
-                            qName, queryName, paramNames, buf.toString());
+                    classBuilder.addQuery(
+                            queryName, stmtBuilder.getStatement());
                     queryName = null;
-                    paramNames = null;
-                    buf = null;
+                    break;
+                case "load":
+                    classBuilder.setLoad(stmtBuilder.getStatement());
+                    break;
+                case "insert":
+                    classBuilder.setLoad(stmtBuilder.getStatement());
+                    break;
+                case "update":
+                    classBuilder.setLoad(stmtBuilder.getStatement());
+                    break;
+                case "delete":
+                    classBuilder.setLoad(stmtBuilder.getStatement());
                     break;
             }
         }
