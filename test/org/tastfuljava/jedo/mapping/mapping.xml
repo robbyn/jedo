@@ -2,20 +2,28 @@
 <!DOCTYPE mapping PUBLIC '-//tastefuljava.org//Jedo Mapping File 1.0//EN' 'jedo.dtd'>
 <mapping package="org.tastefuljava.gianadda.domain">
     <class name="Folder">
-        <id name="id" column="ID"/>
+        <id>
+            <property name="id" column="ID"/>
+        </id>
         <property name="name" column="NAME"/>
 
         <load>
-            SELECT * FROM folders WHERE ID=${id}
+            SELECT * FROM folders
+            WHERE ID=${id}
         </load>
         <query name="rootFolder" parameters="name">
-            SELECT * FROM folders WHERE PARENT_ID IS NULL AND NAME=${name}
+            SELECT * FROM folders
+            WHERE PARENT_ID IS NULL
+                AND NAME=${name}
         </query>
         <query name="subfolder" parameters="parentId,name">
-            SELECT * FROM folders WHERE PARENT_ID=${parentId} AND NAME=${name}
+            SELECT * FROM folders
+            WHERE PARENT_ID=${parentId}
+                AND NAME=${name}
         </query>
         <query name="subfolders" parameters="parentId">
-            SELECT * FROM folders WHERE PARENT_ID=${parentId}
+            SELECT * FROM folders
+            WHERE PARENT_ID=${parentId}
         </query>
     </class>
 </mapping>

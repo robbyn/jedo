@@ -10,6 +10,14 @@ public class Mapper {
         this.classMappers = builder.classMappers;
     }
 
+    public void writeTo(XMLWriter out) {
+        out.startTag("mapping");
+        for (ClassMapper cm: classMappers.values()) {
+            cm.writeTo(out);
+        }
+        out.endTag();
+    }
+
     public static class Builder {
         private final Map<Class<?>,ClassMapper> classMappers = new HashMap<>();
 

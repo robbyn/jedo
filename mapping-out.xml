@@ -1,0 +1,12 @@
+<mapping>
+   <class name="org.tastefuljava.gianadda.domain.Folder">
+      <id>
+         <property name="id" column="ID" />
+      </id>
+      <property name="name" column="NAME" />
+      <load>SELECT * FROM folders WHERE ID=?</load>
+      <query name="subfolders">SELECT * FROM folders WHERE PARENT_ID=?</query>
+      <query name="rootFolder">SELECT * FROM folders WHERE PARENT_ID IS NULL AND NAME=?</query>
+      <query name="subfolder">SELECT * FROM folders WHERE PARENT_ID=? AND NAME=?</query>
+   </class>
+</mapping>

@@ -134,19 +134,31 @@ public class MappingFileReader {
                     classBuilder.addQuery(
                             queryName, stmtBuilder.getStatement());
                     queryName = null;
+                    stmtBuilder = null;
                     break;
                 case "load":
                     classBuilder.setLoad(stmtBuilder.getStatement());
+                    stmtBuilder = null;
                     break;
                 case "insert":
                     classBuilder.setLoad(stmtBuilder.getStatement());
+                    stmtBuilder = null;
                     break;
                 case "update":
                     classBuilder.setLoad(stmtBuilder.getStatement());
+                    stmtBuilder = null;
                     break;
                 case "delete":
                     classBuilder.setLoad(stmtBuilder.getStatement());
+                    stmtBuilder = null;
                     break;
+            }
+        }
+
+        @Override
+        public void characters(char[] ch, int start, int length) throws SAXException {
+            if (stmtBuilder != null) {
+                stmtBuilder.addChars(ch, start, length);
             }
         }
     }

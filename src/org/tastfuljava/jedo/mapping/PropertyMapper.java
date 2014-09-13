@@ -41,4 +41,11 @@ public class PropertyMapper {
     public Object fromResultSet(ResultSet rs) throws SQLException {
         return rs.getObject(column, field.getType());
     }
+
+    void writeTo(XMLWriter out) {
+        out.startTag("property");
+        out.attribute("name", field.getName());
+        out.attribute("column", column);
+        out.endTag();
+    }
 }

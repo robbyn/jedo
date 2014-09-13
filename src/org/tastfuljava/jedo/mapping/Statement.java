@@ -49,6 +49,13 @@ public class Statement {
         return result;
     }
 
+    void writeTo(XMLWriter out, String type, String name) {
+        out.startTag(type);
+        out.attribute("name", name);
+        out.data(sql);
+        out.endTag();
+    }
+
     public static class Builder {
         private final Scope scope;
         private boolean generatedKeys;
@@ -86,6 +93,8 @@ public class Statement {
                         } else if (c == '\'') {
                             buf.append(c);
                             st = 7;
+                        } else {
+                            buf.append(c);
                         }
                         break;
                     case 1:
@@ -99,6 +108,9 @@ public class Statement {
                             st = 6;
                         } else if (c == '\'') {
                             st = 7;
+                        } else {
+                            buf.append(c);
+                            st = 0;
                         }
                         break;
                     case 2:
@@ -150,6 +162,9 @@ public class Statement {
         }
 
         public Statement getStatement() {
+            if (buf.length() > 0 && st == 1) {
+                buf.setLength(buf.length()-1);
+            }
             return new Statement(this);
         }
     }

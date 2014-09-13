@@ -6,11 +6,7 @@
 <!ELEMENT class (id?,property*,load?,query*,insert?,update?,delete?)>
 <!ATTLIST class name CDATA #REQUIRED>
 
-<!ELEMENT id (property*)>
-<!ATTLIST id
-    name CDATA #REQUIRED
-    column CDATA #IMPLIED
->
+<!ELEMENT id (property+)>
 
 <!ELEMENT property EMPTY>
 <!ATTLIST property

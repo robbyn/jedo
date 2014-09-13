@@ -90,6 +90,37 @@ public class ClassMapper {
         return obj;
     }
 
+    public void writeTo(XMLWriter out) {
+        out.startTag("class");
+        out.attribute("name", clazz.getName());
+        if (idProps.length > 0) {
+            out.startTag("id");
+            for (PropertyMapper pm: idProps) {
+                pm.writeTo(out);
+            }
+            out.endTag();
+            for (PropertyMapper pm: props) {
+                pm.writeTo(out);
+            }
+            if (load != null) {
+                load.writeTo(out, "load", null);
+            }
+            for (Map.Entry<String,Statement> e: queries.entrySet()) {
+                e.getValue().writeTo(out, "query", e.getKey());
+            }
+            if (insert != null) {
+                insert.writeTo(out, "insert", null);
+            }
+            if (update != null) {
+                update.writeTo(out, "update", null);
+            }
+            if (delete != null) {
+                delete.writeTo(out, "delete", null);
+            }
+        }
+        out.endTag();
+    }
+
     public static class Builder {
         private final Class<?> clazz;
         private List<PropertyMapper> idProps = new ArrayList<>();
@@ -218,4 +249,4 @@ public class ClassMapper {
             return h;
         }
     }
-    }
+}
