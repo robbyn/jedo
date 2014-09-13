@@ -1,10 +1,12 @@
-package org.tastfuljava.jedo.mapping;
+package org.tastfuljava.jedo.expression;
 
+import org.tastfuljava.jedo.expression.Expression;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
+import org.tastfuljava.jedo.util.ClassUtil;
 
 public abstract class Scope {
     private static final Logger LOG = Logger.getLogger(Scope.class.getName());
@@ -17,7 +19,7 @@ public abstract class Scope {
     public static class ParameterScope extends Scope {
         private final Map<String,Expression> map = new HashMap<>();
 
-        ParameterScope(String[] names) {
+        public ParameterScope(String[] names) {
             for (int i = 0; i < names.length; ++i) {
                 map.put(names[i], new Expression.ParameterExpr(i));
             }

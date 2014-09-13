@@ -1,5 +1,6 @@
 package org.tastfuljava.jedo.mapping;
 
+import org.tastfuljava.jedo.util.ClassUtil;
 import org.tastfuljava.jedo.cache.ObjectId;
 import java.lang.reflect.Field;
 import java.sql.Connection;

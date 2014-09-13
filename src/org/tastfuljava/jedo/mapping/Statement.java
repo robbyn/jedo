@@ -1,5 +1,7 @@
 package org.tastfuljava.jedo.mapping;
 
+import org.tastfuljava.jedo.expression.Scope;
+import org.tastfuljava.jedo.expression.Expression;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;

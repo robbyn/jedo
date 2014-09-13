@@ -1,4 +1,4 @@
-package org.tastfuljava.jedo.mapping;
+package org.tastfuljava.jedo.util;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
