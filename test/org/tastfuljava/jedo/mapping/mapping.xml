@@ -16,14 +16,14 @@
             WHERE PARENT_ID IS NULL
                 AND NAME=${name}
         </query>
-        <query name="subfolder" parameters="parentId,name">
+        <query name="subfolder" parameters="parent,name">
             SELECT * FROM folders
-            WHERE PARENT_ID=${parentId}
+            WHERE PARENT_ID=${parent.id}
                 AND NAME=${name}
         </query>
-        <query name="subfolders" parameters="parentId">
+        <query name="subfolders" parameters="parent">
             SELECT * FROM folders
-            WHERE PARENT_ID=${parentId}
+            WHERE PARENT_ID=${parent.id}
         </query>
     </class>
 </mapping>

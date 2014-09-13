@@ -54,6 +54,10 @@ public class MappingFileReader {
     }
 
     private class ParserHandler extends DefaultHandler {
+        private static final String DTD_SYSTEM_ID = "jedo.dtd";
+        private static final String DTD_PUBLIC_ID
+                = "-//tastefuljava.org//Jedo Mapping File 1.0//EN";
+
         private String packageName;
         private ClassMapper.Builder classBuilder;
         private boolean inId;
@@ -63,8 +67,8 @@ public class MappingFileReader {
         @Override
         public InputSource resolveEntity(String publicId, String systemId)
                 throws IOException, SAXException {
-            if ("-//tastefuljava.org//Jedo Mapping File 1.0//EN".equals(publicId)
-                    || "jedo.dtd".equals(systemId)) {
+            if (DTD_PUBLIC_ID.equals(publicId)
+                    || DTD_SYSTEM_ID.equals(systemId)) {
                 return new InputSource(
                         getClass().getResourceAsStream("jedo.dtd"));
             }
@@ -156,7 +160,8 @@ public class MappingFileReader {
         }
 
         @Override
-        public void characters(char[] ch, int start, int length) throws SAXException {
+        public void characters(char[] ch, int start, int length)
+                throws SAXException {
             if (stmtBuilder != null) {
                 stmtBuilder.addChars(ch, start, length);
             }

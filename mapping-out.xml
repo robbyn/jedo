@@ -9,7 +9,7 @@
 SELECT * FROM folders WHERE ID=?
       </load>
       <query name="subfolders">
-         <parameter value="#0" />
+         <parameter value="#0.id" />
 SELECT * FROM folders WHERE PARENT_ID=?
       </query>
       <query name="rootFolder">
@@ -17,8 +17,8 @@ SELECT * FROM folders WHERE PARENT_ID=?
 SELECT * FROM folders WHERE PARENT_ID IS NULL AND NAME=?
       </query>
       <query name="subfolder">
-         <parameter value="#0" />
-         <parameter value="#1" />
+         <parameter value="#1.id" />
+         <parameter value="#3" />
 SELECT * FROM folders WHERE PARENT_ID=? AND NAME=?
       </query>
    </class>
