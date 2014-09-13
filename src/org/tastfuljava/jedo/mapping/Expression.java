@@ -1,6 +1,8 @@
 package org.tastfuljava.jedo.mapping;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -18,7 +20,7 @@ public abstract class Expression {
                 throw new IllegalArgumentException(
                         "Could not resolve expression " + expr);
             }
-            scope = new Scope.ObjectScope(result.getType(), result);
+            scope = new Scope.PropertyScope(result.getType(), result);
         }
         return result;
     }
@@ -35,12 +37,17 @@ public abstract class Expression {
 
         @Override
         public Class<?> getType() {
-            return Object.class;
+            return null;
         }
 
         @Override
         public Object evaluate(Object self, Object[] parms) {
             return parms[index];
+        }
+
+        @Override
+        public String toString() {
+            return "#" + index;
         }
     }
 
@@ -68,6 +75,84 @@ public abstract class Expression {
                 throw new RuntimeException(
                         "Cannot evaluate field " + field.getName());
             }
+        }
+
+        @Override
+        public String toString() {
+            return object == THIS
+                    ? field.getName() : object + "." + field.getName();
+        }
+    }
+
+    public static class RuntimeExpr extends Expression {
+        private final Expression object;
+        private final String propName;
+
+        public RuntimeExpr(Expression object, String propName) {
+            this.object = object;
+            this.propName = propName;
+        }
+
+        @Override
+        public Class<?> getType() {
+            return null;
+        }
+
+        @Override
+        public Object evaluate(Object self, Object[] parms) {
+            try {
+                Object obj = object.evaluate(self, parms);
+                if (obj == null) {
+                    return null;
+                }
+                Method getter = ClassUtil.getPropGetter(
+                        obj.getClass(), propName);
+                return getter.invoke(obj);
+            } catch (IllegalArgumentException | IllegalAccessException
+                    | InvocationTargetException ex) {
+                LOG.log(Level.SEVERE, null, ex);
+                throw new RuntimeException(
+                        "Cannot evaluate property " + propName);
+            }
+        }
+
+        @Override
+        public String toString() {
+            return object == THIS ? propName : object + "." + propName;
+        }
+    }
+
+    public static class GetterExpr extends Expression {
+        private final Expression object;
+        private final Method getter;
+
+        public GetterExpr(Expression object, Method getter) {
+            this.object = object;
+            this.getter = getter;
+        }
+
+        @Override
+        public Class<?> getType() {
+            return getter.getReturnType();
+        }
+
+        @Override
+        public Object evaluate(Object self, Object[] parms) {
+            try {
+                Object obj = object.evaluate(self, parms);
+                return obj == null ? null : getter.invoke(obj);
+            } catch (IllegalArgumentException | IllegalAccessException
+                    | InvocationTargetException ex) {
+                LOG.log(Level.SEVERE, null, ex);
+                throw new RuntimeException(
+                        "Cannot evaluate getter " + getter.getName());
+            }
+        }
+
+        @Override
+        public String toString() {
+            String exp = getter.getName() + "()";
+            return object == THIS ? exp : object + "." + exp;
         }
     }
 

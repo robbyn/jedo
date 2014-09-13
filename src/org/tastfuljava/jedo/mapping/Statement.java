@@ -76,6 +76,11 @@ public class Statement {
     void writeTo(XMLWriter out, String type, String name) {
         out.startTag(type);
         out.attribute("name", name);
+        for (Expression expr: params) {
+            out.startTag("parameter");
+            out.attribute("value", expr.toString());
+            out.endTag();
+        }
         out.data(sql);
         out.endTag();
     }
@@ -97,7 +102,7 @@ public class Statement {
 
         public Builder(Class<?> clazz, String[] paramNames) {
             this.scope = paramNames == null
-                ? new Scope.ObjectScope(clazz, Expression.THIS)
+                ? new Scope.FieldScope(clazz, Expression.THIS)
                 : new Scope.ParameterScope(paramNames);
         }
 

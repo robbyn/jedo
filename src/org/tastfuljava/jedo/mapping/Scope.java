@@ -1,6 +1,7 @@
 package org.tastfuljava.jedo.mapping;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -28,11 +29,11 @@ public abstract class Scope {
         }
     }
 
-    public static class ObjectScope extends Scope {
+    public static class FieldScope extends Scope {
         private final Class<?> clazz;
         private final Expression self;
 
-        public ObjectScope(Class<?> clazz, Expression object) {
+        public FieldScope(Class<?> clazz, Expression object) {
             this.clazz = clazz;
             this.self = object;
         }
@@ -41,6 +42,26 @@ public abstract class Scope {
         public Expression resolve(String name) {
             Field f = ClassUtil.getInstanceField(clazz, name);
             return new Expression.FieldExpr(self, f);
+        }
+    }
+
+    public static class PropertyScope extends Scope {
+        private final Class<?> clazz;
+        private final Expression self;
+
+        public PropertyScope(Class<?> clazz, Expression object) {
+            this.clazz = clazz;
+            this.self = object;
+        }
+
+        @Override
+        public Expression resolve(String name) {
+            if (clazz == null) {
+                return new Expression.RuntimeExpr(self, name);
+            } else {
+                Method g = ClassUtil.getPropGetter(clazz, name);
+                return new Expression.GetterExpr(self, g);
+            }
         }
     }
 }
