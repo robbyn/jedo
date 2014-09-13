@@ -1,8 +1,9 @@
-package org.tastfuljava.jedo.transaction;
+package org.tastfuljava.jedo.cache;
 
 public class ObjectId {
     private final Class<?> clazz;
     private final Object[] values;
+    private transient int hash = -1;
 
     public ObjectId(Class<?> clazz, Object[] values) {
         if (values == null || values.length < 1) {
@@ -51,10 +52,13 @@ public class ObjectId {
 
     @Override
     public int hashCode() {
-        int h = clazz.hashCode();
-        for (Object value : values) {
-            h = 37 * h + value.hashCode();
+        if (hash == -1) {
+            int h = clazz.hashCode();
+            for (Object value : values) {
+                h = 37 * h + value.hashCode();
+            }
+            hash = h;
         }
-        return h;
+        return hash;
     }
 }

@@ -24,8 +24,7 @@ public class ClassUtil {
     }
 
     public static Field getInstanceField(Class<?> clazz, String name) {
-        Class<?> c = clazz;
-        while (c != null) {
+        for (Class<?> c = clazz; c != null; c = c.getSuperclass()) {
             Field f;
             try {
                 f = c.getDeclaredField(name);
@@ -33,11 +32,12 @@ public class ClassUtil {
                 LOG.log(Level.SEVERE, null, ex);
                 f = null;
             }
-            if (f == null || Modifier.isStatic(f.getModifiers())) {
-                c = c.getSuperclass();
-            } else {
-                f.setAccessible(true);
-                return f;
+            if (f != null) {
+                int mods = f.getModifiers();
+                if (!Modifier.isStatic(mods) && !Modifier.isTransient(mods)) {
+                    f.setAccessible(true);
+                    return f;
+                }
             }
         }
         return null;

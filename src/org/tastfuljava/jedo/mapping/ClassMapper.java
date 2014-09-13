@@ -1,6 +1,6 @@
 package org.tastfuljava.jedo.mapping;
 
-import org.tastfuljava.jedo.transaction.ObjectId;
+import org.tastfuljava.jedo.cache.ObjectId;
 import java.lang.reflect.Field;
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.tastfuljava.jedo.transaction.Cache;
+import org.tastfuljava.jedo.cache.Cache;
 
 public class ClassMapper {
     private static final Logger LOG

@@ -8,7 +8,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.tastfuljava.jedo.mapping.ClassMapper;
 import org.tastfuljava.jedo.mapping.Mapper;
-import org.tastfuljava.jedo.transaction.Cache;
+import org.tastfuljava.jedo.cache.Cache;
 
 public class Session implements Closeable {
     private static final Logger LOG = Logger.getLogger(Session.class.getName());
