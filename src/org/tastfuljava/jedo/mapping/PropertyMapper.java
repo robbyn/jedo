@@ -1,6 +1,8 @@
 package org.tastfuljava.jedo.mapping;
 
 import java.lang.reflect.Field;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -24,5 +26,19 @@ public class PropertyMapper {
             throw new RuntimeException("Could not get property value "
                     + field.getName());
         }
+    }
+
+    public void setValue(Object obj, Object value) {
+        try {
+            field.set(obj, value);
+        } catch (IllegalArgumentException | IllegalAccessException ex) {
+            LOG.log(Level.SEVERE, null, ex);
+            throw new RuntimeException("Could not set property value "
+                    + field.getName());
+        }
+    }
+
+    public Object fromResultSet(ResultSet rs) throws SQLException {
+        return rs.getObject(column, field.getType());
     }
 }
