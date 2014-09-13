@@ -7,9 +7,9 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class WeakCache<K,T> {
+public class Cache<K,T> {
     private static final Logger LOG
-            = Logger.getLogger(WeakCache.class.getName());
+            = Logger.getLogger(Cache.class.getName());
 
     private final Map<K,Ref> map = new HashMap<>();
     private ReferenceQueue<T> refQueue = new ReferenceQueue<>();

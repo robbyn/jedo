@@ -10,6 +10,10 @@ public class Mapper {
         this.classMappers = builder.classMappers;
     }
 
+    public ClassMapper getClassMapper(Class<?> clazz) {
+        return classMappers.get(clazz);
+    }
+
     public void writeTo(XMLWriter out) {
         out.startTag("mapping");
         for (ClassMapper cm: classMappers.values()) {

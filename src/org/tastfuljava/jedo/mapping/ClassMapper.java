@@ -1,6 +1,8 @@
 package org.tastfuljava.jedo.mapping;
 
+import org.tastfuljava.jedo.transaction.ObjectId;
 import java.lang.reflect.Field;
+import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -9,7 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.tastfuljava.jedo.transaction.WeakCache;
+import org.tastfuljava.jedo.transaction.Cache;
 
 public class ClassMapper {
     private static final Logger LOG
@@ -69,7 +71,7 @@ public class ClassMapper {
         }
     }
 
-    public Object getInstance(WeakCache<Object,Object> cache, ResultSet rs)
+    public Object getInstance(Cache<Object,Object> cache, ResultSet rs)
             throws SQLException {
         Object id = getIdFromResultSet(rs);
         Object obj = cache.get(id);
@@ -88,6 +90,65 @@ public class ClassMapper {
             prop.setValue(obj, prop.fromResultSet(rs));
         }
         return obj;
+    }
+
+    public Object load(Connection cnt, Cache cache, Object[] parms)
+            throws SQLException {
+        if (load == null) {
+            throw new IllegalArgumentException(
+                    "No loader for class " + clazz.getName());
+        }
+        ObjectId oid = new ObjectId(clazz, parms);
+        Object obj = cache.get(oid);
+        if (obj == null) {
+            obj = load.queryOne(cnt, this, cache, parms);
+            cache.put(oid, obj);
+        }
+        return obj;
+    }
+
+    public Object queryOne(Connection cnt, Cache cache, String name,
+            Object[] parms) throws SQLException {
+        Statement stmt = queries.get(name);
+        if (stmt == null) {
+            throw new IllegalArgumentException("No query named " + name);
+        }
+        return stmt.queryOne(cnt, this, cache, parms);
+    }
+
+    public void insert(Connection cnt, Cache cache, Object obj)
+            throws SQLException {
+        if (insert == null) {
+            throw new IllegalArgumentException(
+                    "No inserter for " + clazz.getName());
+        }
+        insert.update(cnt, this, obj);
+        cache.put(getId(obj), obj);
+    }
+
+    public void update(Connection cnt, Cache cache, Object obj)
+            throws SQLException {
+        if (update == null) {
+            throw new IllegalArgumentException(
+                    "No inserter for " + clazz.getName());
+        }
+        update.update(cnt, this, obj);
+    }
+
+    public void delete(Connection cnt, Cache cache, Object obj)
+            throws SQLException {
+        if (delete == null) {
+            throw new IllegalArgumentException(
+                    "No inserter for " + clazz.getName());
+        }
+        delete.update(cnt, this, obj);
+        cache.remove(getId(obj));
+    }
+
+    public void getGeneratedKeys(ResultSet rs, Object obj) throws SQLException {
+        for (PropertyMapper prop: idProps) {
+            prop.setValue(obj, prop.fromResultSet(rs));
+        }
     }
 
     public void writeTo(XMLWriter out) {
@@ -190,63 +251,4 @@ public class ClassMapper {
         }
     }
 
-    private static class ObjectId {
-        private final Class<?> clazz;
-        private final Object[] values;
-
-        private ObjectId(Class<?> clazz, Object[] values) {
-            if (values == null || values.length < 1) {
-                throw new IllegalArgumentException(
-                        "At least one value is needed");
-            }
-            this.clazz = clazz;
-            this.values = values;
-        }
-
-        @Override
-        public String toString() {
-            StringBuilder buf = new StringBuilder();
-            buf.append(clazz.getName());
-            buf.append('[');
-            buf.append(values[0]);
-            for (int i = 1; i < values.length; ++i) {
-                buf.append(',');
-                buf.append(values[i]);
-            }
-            buf.append(']');
-            return buf.toString();
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (obj == this) {
-                return true;
-            }
-            if (obj == null || !(obj instanceof ObjectId)) {
-                return false;
-            }
-            ObjectId other = (ObjectId)obj;
-            if (other.clazz != clazz) {
-                return false;
-            }
-            if (other.values.length != values.length) {
-                return false;
-            }
-            for (int i = 0; i < values.length; ++i) {
-                if (!values[i].equals(other.values[i])) {
-                    return false;
-                }
-            }
-            return true;
-        }
-
-        @Override
-        public int hashCode() {
-            int h = clazz.hashCode();
-            for (Object value: values) {
-                h = 37*h + value.hashCode();
-            }
-            return h;
-        }
-    }
 }

@@ -6,7 +6,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import org.tastfuljava.jedo.transaction.WeakCache;
+import org.tastfuljava.jedo.transaction.Cache;
 
 public class Statement {
     private final String sql;
@@ -21,32 +21,56 @@ public class Statement {
     }
 
     public List<Object> query(Connection cnt, ClassMapper cm,
-            WeakCache<Object,Object> cache, Object self, Object[] parms)
+            Cache<Object,Object> cache, Object[] parms)
             throws SQLException {
         List<Object> result = new ArrayList<>();
-        try (PreparedStatement stmt = cnt.prepareStatement(sql);
-                ResultSet rs = stmt.executeQuery()) {
-            while (rs.next()) {
-                result.add(cm.getInstance(cache, rs));
+        try (PreparedStatement stmt = cnt.prepareStatement(sql)) {
+            bindParams(stmt, null, parms);
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    result.add(cm.getInstance(cache, rs));
+                }
             }
         }
         return result;
     }
 
     public Object queryOne(Connection cnt, ClassMapper cm,
-            WeakCache<Object,Object> cache, Object self, Object[] parms)
+            Cache<Object,Object> cache, Object[] parms)
             throws SQLException {
         Object result = null;
-        try (PreparedStatement stmt = cnt.prepareStatement(sql);
-                ResultSet rs = stmt.executeQuery()) {
-            if (rs.next()) {
-                result = cm.getInstance(cache, rs);
+        try (PreparedStatement stmt = cnt.prepareStatement(sql)) {
+            bindParams(stmt, null, parms);
+            try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
-                    throw new SQLException("Only one result allowed");
+                    result = cm.getInstance(cache, rs);
+                    if (rs.next()) {
+                        throw new SQLException("Only one result allowed");
+                    }
                 }
             }
         }
         return result;
+    }
+
+    public void update(Connection cnt, ClassMapper cm, Object obj)
+            throws SQLException {
+        int gk = generatedKeys
+                ? PreparedStatement.RETURN_GENERATED_KEYS
+                : PreparedStatement.NO_GENERATED_KEYS;
+        try (PreparedStatement stmt = cnt.prepareStatement(sql, gk)) {
+            bindParams(stmt, obj, null);
+            stmt.executeUpdate();
+            if (generatedKeys) {
+                try (ResultSet rs = stmt.getGeneratedKeys()) {
+                    if (!rs.next()) {
+                        throw new RuntimeException(
+                                "Could not get generated keys");
+                    }
+                    cm.getGeneratedKeys(rs, obj);
+                }
+            }
+        }
     }
 
     void writeTo(XMLWriter out, String type, String name) {
@@ -54,6 +78,13 @@ public class Statement {
         out.attribute("name", name);
         out.data(sql);
         out.endTag();
+    }
+
+    private void bindParams(PreparedStatement stmt, Object self, Object[] parms)
+            throws SQLException {
+        for (int i = 0; i < params.length; ++i) {
+            stmt.setObject(i, params[i].evaluate(self, parms));
+        }
     }
 
     public static class Builder {
