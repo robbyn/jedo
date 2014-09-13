@@ -46,8 +46,6 @@ public class ClassMapper {
     public Object getId(Object obj) {
         if (idProps == null || idProps.length == 0) {
             return null;
-        } else if (idProps.length == 1) {
-            return idProps[0].getValue(obj);
         } else {
             Object[] values = new Object[idProps.length];
             for (int i = 0; i < idProps.length; ++i) {
@@ -60,8 +58,6 @@ public class ClassMapper {
     public Object getIdFromResultSet(ResultSet rs) throws SQLException {
         if (idProps == null || idProps.length == 0) {
             return null;
-        } else if (idProps.length == 1) {
-            return idProps[0].fromResultSet(rs);
         } else {
             Object[] values = new Object[idProps.length];
             for (int i = 0; i < idProps.length; ++i) {
