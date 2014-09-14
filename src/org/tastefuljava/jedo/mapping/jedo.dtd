@@ -1,9 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <!ELEMENT mapping (class*)>
 <!ATTLIST mapping package CDATA #IMPLIED>
 
-<!ELEMENT class (id?,property*,load?,query*,insert?,update?,delete?)>
+<!ELEMENT class (id?,property*,component*,load?,query*,insert?,update?,delete?)>
 <!ATTLIST class name CDATA #REQUIRED>
 
 <!ELEMENT id (property+)>
@@ -13,6 +12,9 @@
     name CDATA #REQUIRED
     column CDATA #IMPLIED
 >
+
+<!ELEMENT component (property+)>
+<!ATTLIST component name CDATA #REQUIRED>
 
 <!ELEMENT load (#PCDATA)>
 
