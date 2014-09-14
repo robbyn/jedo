@@ -5,7 +5,6 @@ import org.tastefuljava.jedo.cache.ObjectId;
 import java.lang.reflect.Field;
 import java.sql.Connection;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -57,7 +56,7 @@ public class ClassMapper {
         }
     }
 
-    public Object getIdFromResultSet(ResultSet rs) throws SQLException {
+    public Object getIdFromResultSet(ResultSet rs) {
         if (idProps == null || idProps.length == 0) {
             return null;
         } else {
@@ -69,8 +68,7 @@ public class ClassMapper {
         }
     }
 
-    public Object getInstance(Cache<?,?> ucache, ResultSet rs)
-            throws SQLException {
+    public Object getInstance(Cache<?,?> ucache, ResultSet rs) {
         @SuppressWarnings("unchecked")
         Cache<Object,Object> cache = (Cache<Object,Object>) ucache;
         Object id = getIdFromResultSet(rs);
@@ -93,8 +91,7 @@ public class ClassMapper {
         return obj;
     }
 
-    public Object load(Connection cnt, Cache<?,?> ucache, Object[] parms)
-            throws SQLException {
+    public Object load(Connection cnt, Cache<?,?> ucache, Object[] parms) {
         if (load == null) {
             throw new JedoException(
                     "No loader for class " + clazz.getName());
@@ -111,7 +108,7 @@ public class ClassMapper {
     }
 
     public Object queryOne(Connection cnt, Cache cache, String name,
-            Object[] parms) throws SQLException {
+            Object[] parms) {
         Statement stmt = queries.get(name);
         if (stmt == null) {
             throw new JedoException("No query named " + name);
@@ -120,7 +117,7 @@ public class ClassMapper {
     }
 
     public List<Object> query(Connection cnt, Cache<?,?> cache, String name,
-            Object[] parms) throws SQLException {
+            Object[] parms) {
         Statement stmt = queries.get(name);
         if (stmt == null) {
             throw new JedoException("No query named " + name);
@@ -128,8 +125,7 @@ public class ClassMapper {
         return stmt.query(cnt, this, cache, parms);
     }
 
-    public void insert(Connection cnt, Cache<?,?> ucache, Object obj)
-            throws SQLException {
+    public void insert(Connection cnt, Cache<?,?> ucache, Object obj) {
         if (insert == null) {
             throw new JedoException(
                     "No inserter for " + clazz.getName());
@@ -140,8 +136,7 @@ public class ClassMapper {
         cache.put(getId(obj), obj);
     }
 
-    public void update(Connection cnt, Cache cache, Object obj)
-            throws SQLException {
+    public void update(Connection cnt, Cache cache, Object obj) {
         if (update == null) {
             throw new JedoException(
                     "No inserter for " + clazz.getName());
@@ -149,8 +144,7 @@ public class ClassMapper {
         update.update(cnt, this, obj);
     }
 
-    public void delete(Connection cnt, Cache<?,?> ucache, Object obj)
-            throws SQLException {
+    public void delete(Connection cnt, Cache<?,?> ucache, Object obj) {
         if (delete == null) {
             throw new JedoException(
                     "No inserter for " + clazz.getName());
@@ -161,9 +155,10 @@ public class ClassMapper {
         cache.remove(getId(obj));
     }
 
-    public void getGeneratedKeys(ResultSet rs, Object obj) throws SQLException {
+    public void getGeneratedKeys(ResultSet rs, Object obj) {
+        int ix = 0;
         for (PropertyMapper prop: idProps) {
-            prop.setValue(obj, prop.fromResultSet(rs));
+            prop.setValue(obj, prop.fromResultSet(rs, ++ix));
         }
     }
 
@@ -229,12 +224,16 @@ public class ClassMapper {
             return new Statement.Builder(clazz, paramNames);
         }
 
-        public Statement.Builder newLoadStatement() {
-            String[] paramNames = new String[idProps.size()];
-            for (int i = 0; i < idProps.size(); ++i) {
-                paramNames[i] = idProps.get(i).getFieldName();
+        public Statement.Builder newInsertStatement(boolean generatedKeys) {
+            Statement.Builder stmt = new Statement.Builder(clazz, null);
+            if (generatedKeys) {
+                stmt.setGeneratedKeys(getIdColumns());
             }
-            return newStatement(paramNames);
+            return stmt;
+        }
+
+        public Statement.Builder newLoadStatement() {
+            return newStatement(getIdFieldNames());
         }
 
         public void addQuery(String name, Statement stmt) {
@@ -266,6 +265,22 @@ public class ClassMapper {
             return new PropertyMapper(field, column);
         }
 
+        private String[] getIdFieldNames() {
+            String[] result = new String[idProps.size()];
+            for (int i = 0; i < idProps.size(); ++i) {
+                result[i] = idProps.get(i).getFieldName();
+            }
+            return result;
+        }
+
+        private String[] getIdColumns() {
+            String[] result = new String[idProps.size()];
+            for (int i = 0; i < idProps.size(); ++i) {
+                result[i] = idProps.get(i).getFieldName();
+            }
+            return result;
+        }
+
         private static Class<?> loadClass(String packageName,
                 String className) throws ClassNotFoundException {
             String fullName = packageName == null
@@ -274,5 +289,4 @@ public class ClassMapper {
             return cl.loadClass(fullName);
         }
     }
-
 }

@@ -44,8 +44,24 @@ public class PropertyMapper {
         }
     }
 
-    public Object fromResultSet(ResultSet rs) throws SQLException {
-        return Converter.convert(rs.getObject(column), field.getType());
+    public Object fromResultSet(ResultSet rs) {
+        try {
+            return Converter.convert(rs.getObject(column), field.getType());
+        } catch (SQLException ex) {
+            LOG.log(Level.SEVERE, null, ex);
+            throw new JedoException("Could not get property value "
+                    + field.getName());
+        }
+    }
+
+    public Object fromResultSet(ResultSet rs, int ix) {
+        try {
+            return Converter.convert(rs.getObject(ix), field.getType());
+        } catch (SQLException ex) {
+            LOG.log(Level.SEVERE, null, ex);
+            throw new JedoException("Could not get property value "
+                    + field.getName());
+        }
     }
 
     void writeTo(XMLWriter out) {

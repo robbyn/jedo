@@ -116,6 +116,10 @@ public class MappingFileReader {
                     stmtBuilder = classBuilder.newLoadStatement();
                     break;
                 case "insert":
+                    stmtBuilder = classBuilder.newInsertStatement(
+                            "true".equals(attrs.getValue(
+                                    "get-generated-keys")));
+                    break;
                 case "update":
                 case "delete":
                     stmtBuilder = classBuilder.newStatement(null);
@@ -148,15 +152,15 @@ public class MappingFileReader {
                     stmtBuilder = null;
                     break;
                 case "insert":
-                    classBuilder.setLoad(stmtBuilder.getStatement());
+                    classBuilder.setInsert(stmtBuilder.getStatement());
                     stmtBuilder = null;
                     break;
                 case "update":
-                    classBuilder.setLoad(stmtBuilder.getStatement());
+                    classBuilder.setUpdate(stmtBuilder.getStatement());
                     stmtBuilder = null;
                     break;
                 case "delete":
-                    classBuilder.setLoad(stmtBuilder.getStatement());
+                    classBuilder.setDelete(stmtBuilder.getStatement());
                     stmtBuilder = null;
                     break;
             }

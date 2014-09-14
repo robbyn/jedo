@@ -1,37 +1,21 @@
-package org.tastefuljava.jedo.mapping;
+package org.tastefuljava.jedo;
 
-import java.io.File;
+import org.tastefuljava.jedo.testdb.JedoTestBase;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.net.URL;
-import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.h2.tools.RunScript;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.Assert;
-import org.tastefuljava.jedo.Session;
 import org.tastefuljava.jedo.testdb.Folder;
-import org.tastefuljava.jedo.util.Files;
 
-public class ReadTest {
-    private static final File TESTDB_DIR
-            = new File(System.getProperty("user.home"), "jedo-testdb");
-    private static final File TESTDB = new File(TESTDB_DIR, "test");
-
-    private Mapper mapper;
-    private Connection cnt;
-    private Session session;
+public class ReadTest extends JedoTestBase {
 
     public ReadTest() {
     }
@@ -47,25 +31,12 @@ public class ReadTest {
     @Before
     public void setUp()
             throws IOException, ClassNotFoundException, SQLException {
-        MappingFileReader reader = new MappingFileReader();
-        URL url = getClass().getResource("mapping.xml");
-        reader.load(url);
-        mapper = reader.getMapper();
-        Files.deleteIfExists(TESTDB_DIR);
-        Class.forName("org.h2.Driver");
-        cnt = DriverManager.getConnection("jdbc:h2:" + TESTDB, "sa", "");
-        runScript("initdb.sql");
-        session = new Session(cnt, mapper);
+        super.initialize();
     }
 
     @After
     public void tearDown() throws SQLException, IOException {
-        if (session != null) {
-            session.close();
-        }
-        if (cnt != null) {
-            cnt.close();
-        }
+        super.terminate();
     }
 
     @Test
@@ -104,13 +75,6 @@ public class ReadTest {
         for (Folder f: idMap.values()) {
             Assert.assertSame("Cache failure", f,
                     session.load(Folder.class, f.getId()));
-        }
-    }
-
-    private void runScript(String name) throws IOException, SQLException {
-        try (InputStream stream = getClass().getResourceAsStream(name);
-                Reader in = new InputStreamReader(stream, "UTF-8")) {
-            RunScript.execute(cnt, in);
         }
     }
 }

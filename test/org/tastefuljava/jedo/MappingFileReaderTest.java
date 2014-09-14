@@ -1,14 +1,14 @@
-package org.tastefuljava.jedo.mapping;
+package org.tastefuljava.jedo;
 
-import org.tastefuljava.jedo.mapping.Mapper;
-import org.tastefuljava.jedo.mapping.XMLWriter;
-import org.tastefuljava.jedo.mapping.MappingFileReader;
 import java.io.File;
 import java.net.URL;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.tastefuljava.jedo.mapping.Mapper;
+import org.tastefuljava.jedo.mapping.MappingFileReader;
+import org.tastefuljava.jedo.mapping.XMLWriter;
 
 public class MappingFileReaderTest {
 

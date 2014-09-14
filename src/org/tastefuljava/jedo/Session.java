@@ -1,7 +1,6 @@
 package org.tastefuljava.jedo;
 
 import java.io.Closeable;
-import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
@@ -17,6 +16,15 @@ public class Session implements Closeable {
     private final Connection cnt;
     private final Mapper mapper;
     private final Cache cache = new Cache();
+    private boolean closeConnection = true;
+
+    public boolean getCloseConnection() {
+        return closeConnection;
+    }
+
+    public void setCloseConnection(boolean closeConnection) {
+        this.closeConnection = closeConnection;
+    }
 
     public Session(Connection cnt, Mapper mapper) {
         this.cnt = cnt;
@@ -28,17 +36,12 @@ public class Session implements Closeable {
     }
 
     public <T> T loadA(Class<T> clazz, Object[] parms) {
-        try {
-            ClassMapper cm = mapper.getClassMapper(clazz);
-            if (cm == null) {
-                throw new JedoException(
-                        "Class is not mapped " + clazz.getName());
-            }
-            return clazz.cast(cm.load(cnt, cache, parms));
-        } catch (SQLException ex) {
-            LOG.log(Level.SEVERE, null, ex);
-            throw new JedoException(ex.getMessage());
+        ClassMapper cm = mapper.getClassMapper(clazz);
+        if (cm == null) {
+            throw new JedoException(
+                    "Class is not mapped " + clazz.getName());
         }
+        return clazz.cast(cm.load(cnt, cache, parms));
     }
 
     public <T> T queryOne(Class<T> clazz, String name, Object... parms) {
@@ -46,17 +49,12 @@ public class Session implements Closeable {
     }
 
     public <T> T queryOneA(Class<T> clazz, String name, Object[] parms) {
-        try {
-            ClassMapper cm = mapper.getClassMapper(clazz);
-            if (cm == null) {
-                throw new JedoException(
-                        "Class is not mapped " + clazz.getName());
-            }
-            return clazz.cast(cm.queryOne(cnt, cache, name, parms));
-        } catch (SQLException ex) {
-            LOG.log(Level.SEVERE, null, ex);
-            throw new JedoException(ex.getMessage());
+        ClassMapper cm = mapper.getClassMapper(clazz);
+        if (cm == null) {
+            throw new JedoException(
+                    "Class is not mapped " + clazz.getName());
         }
+        return clazz.cast(cm.queryOne(cnt, cache, name, parms));
     }
 
     public <T> List<T> query(Class<T> clazz, String name, Object... parms) {
@@ -64,19 +62,44 @@ public class Session implements Closeable {
     }
 
     public <T> List<T> queryA(Class<T> clazz, String name, Object[] parms) {
-        try {
-            ClassMapper cm = mapper.getClassMapper(clazz);
-            if (cm == null) {
-                throw new JedoException(
-                        "Class is not mapped " + clazz.getName());
-            }
-            @SuppressWarnings("unchecked")
-            List<T> result = (List<T>) cm.query(cnt, cache, name, parms);
-            return result;
-        } catch (SQLException ex) {
-            LOG.log(Level.SEVERE, null, ex);
-            throw new JedoException(ex.getMessage());
+        ClassMapper cm = mapper.getClassMapper(clazz);
+        if (cm == null) {
+            throw new JedoException(
+                    "Class is not mapped " + clazz.getName());
         }
+        @SuppressWarnings("unchecked")
+                List<T> result = (List<T>) cm.query(cnt, cache, name, parms);
+        return result;
+    }
+
+    public void insert(Object obj) {
+        Class<?> clazz = obj.getClass();
+        ClassMapper cm = mapper.getClassMapper(clazz);
+        if (cm == null) {
+            throw new JedoException(
+                    "Class is not mapped " + clazz.getName());
+        }
+        cm.insert(cnt, cache, obj);
+    }
+
+    public void update(Object obj) {
+        Class<?> clazz = obj.getClass();
+        ClassMapper cm = mapper.getClassMapper(clazz);
+        if (cm == null) {
+            throw new JedoException(
+                    "Class is not mapped " + clazz.getName());
+        }
+        cm.update(cnt, cache, obj);
+    }
+
+    public void delete(Object obj) {
+        Class<?> clazz = obj.getClass();
+        ClassMapper cm = mapper.getClassMapper(clazz);
+        if (cm == null) {
+            throw new JedoException(
+                    "Class is not mapped " + clazz.getName());
+        }
+        cm.delete(cnt, cache, obj);
     }
 
     public void commit() {
@@ -97,7 +120,9 @@ public class Session implements Closeable {
                 try {
                     cnt.rollback();
                 } finally {
-                    cnt.close();
+                    if (closeConnection) {
+                        cnt.close();
+                    }
                 }
             }
         } catch (SQLException ex) {

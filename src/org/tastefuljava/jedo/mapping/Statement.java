@@ -8,13 +8,17 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.tastefuljava.jedo.JedoException;
 import org.tastefuljava.jedo.cache.Cache;
 
 public class Statement {
+    private static final Logger LOG
+            = Logger.getLogger(Statement.class.getName());
     private final String sql;
     private final Expression[] params;
-    private final boolean generatedKeys;
+    private final String[] generatedKeys;
 
     private Statement(Builder builder) {
         this.sql = builder.buf.toString();
@@ -24,8 +28,7 @@ public class Statement {
     }
 
     public List<Object> query(Connection cnt, ClassMapper cm,
-            Cache<?,?> ucache, Object[] parms)
-            throws SQLException {
+            Cache<?,?> ucache, Object[] parms) {
         @SuppressWarnings("unchecked")
         Cache<Object,Object> cache = (Cache<Object,Object>)ucache;
         List<Object> result = new ArrayList<>();
@@ -36,13 +39,15 @@ public class Statement {
                     result.add(cm.getInstance(cache, rs));
                 }
             }
+        } catch (SQLException ex) {
+            LOG.log(Level.SEVERE, null, ex);
+            throw new JedoException(ex.getMessage());
         }
         return result;
     }
 
     public Object queryOne(Connection cnt, ClassMapper cm,
-            Cache<?,?> cache, Object[] parms)
-            throws SQLException {
+            Cache<?,?> cache, Object[] parms) {
         Object result = null;
         try (PreparedStatement stmt = cnt.prepareStatement(sql)) {
             bindParams(stmt, null, parms);
@@ -54,19 +59,18 @@ public class Statement {
                     }
                 }
             }
+        } catch (SQLException ex) {
+            LOG.log(Level.SEVERE, null, ex);
+            throw new JedoException(ex.getMessage());
         }
         return result;
     }
 
-    public void update(Connection cnt, ClassMapper cm, Object obj)
-            throws SQLException {
-        int gk = generatedKeys
-                ? PreparedStatement.RETURN_GENERATED_KEYS
-                : PreparedStatement.NO_GENERATED_KEYS;
-        try (PreparedStatement stmt = cnt.prepareStatement(sql, gk)) {
+    public void update(Connection cnt, ClassMapper cm, Object obj) {
+        try (PreparedStatement stmt = prepareStatement(cnt)) {
             bindParams(stmt, obj, null);
             stmt.executeUpdate();
-            if (generatedKeys) {
+            if (generatedKeys != null) {
                 try (ResultSet rs = stmt.getGeneratedKeys()) {
                     if (!rs.next()) {
                         throw new JedoException(
@@ -75,6 +79,9 @@ public class Statement {
                     cm.getGeneratedKeys(rs, obj);
                 }
             }
+        } catch (SQLException ex) {
+            LOG.log(Level.SEVERE, null, ex);
+            throw new JedoException(ex.getMessage());
         }
     }
 
@@ -90,16 +97,28 @@ public class Statement {
         out.endTag();
     }
 
-    private void bindParams(PreparedStatement stmt, Object self, Object[] parms)
-            throws SQLException {
-        for (int i = 0; i < params.length; ++i) {
-            stmt.setObject(i+1, params[i].evaluate(self, parms));
+    private void bindParams(PreparedStatement stmt, Object self,
+            Object[] parms) {
+        try {
+            for (int i = 0; i < params.length; ++i) {
+                stmt.setObject(i+1, params[i].evaluate(self, parms));
+            }
+        } catch (SQLException ex) {
+            LOG.log(Level.SEVERE, null, ex);
+            throw new JedoException(ex.getMessage());
         }
+    }
+
+    private PreparedStatement prepareStatement(Connection cnt)
+            throws SQLException {
+        return generatedKeys == null
+                ? cnt.prepareStatement(sql)
+                : cnt.prepareStatement(sql, generatedKeys);
     }
 
     public static class Builder {
         private final Scope scope;
-        private boolean generatedKeys;
+        private String[] generatedKeys;
         private final List<Expression> params = new ArrayList<>();
         private final StringBuilder buf = new StringBuilder();
         private final StringBuilder expr = new StringBuilder();
@@ -111,8 +130,8 @@ public class Statement {
                 : new Scope.ParameterScope(paramNames);
         }
 
-        public void setGeneratedKeys(boolean newValue) {
-            generatedKeys = newValue;
+        public void setGeneratedKeys(String[] keyNames) {
+            generatedKeys = keyNames;
         }
 
         public void addChars(char[] chars, int start, int length) {
