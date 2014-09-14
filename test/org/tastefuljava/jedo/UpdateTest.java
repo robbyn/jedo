@@ -3,6 +3,7 @@ package org.tastefuljava.jedo;
 import org.tastefuljava.jedo.testdb.JedoTestBase;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.Date;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -83,5 +84,82 @@ public class UpdateTest extends JedoTestBase {
         Picture pic2 = session.load(Picture.class, picId);
         Assert.assertNotSame("Cache not cleared", pic, pic2);
         Assert.assertEquals("Wrong name", "mybeautifulpic.jpg", pic2.getName());
+    }
+
+    @Test
+    public void testUpdate()
+            throws SQLException, ClassNotFoundException, IOException {
+        Folder folder = getFolder("root/sub1");
+        Picture pic = new Picture();
+        pic.setFolderId(folder.getId());
+        pic.setName("mybeautifulpic.jpg");
+        pic.setSize(1024, 768);
+        session.insert(pic);
+        Assert.assertTrue("Picture ID is zero", pic.getId() != 0);
+        int picId = pic.getId();
+        Assert.assertSame("Reread failed",
+                pic, session.load(Picture.class, pic.getId()));
+        session.commit(); // should clear the cache
+        terminate();
+        open();
+        Picture pic2 = session.load(Picture.class, picId);
+        Assert.assertNotSame("Cache not cleared", pic, pic2);
+        pic2.setName("anothername.jpg");
+        Date now = new Date();
+        pic2.setTimestamp(now);
+        session.update(pic2);
+        session.commit(); // should clear the cache
+        terminate();
+        open();
+        Picture pic3 = session.load(Picture.class, picId);
+        Assert.assertNotSame("Cache not cleared", pic3, pic2);
+        Assert.assertNotSame("Cache not cleared", pic3, pic);
+        Assert.assertEquals("Wrong name", "anothername.jpg", pic3.getName());
+        Assert.assertEquals("Wrong date", now, pic3.getTimestamp());
+    }
+
+    @Test
+    public void testDelete()
+            throws SQLException, ClassNotFoundException, IOException {
+        Folder folder = getFolder("root/sub1");
+        Picture pic = new Picture();
+        pic.setFolderId(folder.getId());
+        pic.setName("mybeautifulpic.jpg");
+        pic.setSize(1024, 768);
+        session.insert(pic);
+        Assert.assertTrue("Picture ID is zero", pic.getId() != 0);
+        int picId = pic.getId();
+        Assert.assertSame("Reread failed",
+                pic, session.load(Picture.class, pic.getId()));
+        session.commit(); // should clear the cache
+        terminate();
+        open();
+        Picture pic2 = session.load(Picture.class, picId);
+        session.delete(pic2);
+        session.commit(); // should clear the cache
+        terminate();
+        open();
+        Picture pic3 = session.load(Picture.class, picId);
+        Assert.assertNull("Cache not deleted", pic3);
+    }
+
+    @Test
+    public void testRollback()
+            throws SQLException, ClassNotFoundException, IOException {
+        Folder folder = getFolder("root/sub1");
+        Picture pic = new Picture();
+        pic.setFolderId(folder.getId());
+        pic.setName("mybeautifulpic.jpg");
+        pic.setSize(1024, 768);
+        session.insert(pic);
+        Assert.assertTrue("Picture ID is zero", pic.getId() != 0);
+        int picId = pic.getId();
+        Assert.assertSame("Reread failed",
+                pic, session.load(Picture.class, pic.getId()));
+        // no commit
+        terminate();
+        open();
+        Picture pic2 = session.load(Picture.class, picId);
+        Assert.assertNull("Not rollbacked", pic2);
     }
 }

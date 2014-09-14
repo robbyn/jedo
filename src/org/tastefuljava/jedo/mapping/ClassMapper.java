@@ -139,7 +139,7 @@ public class ClassMapper {
     public void update(Connection cnt, Cache cache, Object obj) {
         if (update == null) {
             throw new JedoException(
-                    "No inserter for " + clazz.getName());
+                    "No updater for " + clazz.getName());
         }
         update.update(cnt, this, obj);
     }
@@ -147,7 +147,7 @@ public class ClassMapper {
     public void delete(Connection cnt, Cache<?,?> ucache, Object obj) {
         if (delete == null) {
             throw new JedoException(
-                    "No inserter for " + clazz.getName());
+                    "No deleter for " + clazz.getName());
         }
         delete.update(cnt, this, obj);
         @SuppressWarnings("unchecked")

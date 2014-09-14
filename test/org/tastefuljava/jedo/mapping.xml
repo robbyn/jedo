@@ -55,5 +55,13 @@
             INSERT INTO pictures(FOLDER_ID,NAME,TIMESTAMP,WIDTH,HEIGHT)
                 VALUES(${folderId},${name},${timestamp},${width},${height})
         </insert>
+        <update>
+            UPDATE pictures SET FOLDER_ID=${folderId},NAME=${name},
+                TIMESTAMP=${timestamp},WIDTH=${width},HEIGHT=${height}
+            WHERE ID=${id}
+        </update>
+        <delete>
+            DELETE FROM pictures WHERE ID=${id}
+        </delete>
     </class>
 </mapping>
