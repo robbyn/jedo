@@ -11,6 +11,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.Assert;
 import org.tastefuljava.jedo.testdb.Folder;
+import org.tastefuljava.jedo.testdb.GpsData;
 import org.tastefuljava.jedo.testdb.Picture;
 
 public class UpdateTest extends JedoTestBase {
@@ -161,5 +162,35 @@ public class UpdateTest extends JedoTestBase {
         open();
         Picture pic2 = session.load(Picture.class, picId);
         Assert.assertNull("Not rollbacked", pic2);
+    }
+
+    @Test
+    public void testComponent()
+            throws SQLException, ClassNotFoundException, IOException {
+        Folder folder = getFolder("root/sub1");
+        Picture pic = new Picture();
+        pic.setFolderId(folder.getId());
+        pic.setName("mybeautifulpic.jpg");
+        pic.setSize(1024, 768);
+        GpsData gps = new GpsData();
+        gps.setLatitude(46);
+        gps.setLongitude(7);
+        pic.setGpsData(gps);
+        session.insert(pic);
+        Assert.assertTrue("Picture ID is zero", pic.getId() != 0);
+        int picId = pic.getId();
+        Assert.assertSame("Reread failed",
+                pic, session.load(Picture.class, pic.getId()));
+        session.commit(); // should clear the cache
+        terminate();
+        open();
+        Picture pic2 = session.load(Picture.class, picId);
+        GpsData gps2 = pic2.getGpsData();
+        Assert.assertNotNull("Component not present", gps2);
+        Assert.assertNull("Unexpected value here", gps2.getAltitude());
+        Assert.assertEquals("Different values",
+                gps.getLatitude(), gps2.getLatitude(), 0.0000001);
+        Assert.assertEquals("Different values",
+                gps.getLongitude(), gps2.getLongitude(), 0.0000001);
     }
 }

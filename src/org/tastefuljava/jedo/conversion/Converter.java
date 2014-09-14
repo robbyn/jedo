@@ -130,7 +130,7 @@ public abstract class Converter<S,T> {
         registerId(float.class, Float.class);
         registerId(Float.class, float.class);
         registerId(double.class, Double.class);
-        registerId(Double.class, float.class);
+        registerId(Double.class, double.class);
         register(Timestamp.class, Date.class, new Converter<Timestamp,Date>() {
             @Override
             public Date convert(Timestamp value) {

@@ -10,6 +10,7 @@ public class Picture {
     private Date timestamp = new Date();
     private int width;
     private int height;
+    private GpsData gpsData;
 
     public int getId() {
         return id;
@@ -66,5 +67,13 @@ public class Picture {
 
     public void setDimension(Dimension dim) {
         setSize(dim.width, dim.height);
+    }
+
+    public GpsData getGpsData() {
+        return gpsData;
+    }
+
+    public void setGpsData(GpsData gpsData) {
+        this.gpsData = gpsData;
     }
 }

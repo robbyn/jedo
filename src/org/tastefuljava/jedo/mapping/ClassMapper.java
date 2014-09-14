@@ -21,6 +21,7 @@ public class ClassMapper {
     private final Class<?> clazz;
     private final PropertyMapper[] idProps;
     private final PropertyMapper[] props;
+    private final ComponentMapper[] comps;
     private final Map<String,Statement> queries;
     private final Statement load;
     private final Statement insert;
@@ -33,6 +34,8 @@ public class ClassMapper {
                 new PropertyMapper[builder.idProps.size()]);
         this.props = builder.props.toArray(
                 new PropertyMapper[builder.props.size()]);
+        this.comps = builder.comps.toArray(
+                new ComponentMapper[builder.comps.size()]);
         this.queries = builder.queries;
         this.load = builder.load;
         this.insert = builder.insert;
@@ -86,6 +89,9 @@ public class ClassMapper {
         }
         for (PropertyMapper prop: props) {
             prop.setValue(obj, prop.fromResultSet(rs));
+        }
+        for (ComponentMapper comp: comps) {
+            comp.collect(obj, rs);
         }
         cache.put(id, obj);
         return obj;
@@ -174,6 +180,9 @@ public class ClassMapper {
             for (PropertyMapper pm: props) {
                 pm.writeTo(out);
             }
+            for (ComponentMapper cm: comps) {
+                cm.writeTo(out);
+            }
             if (load != null) {
                 load.writeTo(out, "load", null);
             }
@@ -197,6 +206,7 @@ public class ClassMapper {
         private final Class<?> clazz;
         private List<PropertyMapper> idProps = new ArrayList<>();
         private List<PropertyMapper> props = new ArrayList<>();
+        private List<ComponentMapper> comps = new ArrayList<>();
         private final Map<String,Statement> queries = new HashMap<>();
         private Statement load;
         private Statement insert;
@@ -218,6 +228,15 @@ public class ClassMapper {
 
         public void addProp(String field, String column) {
             props.add(newPropertyMapper(field, column));
+        }
+
+        public ComponentMapper.Builder newComponent(String name) {
+            return new ComponentMapper.Builder(
+                    ClassUtil.getInstanceField(clazz, name));
+        }
+
+        public void addComponent(ComponentMapper cm) {
+            comps.add(cm);
         }
 
         public Statement.Builder newStatement(String[] paramNames) {

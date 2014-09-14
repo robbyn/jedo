@@ -62,6 +62,7 @@ public class MappingFileReader {
         private String packageName;
         private ClassMapper.Builder classBuilder;
         private boolean inId;
+        private ComponentMapper.Builder compBuilder;
         private Statement.Builder stmtBuilder;
         private String queryName;
 
@@ -97,13 +98,19 @@ public class MappingFileReader {
                     inId = true;
                     break;
                 case "property":
+                    String name = attrs.getValue("name");
+                    String column = attrs.getValue("column");
                     if (inId) {
-                        classBuilder.addIdProp(attrs.getValue("name"),
-                                attrs.getValue("column"));
+                        classBuilder.addIdProp(name, column);
+                    } else if (compBuilder != null) {
+                        compBuilder.addProp(name, column);
                     } else {
-                        classBuilder.addProp(attrs.getValue("name"),
-                                attrs.getValue("column"));
+                        classBuilder.addProp(name, column);
                     }
+                    break;
+                case "component":
+                    compBuilder = classBuilder.newComponent(
+                            attrs.getValue("name"));
                     break;
                 case "query":
                     queryName = attrs.getValue("name");
@@ -140,6 +147,10 @@ public class MappingFileReader {
                     break;
                 case "id":
                     inId = false;
+                    break;
+                case "component":
+                    classBuilder.addComponent(compBuilder.getMapper());
+                    compBuilder = null;
                     break;
                 case "query":
                     classBuilder.addQuery(

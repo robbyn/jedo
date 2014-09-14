@@ -21,7 +21,9 @@ public abstract class Scope {
 
         public ParameterScope(String[] names) {
             for (int i = 0; i < names.length; ++i) {
-                map.put(names[i], new Expression.ParameterExpr(i));
+                Expression expr = new Expression.ParameterExpr(i);
+                map.put(names[i], expr);
+                map.put("#" + i, expr);
             }
         }
 

@@ -37,6 +37,11 @@
         <property name="timestamp" column="TIMESTAMP"/>
         <property name="width" column="WIDTH"/>
         <property name="height" column="HEIGHT"/>
+        <component name="gpsData">
+            <property name="latitude" column="LATITUDE"/>
+            <property name="longitude" column="LONGITUDE"/>
+            <property name="altitude" column="ALTITUDE"/>
+        </component>
 
         <load>
             SELECT * FROM pictures
@@ -52,12 +57,16 @@
             WHERE PARENT_ID=${folder.id}
         </query>
         <insert get-generated-keys="true">
-            INSERT INTO pictures(FOLDER_ID,NAME,TIMESTAMP,WIDTH,HEIGHT)
-                VALUES(${folderId},${name},${timestamp},${width},${height})
+            INSERT INTO pictures(FOLDER_ID,NAME,TIMESTAMP,WIDTH,HEIGHT,LATITUDE,
+                LONGITUDE,ALTITUDE)
+            VALUES(${folderId},${name},${timestamp},${width},${height},
+                ${gpsData.latitude},${gpsData.longitude},${gpsData.altitude})
         </insert>
         <update>
             UPDATE pictures SET FOLDER_ID=${folderId},NAME=${name},
-                TIMESTAMP=${timestamp},WIDTH=${width},HEIGHT=${height}
+                TIMESTAMP=${timestamp},WIDTH=${width},HEIGHT=${height},
+                LATITUDE=${gpsData.latitude},LONGITUDE=${gpsData.longitude},
+                ALTITUDE=${gpsData.altitude}
             WHERE ID=${id}
         </update>
         <delete>
