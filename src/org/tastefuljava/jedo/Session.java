@@ -1,4 +1,4 @@
-package org.tastfuljava.jedo;
+package org.tastefuljava.jedo;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -6,9 +6,9 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.tastfuljava.jedo.mapping.ClassMapper;
-import org.tastfuljava.jedo.mapping.Mapper;
-import org.tastfuljava.jedo.cache.Cache;
+import org.tastefuljava.jedo.mapping.ClassMapper;
+import org.tastefuljava.jedo.mapping.Mapper;
+import org.tastefuljava.jedo.cache.Cache;
 
 public class Session implements Closeable {
     private static final Logger LOG = Logger.getLogger(Session.class.getName());

@@ -1,4 +1,4 @@
-package org.tastfuljava.jedo.cache;
+package org.tastefuljava.jedo.cache;
 
 import java.lang.ref.ReferenceQueue;
 import java.lang.ref.WeakReference;

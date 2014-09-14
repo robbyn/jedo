@@ -1,11 +1,11 @@
-package org.tastfuljava.jedo.expression;
+package org.tastefuljava.jedo.expression;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.tastfuljava.jedo.util.ClassUtil;
+import org.tastefuljava.jedo.util.ClassUtil;
 
 public abstract class Expression {
     private static final Logger LOG

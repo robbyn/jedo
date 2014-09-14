@@ -1,4 +1,4 @@
-package org.tastfuljava.jedo.cache;
+package org.tastefuljava.jedo.cache;
 
 public class ObjectId {
     private final Class<?> clazz;

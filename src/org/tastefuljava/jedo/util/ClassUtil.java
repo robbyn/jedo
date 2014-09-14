@@ -1,4 +1,4 @@
-package org.tastfuljava.jedo.util;
+package org.tastefuljava.jedo.util;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapping PUBLIC '-//tastefuljava.org//Jedo Mapping File 1.0//EN' 'jedo.dtd'>
-<mapping package="org.tastefuljava.gianadda.domain">
+<mapping package="org.tastefuljava.jedo.testdb">
     <class name="Folder">
         <id>
             <property name="id" column="ID"/>

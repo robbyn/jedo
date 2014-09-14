@@ -1,12 +1,12 @@
-package org.tastfuljava.jedo.expression;
+package org.tastefuljava.jedo.expression;
 
-import org.tastfuljava.jedo.expression.Expression;
+import org.tastefuljava.jedo.expression.Expression;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
-import org.tastfuljava.jedo.util.ClassUtil;
+import org.tastefuljava.jedo.util.ClassUtil;
 
 public abstract class Scope {
     private static final Logger LOG = Logger.getLogger(Scope.class.getName());

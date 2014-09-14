@@ -1,14 +1,14 @@
-package org.tastfuljava.jedo.mapping;
+package org.tastefuljava.jedo.mapping;
 
-import org.tastfuljava.jedo.expression.Scope;
-import org.tastfuljava.jedo.expression.Expression;
+import org.tastefuljava.jedo.expression.Scope;
+import org.tastefuljava.jedo.expression.Expression;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import org.tastfuljava.jedo.cache.Cache;
+import org.tastefuljava.jedo.cache.Cache;
 
 public class Statement {
     private final String sql;

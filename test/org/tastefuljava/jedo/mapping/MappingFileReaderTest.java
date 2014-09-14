@@ -1,5 +1,8 @@
-package org.tastfuljava.jedo.mapping;
+package org.tastefuljava.jedo.mapping;
 
+import org.tastefuljava.jedo.mapping.Mapper;
+import org.tastefuljava.jedo.mapping.XMLWriter;
+import org.tastefuljava.jedo.mapping.MappingFileReader;
 import java.io.File;
 import java.net.URL;
 import org.junit.After;

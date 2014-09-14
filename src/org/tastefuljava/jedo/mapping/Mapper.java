@@ -1,4 +1,4 @@
-package org.tastfuljava.jedo.mapping;
+package org.tastefuljava.jedo.mapping;
 
 import java.util.HashMap;
 import java.util.Map;

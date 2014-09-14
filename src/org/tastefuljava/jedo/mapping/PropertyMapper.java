@@ -1,4 +1,4 @@
-package org.tastfuljava.jedo.mapping;
+package org.tastefuljava.jedo.mapping;
 
 import java.lang.reflect.Field;
 import java.sql.ResultSet;
