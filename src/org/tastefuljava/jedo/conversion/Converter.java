@@ -170,5 +170,41 @@ public abstract class Converter<S,T> {
                         : new java.sql.Date(value.getTime());
             }
         });
+        register(Byte.class, Short.class, new Converter<Byte,Short>() {
+            @Override
+            public Short convert(Byte value) {
+                return value == null ? null : value.shortValue();
+            }
+        });
+        register(Short.class, Integer.class, new Converter<Short,Integer>() {
+            @Override
+            public Integer convert(Short value) {
+                return value == null ? null : value.intValue();
+            }
+        });
+        register(Integer.class, Long.class, new Converter<Integer,Long>() {
+            @Override
+            public Long convert(Integer value) {
+                return value == null ? null : value.longValue();
+            }
+        });
+        register(Integer.class, Float.class, new Converter<Integer,Float>() {
+            @Override
+            public Float convert(Integer value) {
+                return value == null ? null : value.floatValue();
+            }
+        });
+        register(Long.class, Double.class, new Converter<Long,Double>() {
+            @Override
+            public Double convert(Long value) {
+                return value == null ? null : value.doubleValue();
+            }
+        });
+        register(Float.class, Double.class, new Converter<Float,Double>() {
+            @Override
+            public Double convert(Float value) {
+                return value == null ? null : value.doubleValue();
+            }
+        });
     }
 }
