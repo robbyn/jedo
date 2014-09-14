@@ -31,13 +31,13 @@ public class Session implements Closeable {
         try {
             ClassMapper cm = mapper.getClassMapper(clazz);
             if (cm == null) {
-                throw new IllegalArgumentException(
+                throw new JedoException(
                         "Class is not mapped " + clazz.getName());
             }
             return clazz.cast(cm.load(cnt, cache, parms));
         } catch (SQLException ex) {
             LOG.log(Level.SEVERE, null, ex);
-            throw new RuntimeException(ex.getMessage());
+            throw new JedoException(ex.getMessage());
         }
     }
 
@@ -49,13 +49,13 @@ public class Session implements Closeable {
         try {
             ClassMapper cm = mapper.getClassMapper(clazz);
             if (cm == null) {
-                throw new IllegalArgumentException(
+                throw new JedoException(
                         "Class is not mapped " + clazz.getName());
             }
             return clazz.cast(cm.queryOne(cnt, cache, name, parms));
         } catch (SQLException ex) {
             LOG.log(Level.SEVERE, null, ex);
-            throw new RuntimeException(ex.getMessage());
+            throw new JedoException(ex.getMessage());
         }
     }
 
@@ -67,7 +67,7 @@ public class Session implements Closeable {
         try {
             ClassMapper cm = mapper.getClassMapper(clazz);
             if (cm == null) {
-                throw new IllegalArgumentException(
+                throw new JedoException(
                         "Class is not mapped " + clazz.getName());
             }
             @SuppressWarnings("unchecked")
@@ -75,7 +75,7 @@ public class Session implements Closeable {
             return result;
         } catch (SQLException ex) {
             LOG.log(Level.SEVERE, null, ex);
-            throw new RuntimeException(ex.getMessage());
+            throw new JedoException(ex.getMessage());
         }
     }
 
@@ -85,12 +85,12 @@ public class Session implements Closeable {
             cnt.commit();
         } catch (SQLException ex) {
             LOG.log(Level.SEVERE, null, ex);
-            throw new RuntimeException(ex.getMessage());
+            throw new JedoException(ex.getMessage());
         }
     }
 
     @Override
-    public void close() throws IOException {
+    public void close() {
         try {
             cache.clear();
             if (!cnt.isClosed()) {
@@ -102,7 +102,7 @@ public class Session implements Closeable {
             }
         } catch (SQLException ex) {
             LOG.log(Level.SEVERE, null, ex);
-            throw new IOException(ex.getMessage());
+            throw new JedoException(ex.getMessage());
         }
     }
 }

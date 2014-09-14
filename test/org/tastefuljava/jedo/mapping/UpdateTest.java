@@ -9,10 +9,6 @@ import java.net.URL;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import org.h2.tools.RunScript;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -22,9 +18,10 @@ import org.junit.Test;
 import org.junit.Assert;
 import org.tastefuljava.jedo.Session;
 import org.tastefuljava.jedo.testdb.Folder;
+import org.tastefuljava.jedo.testdb.Picture;
 import org.tastefuljava.jedo.util.Files;
 
-public class ReadTest {
+public class UpdateTest {
     private static final File TESTDB_DIR
             = new File(System.getProperty("user.home"), "jedo-testdb");
     private static final File TESTDB = new File(TESTDB_DIR, "test");
@@ -33,7 +30,7 @@ public class ReadTest {
     private Connection cnt;
     private Session session;
 
-    public ReadTest() {
+    public UpdateTest() {
     }
 
     @BeforeClass
@@ -79,31 +76,44 @@ public class ReadTest {
     public void testRoot() {
         Folder root = session.queryOne(Folder.class, "rootFolder", "root");
         Assert.assertNotNull("Root is null", root);
+        Assert.assertNull("Root is not a root", root.getParentId());
+        Assert.assertTrue("Root is not a root", root.isRoot());
         Assert.assertEquals("Wrong folder name", "root", root.getName());
+        Folder sub1 = getFolder("root/sub1");
+        Assert.assertNotNull("Folder is null", sub1);
+        Assert.assertEquals("Wrong parent id",
+                (Integer)root.getId(), sub1.getParentId());
+        Assert.assertEquals("Wrong name",
+                "sub1", sub1.getName());
+        Folder sub2 = getFolder("root/sub2");
+        Assert.assertNotNull("Folder is null", sub2);
+        Assert.assertEquals("Wrong parent id",
+                (Integer)root.getId(), sub2.getParentId());
+        Assert.assertEquals("Wrong name",
+                "sub2", sub2.getName());
     }
 
     @Test
-    public void testSubs() {
-        Folder root = session.queryOne(Folder.class, "rootFolder", "root");
-        List<Folder> subs = session.query(Folder.class, "subfolders", root);
-        Assert.assertNotNull("Null list returned", subs);
-        Assert.assertEquals("Wrong number of subfoders returned",
-                2, subs.size());
-        Map<Integer,Folder> idMap = new HashMap<>();
-        idMap.put(root.getId(), root);
-        Map<String,Folder> map = new HashMap<>();
-        map.put(root.getName(), root);
-        for (Folder sub: subs) {
-            idMap.put(sub.getId(), sub);
-            map.put(sub.getName(), sub);
-        }
-        Assert.assertEquals("IDs not unique", 3, idMap.size());
-        Assert.assertEquals("Wrong number of names", 3, map.size());
-        Assert.assertTrue("Bad names", map.keySet().containsAll(
-                Arrays.asList("root", "sub1", "sub2")));
-        for (Folder f: idMap.values()) {
-            Assert.assertSame("Cache failure", f,
-                    session.load(Folder.class, f.getId()));
+    public void testInsert() {
+        Folder folder = getFolder("root/sub1");
+        Picture pic = new Picture();
+        pic.setName("mybeautifulpic.jpg");
+        pic.setSize(1024, 768);
+        
+    }
+
+    private Folder getFolder(String path) {
+        String[] names = path.split("/");
+        if (names.length == 0) {
+            return null;
+        } else {
+            Folder folder = session.queryOne(
+                    Folder.class, "rootFolder", names[0]);
+            for (int i = 1; i < names.length; ++i) {
+                folder = session.queryOne(
+                        Folder.class, "subfolder", folder, names[i]);
+            }
+            return folder;
         }
     }
 

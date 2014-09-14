@@ -7,6 +7,7 @@ public class Picture {
     private int id;
     private int folderId;
     private String name;
+    private Date timestamp = new Date();
     private int width;
     private int height;
 
@@ -28,6 +29,14 @@ public class Picture {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public Date getTimestamp() {
+        return timestamp;
+    }
+
+    public void setTimestamp(Date timestamp) {
+        this.timestamp = timestamp;
     }
 
     public int getWidth() {

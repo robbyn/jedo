@@ -1,5 +1,7 @@
 package org.tastefuljava.jedo.cache;
 
+import org.tastefuljava.jedo.JedoException;
+
 public class ObjectId {
     private final Class<?> clazz;
     private final Object[] values;
@@ -7,7 +9,7 @@ public class ObjectId {
 
     public ObjectId(Class<?> clazz, Object[] values) {
         if (values == null || values.length < 1) {
-            throw new IllegalArgumentException("At least one value is needed");
+            throw new JedoException("At least one value is needed");
         }
         this.clazz = clazz;
         this.values = values.clone();

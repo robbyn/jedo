@@ -10,6 +10,7 @@ import java.util.logging.Logger;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
+import org.tastefuljava.jedo.JedoException;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -49,7 +50,7 @@ public class MappingFileReader {
             parser.parse(new InputSource(in), handler);
         } catch (SAXException | ParserConfigurationException e) {
             LOG.log(Level.SEVERE, "Error reading project", e);
-            throw new IOException(e.getMessage());
+            throw new JedoException(e.getMessage());
         }
     }
 
@@ -89,7 +90,7 @@ public class MappingFileReader {
                                 packageName, className);
                     } catch (ClassNotFoundException ex) {
                         LOG.log(Level.SEVERE, null, ex);
-                        throw new SAXException(ex.getMessage());
+                        throw new JedoException(ex.getMessage());
                     }
                     break;
                 case "id":

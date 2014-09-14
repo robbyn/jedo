@@ -9,6 +9,7 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.Writer;
 import java.util.Stack;
+import org.tastefuljava.jedo.JedoException;
 
 public class XMLWriter implements Closeable {
     private PrintWriter out;
@@ -70,7 +71,7 @@ public class XMLWriter implements Closeable {
 
     public void attribute(String name, String value) {
         if (!inAttributes) {
-            throw new RuntimeException("Attributes not allowed here");
+            throw new JedoException("Attributes not allowed here");
         }
         if (value != null) {
             out.print(" ");

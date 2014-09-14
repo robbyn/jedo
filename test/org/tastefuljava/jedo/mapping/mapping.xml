@@ -5,6 +5,7 @@
         <id>
             <property name="id" column="ID"/>
         </id>
+        <property name="parentId" column="PARENT_ID"/>
         <property name="name" column="NAME"/>
 
         <load>
@@ -25,5 +26,34 @@
             SELECT * FROM folders
             WHERE PARENT_ID=${parent.id}
         </query>
+    </class>
+
+    <class name="Picture">
+        <id>
+            <property name="id" column="ID"/>
+        </id>
+        <property name="folderId" column="FOLDER_ID"/>
+        <property name="name" column="NAME"/>
+        <property name="timestamp" column="TIMESTAMP"/>
+        <property name="width" column="WIDTH"/>
+        <property name="height" column="HEIGHT"/>
+
+        <load>
+            SELECT * FROM pictures
+            WHERE ID=${id}
+        </load>
+        <query name="byName" parameters="folder,name">
+            SELECT * FROM pictures
+            WHERE PARENT_ID=${folder.id}
+                AND NAME=${name}
+        </query>
+        <query name="inFolder" parameters="folder">
+            SELECT * FROM pictures
+            WHERE PARENT_ID=${folder.id}
+        </query>
+        <insert get-generated-keys="true">
+            INSERT INTO pictures(FOLDER_ID,NAME,TIMESTAMP,WIDTH,HEIGHT)
+                VALUES(${folderId},${name},${timestamp},${width},${height})
+        </insert>
     </class>
 </mapping>

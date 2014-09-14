@@ -7,6 +7,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.tastefuljava.jedo.JedoException;
 
 public abstract class Converter<S,T> {
     public static final Converter IDENTITY;
@@ -20,7 +21,7 @@ public abstract class Converter<S,T> {
         }
         Converter conv = getConverter(value.getClass(), targetType);
         if (conv == null) {
-            throw new IllegalArgumentException(
+            throw new JedoException(
                     "No conversion from " + value.getClass().getName()
                     + " to " + targetType.getName());
         }

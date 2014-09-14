@@ -5,6 +5,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.tastefuljava.jedo.JedoException;
 import org.tastefuljava.jedo.util.ClassUtil;
 
 public abstract class Expression {
@@ -18,7 +19,7 @@ public abstract class Expression {
         for (String name: expr.split("\\.")) {
             result = scope.resolve(name);
             if (result == null) {
-                throw new IllegalArgumentException(
+                throw new JedoException(
                         "Could not resolve expression " + expr);
             }
             scope = new Scope.PropertyScope(result.getType(), result);
@@ -73,7 +74,7 @@ public abstract class Expression {
                 return obj == null ? null : field.get(obj);
             } catch (IllegalArgumentException | IllegalAccessException ex) {
                 LOG.log(Level.SEVERE, null, ex);
-                throw new RuntimeException(
+                throw new JedoException(
                         "Cannot evaluate field " + field.getName());
             }
         }
@@ -112,7 +113,7 @@ public abstract class Expression {
             } catch (IllegalArgumentException | IllegalAccessException
                     | InvocationTargetException ex) {
                 LOG.log(Level.SEVERE, null, ex);
-                throw new RuntimeException(
+                throw new JedoException(
                         "Cannot evaluate property " + propName);
             }
         }
@@ -145,7 +146,7 @@ public abstract class Expression {
             } catch (IllegalArgumentException | IllegalAccessException
                     | InvocationTargetException ex) {
                 LOG.log(Level.SEVERE, null, ex);
-                throw new RuntimeException(
+                throw new JedoException(
                         "Cannot evaluate getter " + getter.getName());
             }
         }

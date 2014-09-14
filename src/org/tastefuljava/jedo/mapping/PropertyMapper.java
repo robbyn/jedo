@@ -5,6 +5,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.tastefuljava.jedo.JedoException;
 import org.tastefuljava.jedo.conversion.Converter;
 
 public class PropertyMapper {
@@ -28,7 +29,7 @@ public class PropertyMapper {
             return field.get(object);
         } catch (IllegalArgumentException | IllegalAccessException ex) {
             LOG.log(Level.SEVERE, null, ex);
-            throw new RuntimeException("Could not get property value "
+            throw new JedoException("Could not get property value "
                     + field.getName());
         }
     }
@@ -38,7 +39,7 @@ public class PropertyMapper {
             field.set(obj, value);
         } catch (IllegalArgumentException | IllegalAccessException ex) {
             LOG.log(Level.SEVERE, null, ex);
-            throw new RuntimeException("Could not set property value "
+            throw new JedoException("Could not set property value "
                     + field.getName());
         }
     }

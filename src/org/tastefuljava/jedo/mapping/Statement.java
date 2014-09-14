@@ -8,6 +8,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import org.tastefuljava.jedo.JedoException;
 import org.tastefuljava.jedo.cache.Cache;
 
 public class Statement {
@@ -49,7 +50,7 @@ public class Statement {
                 if (rs.next()) {
                     result = cm.getInstance(cache, rs);
                     if (rs.next()) {
-                        throw new SQLException("Only one result allowed");
+                        throw new JedoException("Only one result allowed");
                     }
                 }
             }
@@ -68,7 +69,7 @@ public class Statement {
             if (generatedKeys) {
                 try (ResultSet rs = stmt.getGeneratedKeys()) {
                     if (!rs.next()) {
-                        throw new RuntimeException(
+                        throw new JedoException(
                                 "Could not get generated keys");
                     }
                     cm.getGeneratedKeys(rs, obj);

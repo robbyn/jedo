@@ -1,11 +1,11 @@
 package org.tastefuljava.jedo.expression;
 
-import org.tastefuljava.jedo.expression.Expression;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
+import org.tastefuljava.jedo.JedoException;
 import org.tastefuljava.jedo.util.ClassUtil;
 
 public abstract class Scope {
@@ -43,6 +43,10 @@ public abstract class Scope {
         @Override
         public Expression resolve(String name) {
             Field f = ClassUtil.getInstanceField(clazz, name);
+            if (f == null) {
+                throw new JedoException("Field " + name
+                        + " not found in class " + clazz.getName());
+            }
             return new Expression.FieldExpr(self, f);
         }
     }

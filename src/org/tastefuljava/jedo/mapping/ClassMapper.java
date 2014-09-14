@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.tastefuljava.jedo.JedoException;
 import org.tastefuljava.jedo.cache.Cache;
 
 public class ClassMapper {
@@ -95,7 +96,7 @@ public class ClassMapper {
     public Object load(Connection cnt, Cache<?,?> ucache, Object[] parms)
             throws SQLException {
         if (load == null) {
-            throw new IllegalArgumentException(
+            throw new JedoException(
                     "No loader for class " + clazz.getName());
         }
         ObjectId oid = new ObjectId(clazz, parms);
@@ -113,7 +114,7 @@ public class ClassMapper {
             Object[] parms) throws SQLException {
         Statement stmt = queries.get(name);
         if (stmt == null) {
-            throw new IllegalArgumentException("No query named " + name);
+            throw new JedoException("No query named " + name);
         }
         return stmt.queryOne(cnt, this, cache, parms);
     }
@@ -122,7 +123,7 @@ public class ClassMapper {
             Object[] parms) throws SQLException {
         Statement stmt = queries.get(name);
         if (stmt == null) {
-            throw new IllegalArgumentException("No query named " + name);
+            throw new JedoException("No query named " + name);
         }
         return stmt.query(cnt, this, cache, parms);
     }
@@ -130,7 +131,7 @@ public class ClassMapper {
     public void insert(Connection cnt, Cache<?,?> ucache, Object obj)
             throws SQLException {
         if (insert == null) {
-            throw new IllegalArgumentException(
+            throw new JedoException(
                     "No inserter for " + clazz.getName());
         }
         insert.update(cnt, this, obj);
@@ -142,7 +143,7 @@ public class ClassMapper {
     public void update(Connection cnt, Cache cache, Object obj)
             throws SQLException {
         if (update == null) {
-            throw new IllegalArgumentException(
+            throw new JedoException(
                     "No inserter for " + clazz.getName());
         }
         update.update(cnt, this, obj);
@@ -151,7 +152,7 @@ public class ClassMapper {
     public void delete(Connection cnt, Cache<?,?> ucache, Object obj)
             throws SQLException {
         if (delete == null) {
-            throw new IllegalArgumentException(
+            throw new JedoException(
                     "No inserter for " + clazz.getName());
         }
         delete.update(cnt, this, obj);
