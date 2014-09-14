@@ -34,11 +34,15 @@ public abstract class JedoTestBase {
         reader.load(url);
         mapper = reader.getMapper();
         Files.deleteIfExists(TESTDB_DIR);
+        open();
+        runScript("initdb.sql");
+    }
+
+    protected void open()
+            throws ClassNotFoundException, SQLException, IOException {
         Class.forName("org.h2.Driver");
         cnt = DriverManager.getConnection("jdbc:h2:" + TESTDB, "sa", "");
         cnt.setAutoCommit(false);
-        runScript("initdb.sql");
-        cnt.commit();
         session = new Session(cnt, mapper);
     }
 

@@ -65,7 +65,8 @@ public class UpdateTest extends JedoTestBase {
     }
 
     @Test
-    public void testInsert() {
+    public void testInsert()
+            throws SQLException, ClassNotFoundException, IOException {
         Folder folder = getFolder("root/sub1");
         Picture pic = new Picture();
         pic.setFolderId(folder.getId());
@@ -77,6 +78,8 @@ public class UpdateTest extends JedoTestBase {
         Assert.assertSame("Reread failed",
                 pic, session.load(Picture.class, pic.getId()));
         session.commit(); // should clear the cache
+        terminate();
+        open();
         Picture pic2 = session.load(Picture.class, picId);
         Assert.assertNotSame("Cache not cleared", pic, pic2);
         Assert.assertEquals("Wrong name", "mybeautifulpic.jpg", pic2.getName());
