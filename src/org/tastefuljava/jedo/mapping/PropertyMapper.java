@@ -5,6 +5,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.tastefuljava.jedo.conversion.Converter;
 
 public class PropertyMapper {
     private static final Logger LOG
@@ -16,6 +17,10 @@ public class PropertyMapper {
     public PropertyMapper(Field field, String column) {
         this.field = field;
         this.column = column;
+    }
+
+    String getFieldName() {
+        return field.getName();
     }
 
     public Object getValue(Object object) {
@@ -39,7 +44,7 @@ public class PropertyMapper {
     }
 
     public Object fromResultSet(ResultSet rs) throws SQLException {
-        return rs.getObject(column, field.getType());
+        return Converter.convert(rs.getObject(column), field.getType());
     }
 
     void writeTo(XMLWriter out) {

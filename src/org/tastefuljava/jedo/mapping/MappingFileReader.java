@@ -109,13 +109,15 @@ public class MappingFileReader {
                     String s = attrs.getValue("parameters");
                     String[] paramNames = s == null
                             ? EMPTY_STRING_ARRAY : s.split("[ ,]+");
-                    stmtBuilder = classBuilder.newStatementBuilder(paramNames);
+                    stmtBuilder = classBuilder.newStatement(paramNames);
                     break;
                 case "load":
+                    stmtBuilder = classBuilder.newLoadStatement();
+                    break;
                 case "insert":
                 case "update":
                 case "delete":
-                    stmtBuilder = classBuilder.newStatementBuilder(null);
+                    stmtBuilder = classBuilder.newStatement(null);
                     break;
             }
         }

@@ -68,8 +68,10 @@ public class ClassMapper {
         }
     }
 
-    public Object getInstance(Cache<Object,Object> cache, ResultSet rs)
+    public Object getInstance(Cache<?,?> ucache, ResultSet rs)
             throws SQLException {
+        @SuppressWarnings("unchecked")
+        Cache<Object,Object> cache = (Cache<Object,Object>) ucache;
         Object id = getIdFromResultSet(rs);
         Object obj = cache.get(id);
         if (obj != null) {
@@ -86,16 +88,19 @@ public class ClassMapper {
         for (PropertyMapper prop: props) {
             prop.setValue(obj, prop.fromResultSet(rs));
         }
+        cache.put(id, obj);
         return obj;
     }
 
-    public Object load(Connection cnt, Cache cache, Object[] parms)
+    public Object load(Connection cnt, Cache<?,?> ucache, Object[] parms)
             throws SQLException {
         if (load == null) {
             throw new IllegalArgumentException(
                     "No loader for class " + clazz.getName());
         }
         ObjectId oid = new ObjectId(clazz, parms);
+        @SuppressWarnings("unchecked")
+        Cache<Object,Object> cache = (Cache<Object,Object>)ucache;
         Object obj = cache.get(oid);
         if (obj == null) {
             obj = load.queryOne(cnt, this, cache, parms);
@@ -113,13 +118,24 @@ public class ClassMapper {
         return stmt.queryOne(cnt, this, cache, parms);
     }
 
-    public void insert(Connection cnt, Cache cache, Object obj)
+    public List<Object> query(Connection cnt, Cache<?,?> cache, String name,
+            Object[] parms) throws SQLException {
+        Statement stmt = queries.get(name);
+        if (stmt == null) {
+            throw new IllegalArgumentException("No query named " + name);
+        }
+        return stmt.query(cnt, this, cache, parms);
+    }
+
+    public void insert(Connection cnt, Cache<?,?> ucache, Object obj)
             throws SQLException {
         if (insert == null) {
             throw new IllegalArgumentException(
                     "No inserter for " + clazz.getName());
         }
         insert.update(cnt, this, obj);
+        @SuppressWarnings("unchecked")
+        Cache<Object,Object> cache = (Cache<Object,Object>)ucache;
         cache.put(getId(obj), obj);
     }
 
@@ -132,13 +148,15 @@ public class ClassMapper {
         update.update(cnt, this, obj);
     }
 
-    public void delete(Connection cnt, Cache cache, Object obj)
+    public void delete(Connection cnt, Cache<?,?> ucache, Object obj)
             throws SQLException {
         if (delete == null) {
             throw new IllegalArgumentException(
                     "No inserter for " + clazz.getName());
         }
         delete.update(cnt, this, obj);
+        @SuppressWarnings("unchecked")
+        Cache<Object,Object> cache = (Cache<Object,Object>)ucache;
         cache.remove(getId(obj));
     }
 
@@ -206,8 +224,16 @@ public class ClassMapper {
             props.add(newPropertyMapper(field, column));
         }
 
-        public Statement.Builder newStatementBuilder(String[] paramNames) {
+        public Statement.Builder newStatement(String[] paramNames) {
             return new Statement.Builder(clazz, paramNames);
+        }
+
+        public Statement.Builder newLoadStatement() {
+            String[] paramNames = new String[idProps.size()];
+            for (int i = 0; i < idProps.size(); ++i) {
+                paramNames[i] = idProps.get(i).getFieldName();
+            }
+            return newStatement(paramNames);
         }
 
         public void addQuery(String name, Statement stmt) {

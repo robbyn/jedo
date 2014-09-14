@@ -23,8 +23,10 @@ public class Statement {
     }
 
     public List<Object> query(Connection cnt, ClassMapper cm,
-            Cache<Object,Object> cache, Object[] parms)
+            Cache<?,?> ucache, Object[] parms)
             throws SQLException {
+        @SuppressWarnings("unchecked")
+        Cache<Object,Object> cache = (Cache<Object,Object>)ucache;
         List<Object> result = new ArrayList<>();
         try (PreparedStatement stmt = cnt.prepareStatement(sql)) {
             bindParams(stmt, null, parms);
@@ -38,7 +40,7 @@ public class Statement {
     }
 
     public Object queryOne(Connection cnt, ClassMapper cm,
-            Cache<Object,Object> cache, Object[] parms)
+            Cache<?,?> cache, Object[] parms)
             throws SQLException {
         Object result = null;
         try (PreparedStatement stmt = cnt.prepareStatement(sql)) {
@@ -90,7 +92,7 @@ public class Statement {
     private void bindParams(PreparedStatement stmt, Object self, Object[] parms)
             throws SQLException {
         for (int i = 0; i < params.length; ++i) {
-            stmt.setObject(i, params[i].evaluate(self, parms));
+            stmt.setObject(i+1, params[i].evaluate(self, parms));
         }
     }
 

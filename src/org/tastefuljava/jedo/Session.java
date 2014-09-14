@@ -4,6 +4,7 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.tastefuljava.jedo.mapping.ClassMapper;
@@ -52,6 +53,26 @@ public class Session implements Closeable {
                         "Class is not mapped " + clazz.getName());
             }
             return clazz.cast(cm.queryOne(cnt, cache, name, parms));
+        } catch (SQLException ex) {
+            LOG.log(Level.SEVERE, null, ex);
+            throw new RuntimeException(ex.getMessage());
+        }
+    }
+
+    public <T> List<T> query(Class<T> clazz, String name, Object... parms) {
+        return queryA(clazz, name, parms);
+    }
+
+    public <T> List<T> queryA(Class<T> clazz, String name, Object[] parms) {
+        try {
+            ClassMapper cm = mapper.getClassMapper(clazz);
+            if (cm == null) {
+                throw new IllegalArgumentException(
+                        "Class is not mapped " + clazz.getName());
+            }
+            @SuppressWarnings("unchecked")
+            List<T> result = (List<T>) cm.query(cnt, cache, name, parms);
+            return result;
         } catch (SQLException ex) {
             LOG.log(Level.SEVERE, null, ex);
             throw new RuntimeException(ex.getMessage());
