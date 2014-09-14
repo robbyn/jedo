@@ -59,7 +59,7 @@ public class ObjectId {
             for (Object value : values) {
                 h = 37 * h + value.hashCode();
             }
-            hash = h;
+            hash = h & 0x7FFFFFFF;
         }
         return hash;
     }
