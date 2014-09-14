@@ -51,10 +51,8 @@ public abstract class JedoTestBase {
             session.setCloseConnection(false);
             session.close();
         }
-        if (cnt != null) {
-            if (!cnt.isClosed()) {
-                cnt.createStatement().execute("SHUTDOWN");
-            }
+        if (cnt != null && !cnt.isClosed()) {
+            cnt.createStatement().execute("SHUTDOWN");
             cnt.close();
         }
     }
