@@ -73,7 +73,12 @@ public class UpdateTest extends JedoTestBase {
         pic.setSize(1024, 768);
         session.insert(pic);
         Assert.assertTrue("Picture ID is zero", pic.getId() != 0);
+        int picId = pic.getId();
         Assert.assertSame("Reread failed",
                 pic, session.load(Picture.class, pic.getId()));
+        session.commit(); // should clear the cache
+        Picture pic2 = session.load(Picture.class, picId);
+        Assert.assertNotSame("Cache not cleared", pic, pic2);
+        Assert.assertEquals("Wrong name", "mybeautifulpic.jpg", pic2.getName());
     }
 }
