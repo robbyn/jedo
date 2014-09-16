@@ -1,4 +1,4 @@
-package org.tastefuljava.jedo.mapping;
+package org.tastefuljava.jedo.util;
 
 import java.io.Closeable;
 import java.io.File;

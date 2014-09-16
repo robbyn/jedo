@@ -1,5 +1,6 @@
 package org.tastefuljava.jedo.mapping;
 
+import org.tastefuljava.jedo.util.XMLWriter;
 import java.util.HashMap;
 import java.util.Map;
 

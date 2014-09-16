@@ -1,10 +1,13 @@
 package org.tastefuljava.jedo.mapping;
 
+import org.tastefuljava.jedo.util.XMLWriter;
 import org.tastefuljava.jedo.util.ClassUtil;
 import org.tastefuljava.jedo.cache.ObjectId;
 import java.lang.reflect.Field;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -107,8 +110,7 @@ public class ClassMapper {
         Cache<Object,Object> cache = (Cache<Object,Object>)ucache;
         Object obj = cache.get(oid);
         if (obj == null) {
-            obj = load.queryOne(cnt, this, cache, parms);
-            cache.put(oid, obj);
+            obj = queryOne(load, cnt, cache, parms);
         }
         return obj;
     }
@@ -119,16 +121,46 @@ public class ClassMapper {
         if (stmt == null) {
             throw new JedoException("No query named " + name);
         }
-        return stmt.queryOne(cnt, this, cache, parms);
+        return queryOne(stmt, cnt, cache, parms);
     }
 
-    public List<Object> query(Connection cnt, Cache<?,?> cache, String name,
+    private Object queryOne(Statement stmt, Connection cnt, Cache cache,
+            Object[] parms) {
+        Object result = null;
+        try (PreparedStatement pstmt = stmt.prepare(cnt, null, parms);
+                ResultSet rs = pstmt.executeQuery()) {
+            if (rs.next()) {
+                result = getInstance(cache, rs);
+                if (rs.next()) {
+                    throw new JedoException("Only one result allowed");
+                }
+            }
+        } catch (final SQLException ex) {
+            LOG.log(Level.SEVERE, null, ex);
+            throw new JedoException(ex.getMessage());
+        }
+        return result;
+    }
+
+    public List<Object> query(Connection cnt, Cache<?,?> ucache, String name,
             Object[] parms) {
         Statement stmt = queries.get(name);
         if (stmt == null) {
             throw new JedoException("No query named " + name);
         }
-        return stmt.query(cnt, this, cache, parms);
+        @SuppressWarnings(value = "unchecked")
+        final Cache<Object, Object> cache = (Cache<Object, Object>) ucache;
+        List<Object> result = new ArrayList<>();
+        try (PreparedStatement pstmt = stmt.prepare(cnt, null, parms);
+                ResultSet rs = pstmt.executeQuery()) {
+            while (rs.next()) {
+                result.add(getInstance(cache, rs));
+            }
+        } catch (SQLException ex) {
+            LOG.log(Level.SEVERE, null, ex);
+            throw new JedoException(ex.getMessage());
+        }
+        return result;
     }
 
     public void insert(Connection cnt, Cache<?,?> ucache, Object obj) {
@@ -136,10 +168,16 @@ public class ClassMapper {
             throw new JedoException(
                     "No inserter for " + clazz.getName());
         }
-        insert.update(cnt, this, obj);
-        @SuppressWarnings("unchecked")
-        Cache<Object,Object> cache = (Cache<Object,Object>)ucache;
-        cache.put(getId(obj), obj);
+        try (final PreparedStatement stmt = insert.prepare(cnt, obj, null)) {
+            stmt.executeUpdate();
+            insert.collectKeys(stmt, idProps, obj);
+            @SuppressWarnings("unchecked")
+            Cache<Object,Object> cache = (Cache<Object,Object>)ucache;
+            cache.put(getId(obj), obj);
+        } catch (SQLException ex) {
+            LOG.log(Level.SEVERE, null, ex);
+            throw new JedoException(ex.getMessage());
+        }
     }
 
     public void update(Connection cnt, Cache cache, Object obj) {
@@ -147,7 +185,12 @@ public class ClassMapper {
             throw new JedoException(
                     "No updater for " + clazz.getName());
         }
-        update.update(cnt, this, obj);
+        try (final PreparedStatement stmt = update.prepare(cnt, obj, null)) {
+            stmt.executeUpdate();
+        } catch (SQLException ex) {
+            LOG.log(Level.SEVERE, null, ex);
+            throw new JedoException(ex.getMessage());
+        }
     }
 
     public void delete(Connection cnt, Cache<?,?> ucache, Object obj) {
@@ -155,16 +198,14 @@ public class ClassMapper {
             throw new JedoException(
                     "No deleter for " + clazz.getName());
         }
-        delete.update(cnt, this, obj);
-        @SuppressWarnings("unchecked")
-        Cache<Object,Object> cache = (Cache<Object,Object>)ucache;
-        cache.remove(getId(obj));
-    }
-
-    public void getGeneratedKeys(ResultSet rs, Object obj) {
-        int ix = 0;
-        for (PropertyMapper prop: idProps) {
-            prop.setValue(obj, prop.fromResultSet(rs, ++ix));
+        try (PreparedStatement stmt = delete.prepare(cnt, obj, null)) {
+            stmt.executeUpdate();
+            @SuppressWarnings("unchecked")
+            Cache<Object,Object> cache = (Cache<Object,Object>)ucache;
+            cache.remove(getId(obj));
+        } catch (SQLException ex) {
+            LOG.log(Level.SEVERE, null, ex);
+            throw new JedoException(ex.getMessage());
         }
     }
 

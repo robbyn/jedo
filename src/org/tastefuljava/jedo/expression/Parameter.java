@@ -1,4 +1,4 @@
-package org.tastefuljava.jedo.mapping;
+package org.tastefuljava.jedo.expression;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -8,8 +8,7 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.tastefuljava.jedo.JedoException;
-import org.tastefuljava.jedo.expression.Expression;
-import org.tastefuljava.jedo.expression.Scope;
+import org.tastefuljava.jedo.util.XMLWriter;
 import org.tastefuljava.jedo.util.ClassUtil;
 
 public class Parameter {
@@ -74,7 +73,22 @@ public class Parameter {
         }
     }
 
-    void writeTo(XMLWriter out) {
+    @Override
+    public String toString() {
+        StringBuilder buf = new StringBuilder();
+        buf.append(expr);
+        if (type != null) {
+            buf.append(':');
+            buf.append(type);
+            if (length != null) {
+                buf.append(':');
+                buf.append(length);
+            }
+        }
+        return buf.toString();
+    }
+
+    public void writeTo(XMLWriter out) {
         out.startTag("parameter");
         out.attribute("value", toString());
         out.endTag();

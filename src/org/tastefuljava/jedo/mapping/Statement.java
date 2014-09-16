@@ -1,7 +1,5 @@
 package org.tastefuljava.jedo.mapping;
 
-import org.tastefuljava.jedo.expression.Scope;
-import org.tastefuljava.jedo.expression.Expression;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -11,7 +9,11 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.tastefuljava.jedo.JedoException;
-import org.tastefuljava.jedo.cache.Cache;
+import org.tastefuljava.jedo.expression.Expression;
+import org.tastefuljava.jedo.expression.Parameter;
+import org.tastefuljava.jedo.expression.Scope;
+import org.tastefuljava.jedo.mapping.PropertyMapper;
+import org.tastefuljava.jedo.util.XMLWriter;
 
 public class Statement {
     private static final Logger LOG
@@ -27,56 +29,22 @@ public class Statement {
         this.generatedKeys = builder.generatedKeys;
     }
 
-    public List<Object> query(Connection cnt, ClassMapper cm,
-            Cache<?,?> ucache, Object[] parms) {
-        @SuppressWarnings("unchecked")
-        Cache<Object,Object> cache = (Cache<Object,Object>)ucache;
-        List<Object> result = new ArrayList<>();
-        try (PreparedStatement stmt = cnt.prepareStatement(sql)) {
-            bindParams(stmt, null, parms);
-            try (ResultSet rs = stmt.executeQuery()) {
-                while (rs.next()) {
-                    result.add(cm.getInstance(cache, rs));
+    public PreparedStatement prepare(Connection cnt, Object self,
+            Object[] parms) {
+        try {
+            boolean ok = false;
+            PreparedStatement stmt = generatedKeys == null
+                    ? cnt.prepareStatement(sql)
+                    : cnt.prepareStatement(sql, generatedKeys);
+            try {
+                for (int i = 0; i < params.length; ++i) {
+                    params[i].set(stmt, i+1, self, parms);
                 }
-            }
-        } catch (SQLException ex) {
-            LOG.log(Level.SEVERE, null, ex);
-            throw new JedoException(ex.getMessage());
-        }
-        return result;
-    }
-
-    public Object queryOne(Connection cnt, ClassMapper cm,
-            Cache<?,?> cache, Object[] parms) {
-        Object result = null;
-        try (PreparedStatement stmt = cnt.prepareStatement(sql)) {
-            bindParams(stmt, null, parms);
-            try (ResultSet rs = stmt.executeQuery()) {
-                if (rs.next()) {
-                    result = cm.getInstance(cache, rs);
-                    if (rs.next()) {
-                        throw new JedoException("Only one result allowed");
-                    }
-                }
-            }
-        } catch (SQLException ex) {
-            LOG.log(Level.SEVERE, null, ex);
-            throw new JedoException(ex.getMessage());
-        }
-        return result;
-    }
-
-    public void update(Connection cnt, ClassMapper cm, Object obj) {
-        try (PreparedStatement stmt = prepareStatement(cnt)) {
-            bindParams(stmt, obj, null);
-            stmt.executeUpdate();
-            if (generatedKeys != null) {
-                try (ResultSet rs = stmt.getGeneratedKeys()) {
-                    if (!rs.next()) {
-                        throw new JedoException(
-                                "Could not get generated keys");
-                    }
-                    cm.getGeneratedKeys(rs, obj);
+                ok = true;
+                return stmt;
+            } finally {
+                if (!ok) {
+                    stmt.close();
                 }
             }
         } catch (SQLException ex) {
@@ -85,7 +53,23 @@ public class Statement {
         }
     }
 
-    void writeTo(XMLWriter out, String type, String name) {
+    public void collectKeys(PreparedStatement stmt, PropertyMapper[] props,
+            Object obj) throws JedoException, SQLException {
+        if (generatedKeys != null) {
+            try (ResultSet rs = stmt.getGeneratedKeys()) {
+                if (!rs.next()) {
+                    throw new JedoException(
+                            "Could not get generated keys");
+                }
+                int ix = 0;
+                for (PropertyMapper prop : props) {
+                    prop.setValue(obj, prop.fromResultSet(rs, ++ix));
+                }
+            }
+        }
+    }
+
+    public void writeTo(XMLWriter out, String type, String name) {
         out.startTag(type);
         out.attribute("name", name);
         for (Parameter param: params) {
@@ -93,20 +77,6 @@ public class Statement {
         }
         out.data(sql);
         out.endTag();
-    }
-
-    private void bindParams(PreparedStatement stmt, Object self,
-            Object[] parms) {
-        for (int i = 0; i < params.length; ++i) {
-            params[i].set(stmt, i+1, self, parms);
-        }
-    }
-
-    private PreparedStatement prepareStatement(Connection cnt)
-            throws SQLException {
-        return generatedKeys == null
-                ? cnt.prepareStatement(sql)
-                : cnt.prepareStatement(sql, generatedKeys);
     }
 
     public static class Builder {

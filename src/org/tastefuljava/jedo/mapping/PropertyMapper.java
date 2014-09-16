@@ -1,5 +1,6 @@
 package org.tastefuljava.jedo.mapping;
 
+import org.tastefuljava.jedo.util.XMLWriter;
 import java.lang.reflect.Field;
 import java.sql.ResultSet;
 import java.sql.SQLException;
