@@ -58,7 +58,9 @@ public class ClassUtil {
                 throw new JedoException("Wrong constant type "
                         + clazz.getName() + "." + name);
             }
-            return type.cast(field.get(null));
+            @SuppressWarnings("unchecked")
+            T result = (T)field.get(null);
+            return result;
         } catch (NoSuchFieldException | SecurityException 
                 | IllegalAccessException ex) {
             LOG.log(Level.SEVERE, null, ex);

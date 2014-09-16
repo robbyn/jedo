@@ -59,13 +59,14 @@
         <insert get-generated-keys="true">
             INSERT INTO pictures(FOLDER_ID,NAME,TIMESTAMP,WIDTH,HEIGHT,LATITUDE,
                 LONGITUDE,ALTITUDE)
-            VALUES(${folderId},${name},${timestamp},${width},${height},
+            VALUES(${folderId},${name},${timestamp:TIMESTAMP},${width},${height},
                 ${gpsData.latitude},${gpsData.longitude},${gpsData.altitude})
         </insert>
         <update>
             UPDATE pictures SET FOLDER_ID=${folderId},NAME=${name},
-                TIMESTAMP=${timestamp},WIDTH=${width},HEIGHT=${height},
-                LATITUDE=${gpsData.latitude},LONGITUDE=${gpsData.longitude},
+                TIMESTAMP=${timestamp:TIMESTAMP},WIDTH=${width},
+                HEIGHT=${height},LATITUDE=${gpsData.latitude},
+                LONGITUDE=${gpsData.longitude},
                 ALTITUDE=${gpsData.altitude}
             WHERE ID=${id}
         </update>
