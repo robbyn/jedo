@@ -3,15 +3,17 @@ package org.tastefuljava.jedo.util;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.sql.Types;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.tastefuljava.jedo.JedoException;
 
 public class ClassUtil {
     private static final Logger LOG
             = Logger.getLogger(ClassUtil.class.getName());
 
     private static final Class<?>[] EMPTY_CLASS_ARRAY = {};
- 
+
     private ClassUtil() {
     }
 
@@ -43,6 +45,27 @@ public class ClassUtil {
         return null;
     }
 
+    public static <T> T getConstant(Class<?> clazz, String name,
+            Class<T> type) {
+        try {
+            Field field = clazz.getField(name);
+            int mods = field.getModifiers();
+            if (!Modifier.isStatic(mods) || !Modifier.isFinal(mods)) {
+                throw new JedoException("Field " + clazz.getName() + "." + name
+                        + " is not a constant");
+            }
+            if (!type.isAssignableFrom(field.getType())) {
+                throw new JedoException("Wrong constant type "
+                        + clazz.getName() + "." + name);
+            }
+            return type.cast(field.get(null));
+        } catch (NoSuchFieldException | SecurityException 
+                | IllegalAccessException ex) {
+            LOG.log(Level.SEVERE, null, ex);
+            throw new JedoException(ex.getMessage());
+        }
+    }
+ 
     public static Method getPropGetter(Class<?> clazz, String name) {
         try {
             String cname = Character.toUpperCase(name.charAt(0))

@@ -17,13 +17,13 @@ public class Statement {
     private static final Logger LOG
             = Logger.getLogger(Statement.class.getName());
     private final String sql;
-    private final Expression[] params;
+    private final Parameter[] params;
     private final String[] generatedKeys;
 
     private Statement(Builder builder) {
         this.sql = builder.buf.toString();
         this.params = builder.params.toArray(
-                new Expression[builder.params.size()]);
+                new Parameter[builder.params.size()]);
         this.generatedKeys = builder.generatedKeys;
     }
 
@@ -88,10 +88,8 @@ public class Statement {
     void writeTo(XMLWriter out, String type, String name) {
         out.startTag(type);
         out.attribute("name", name);
-        for (Expression expr: params) {
-            out.startTag("parameter");
-            out.attribute("value", expr.toString());
-            out.endTag();
+        for (Parameter param: params) {
+            param.writeTo(out);
         }
         out.data(sql);
         out.endTag();
@@ -99,13 +97,8 @@ public class Statement {
 
     private void bindParams(PreparedStatement stmt, Object self,
             Object[] parms) {
-        try {
-            for (int i = 0; i < params.length; ++i) {
-                stmt.setObject(i+1, params[i].evaluate(self, parms));
-            }
-        } catch (SQLException ex) {
-            LOG.log(Level.SEVERE, null, ex);
-            throw new JedoException(ex.getMessage());
+        for (int i = 0; i < params.length; ++i) {
+            params[i].set(stmt, i+1, self, parms);
         }
     }
 
@@ -119,7 +112,7 @@ public class Statement {
     public static class Builder {
         private final Scope scope;
         private String[] generatedKeys;
-        private final List<Expression> params = new ArrayList<>();
+        private final List<Parameter> params = new ArrayList<>();
         private final StringBuilder buf = new StringBuilder();
         private final StringBuilder expr = new StringBuilder();
         int st = 1;
@@ -198,7 +191,7 @@ public class Statement {
                     case 5:
                         if (c == '}') {
                             buf.append('?');
-                            params.add(Expression.parse(
+                            params.add(Parameter.parse(
                                     scope, expr.toString()));
                             st = 0;
                         } else {
