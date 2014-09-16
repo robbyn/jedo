@@ -12,7 +12,6 @@ import org.tastefuljava.jedo.JedoException;
 import org.tastefuljava.jedo.expression.Expression;
 import org.tastefuljava.jedo.expression.Parameter;
 import org.tastefuljava.jedo.expression.Scope;
-import org.tastefuljava.jedo.mapping.PropertyMapper;
 import org.tastefuljava.jedo.util.XMLWriter;
 
 public class Statement {
