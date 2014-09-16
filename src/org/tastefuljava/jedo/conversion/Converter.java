@@ -21,6 +21,13 @@ public abstract class Converter<S,T> {
         }
         Converter conv = getConverter(value.getClass(), targetType);
         if (conv == null) {
+            @SuppressWarnings("unchecked")
+            boolean tstring = (Class<?>)String.class == (Class<?>)targetType;
+            if (tstring) {
+                @SuppressWarnings("unchecked")
+                TT result = (TT)value.toString();
+                return result;
+            }
             throw new JedoException(
                     "No conversion from " + value.getClass().getName()
                     + " to " + targetType.getName());
