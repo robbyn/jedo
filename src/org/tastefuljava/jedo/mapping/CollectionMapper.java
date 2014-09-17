@@ -38,7 +38,8 @@ public class CollectionMapper extends FieldMapper {
             for (int i = 0; i < columns.length; ++i) {
                 values[i] = rs.getObject(columns[i]);
             }
-            if (field.getType() == Set.class) {
+            if (field.getType() == Set.class
+                    || field.getType() == Collection.class) {
                 return new LazySet<>(cnt, cache, this, values);
             } else if (field.getType() == List.class) {
                 return new LazyList<>(cnt, cache, this, values);
