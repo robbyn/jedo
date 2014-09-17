@@ -14,6 +14,7 @@ import org.tastefuljava.jedo.JedoException;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
 import org.xml.sax.helpers.DefaultHandler;
 
 public class MappingFileReader {
@@ -44,7 +45,8 @@ public class MappingFileReader {
             throws IOException {
         try {
             SAXParserFactory factory = SAXParserFactory.newInstance();
-            factory.setFeature("http://xml.org/sax/features/validation", true);
+            factory.setValidating(true);
+            factory.setNamespaceAware(true);
             SAXParser parser = factory.newSAXParser();
             ParserHandler handler = new ParserHandler();
             parser.parse(new InputSource(in), handler);
@@ -78,6 +80,23 @@ public class MappingFileReader {
                 return source;
             }
             return super.resolveEntity(publicId, systemId);
+        }
+
+        @Override
+        public void fatalError(SAXParseException e) throws SAXException {
+            LOG.log(Level.SEVERE, e.getMessage(), e);
+            throw new SAXException(e.getMessage());
+        }
+
+        @Override
+        public void error(SAXParseException e) throws SAXException {
+            LOG.log(Level.SEVERE, e.getMessage(), e);
+            throw new SAXException(e.getMessage());
+        }
+
+        @Override
+        public void warning(SAXParseException e) throws SAXException {
+            LOG.log(Level.WARNING, e.getMessage(), e);
         }
 
         @Override
