@@ -71,10 +71,13 @@ public class MappingFileReader {
                 throws IOException, SAXException {
             if (DTD_PUBLIC_ID.equals(publicId)
                     || DTD_SYSTEM_ID.equals(systemId)) {
-                return new InputSource(
+                InputSource source = new InputSource(
                         getClass().getResourceAsStream("jedo.dtd"));
+                source.setPublicId(publicId);
+                source.setSystemId(systemId);
+                return source;
             }
-            return null;
+            return super.resolveEntity(publicId, systemId);
         }
 
         @Override
