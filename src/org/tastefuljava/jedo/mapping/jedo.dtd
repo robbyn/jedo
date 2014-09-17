@@ -2,13 +2,19 @@
 <!ELEMENT mapping (class*)>
 <!ATTLIST mapping package CDATA #IMPLIED>
 
-<!ELEMENT class (id?,property*,component*,load?,query*,insert?,update?,delete?)>
+<!ELEMENT class (id?,(property|reference|component)*,load?,query*,insert?,update?,delete?)>
 <!ATTLIST class name CDATA #REQUIRED>
 
 <!ELEMENT id (property+)>
 
 <!ELEMENT property EMPTY>
 <!ATTLIST property
+    name CDATA #REQUIRED
+    column CDATA #IMPLIED
+>
+
+<!ELEMENT reference EMPTY>
+<!ATTLIST reference
     name CDATA #REQUIRED
     column CDATA #IMPLIED
 >

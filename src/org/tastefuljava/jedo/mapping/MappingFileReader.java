@@ -85,27 +85,28 @@ public class MappingFileReader {
                     packageName = attrs.getValue("package");
                     break;
                 case "class":
-                    try {
-                        String className = attrs.getValue("name");
-                        classBuilder = new ClassMapper.Builder(
-                                packageName, className);
-                    } catch (ClassNotFoundException ex) {
-                        LOG.log(Level.SEVERE, null, ex);
-                        throw new JedoException(ex.getMessage());
-                    }
+                    String className = attrs.getValue("name");
+                    classBuilder = builder.newClass(packageName, className);
                     break;
                 case "id":
                     inId = true;
                     break;
-                case "property":
-                    String name = attrs.getValue("name");
-                    String column = attrs.getValue("column");
-                    if (inId) {
-                        classBuilder.addIdProp(name, column);
-                    } else if (compBuilder != null) {
-                        compBuilder.addProp(name, column);
-                    } else {
-                        classBuilder.addProp(name, column);
+                case "property": {
+                        String name = attrs.getValue("name");
+                        String column = attrs.getValue("column");
+                        if (inId) {
+                            classBuilder.addIdProp(name, column);
+                        } else if (compBuilder != null) {
+                            compBuilder.addProp(name, column);
+                        } else {
+                            classBuilder.addProp(name, column);
+                        }
+                    }
+                    break;
+                case "reference": {
+                        String name = attrs.getValue("name");
+                        String column = attrs.getValue("column");
+                        classBuilder.addReference(name, column.split("[,]"));
                     }
                     break;
                 case "component":
@@ -142,7 +143,6 @@ public class MappingFileReader {
                     packageName = null;
                     break;
                 case "class":
-                    builder.addClassMapper(classBuilder.getMapper());
                     classBuilder = null;
                     break;
                 case "id":

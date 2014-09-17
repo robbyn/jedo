@@ -6,9 +6,9 @@ import java.util.Map;
 
 public class Mapper {
     private final Map<Class<?>,ClassMapper> classMappers;
-    
-    private Mapper(Builder builder) {
-        this.classMappers = builder.classMappers;
+
+    private Mapper(Map<Class<?>,ClassMapper> classMappers) {
+        this.classMappers = classMappers;
     }
 
     public ClassMapper getClassMapper(Class<?> clazz) {
@@ -24,17 +24,29 @@ public class Mapper {
     }
 
     public static class Builder {
-        private final Map<Class<?>,ClassMapper> classMappers = new HashMap<>();
+        private final Map<Class<?>,ClassMapper.Builder> classMappers
+                = new HashMap<>();
 
         public Builder() {
         }
 
-        public void addClassMapper(ClassMapper cm) {
-            classMappers.put(cm.getMappedClass(), cm);
+        public ClassMapper.Builder newClass(String packageName,
+                String className) {
+            ClassMapper.Builder builder
+                    = new ClassMapper.Builder(packageName, className);
+            classMappers.put(builder.getMappedClass(), builder);
+            return builder;
         }
 
         public Mapper getMapper() {
-            return new Mapper(this);
+            Map<Class<?>,ClassMapper> map = new HashMap<>();
+            for (ClassMapper.Builder cmb: classMappers.values()) {
+                map.put(cmb.getMappedClass(), cmb.getMapper());
+            }
+            for (ClassMapper cm: map.values()) {
+                cm.fixReferences(map);
+            }
+            return new Mapper(map);
         }
     }
 }

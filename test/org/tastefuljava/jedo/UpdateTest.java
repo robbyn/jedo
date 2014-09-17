@@ -71,7 +71,7 @@ public class UpdateTest extends JedoTestBase {
             throws SQLException, ClassNotFoundException, IOException {
         Folder folder = getFolder("root/sub1");
         Picture pic = new Picture();
-        pic.setFolderId(folder.getId());
+        pic.setFolder(folder);
         pic.setName("mybeautifulpic.jpg");
         pic.setSize(1024, 768);
         session.insert(pic);
@@ -83,8 +83,10 @@ public class UpdateTest extends JedoTestBase {
         terminate();
         open();
         Picture pic2 = session.load(Picture.class, picId);
+        Folder folder2 = getFolder("root/sub1");
         Assert.assertNotSame("Cache not cleared", pic, pic2);
         Assert.assertEquals("Wrong name", "mybeautifulpic.jpg", pic2.getName());
+        Assert.assertSame("Different folder loaded", folder2, pic2.getFolder());
     }
 
     @Test
@@ -92,7 +94,7 @@ public class UpdateTest extends JedoTestBase {
             throws SQLException, ClassNotFoundException, IOException {
         Folder folder = getFolder("root/sub1");
         Picture pic = new Picture();
-        pic.setFolderId(folder.getId());
+        pic.setFolder(folder);
         pic.setName("mybeautifulpic.jpg");
         pic.setSize(1024, 768);
         session.insert(pic);
@@ -124,7 +126,7 @@ public class UpdateTest extends JedoTestBase {
             throws SQLException, ClassNotFoundException, IOException {
         Folder folder = getFolder("root/sub1");
         Picture pic = new Picture();
-        pic.setFolderId(folder.getId());
+        pic.setFolder(folder);
         pic.setName("mybeautifulpic.jpg");
         pic.setSize(1024, 768);
         session.insert(pic);
@@ -149,7 +151,7 @@ public class UpdateTest extends JedoTestBase {
             throws SQLException, ClassNotFoundException, IOException {
         Folder folder = getFolder("root/sub1");
         Picture pic = new Picture();
-        pic.setFolderId(folder.getId());
+        pic.setFolder(folder);
         pic.setName("mybeautifulpic.jpg");
         pic.setSize(1024, 768);
         session.insert(pic);
@@ -169,7 +171,7 @@ public class UpdateTest extends JedoTestBase {
             throws SQLException, ClassNotFoundException, IOException {
         Folder folder = getFolder("root/sub1");
         Picture pic = new Picture();
-        pic.setFolderId(folder.getId());
+        pic.setFolder(folder);
         pic.setName("mybeautifulpic.jpg");
         pic.setSize(1024, 768);
         GpsData gps = new GpsData();

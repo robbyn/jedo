@@ -2,28 +2,31 @@ package org.tastefuljava.jedo.mapping;
 
 import org.tastefuljava.jedo.util.XMLWriter;
 import java.lang.reflect.Field;
+import java.sql.Connection;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.tastefuljava.jedo.JedoException;
+import org.tastefuljava.jedo.cache.Cache;
 import org.tastefuljava.jedo.util.ClassUtil;
 
-public class ComponentMapper {
+public class ComponentMapper extends FieldMapper {
     private static final Logger LOG
             = Logger.getLogger(ComponentMapper.class.getName());
 
-    private final Field field;
     private final PropertyMapper[] props;
 
     private ComponentMapper(Builder builder) {
-        this.field = builder.field;
+        super(builder.field);
         this.props = builder.props.toArray(
                 new PropertyMapper[builder.props.size()]);
     }
 
-    public void collect(Object obj, ResultSet rs) {
+    @Override
+    public Object fromResultSet(Connection cnt, Cache<Object,Object> cache,
+            ResultSet rs) {
         try {
             boolean allNull = true;
             Object[] values = new Object[props.length];
@@ -34,16 +37,15 @@ public class ComponentMapper {
                     allNull = false;
                 }
             }
-            Object comp;
             if (allNull) {
-                comp = null;
+                return null;
             } else {
-                comp = field.getType().newInstance();
+                Object comp = field.getType().newInstance();
                 for (int i = 0; i < props.length; ++i) {
                     props[i].setValue(comp, values[i]);
                 }
+                return comp;
             }
-            field.set(obj, comp);
         } catch (IllegalArgumentException | IllegalAccessException
                 | InstantiationException ex) {
             LOG.log(Level.SEVERE, null, ex);

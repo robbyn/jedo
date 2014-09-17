@@ -5,7 +5,7 @@ import java.util.Date;
 
 public class Picture {
     private int id;
-    private int folderId;
+    private Folder folder;
     private String name;
     private Date timestamp = new Date();
     private int width;
@@ -16,12 +16,12 @@ public class Picture {
         return id;
     }
 
-    public int getFolderId() {
-        return folderId;
+    public Folder getFolder() {
+        return folder;
     }
 
-    public void setFolderId(int folderId) {
-        this.folderId = folderId;
+    public void setFolder(Folder folder) {
+        this.folder = folder;
     }
 
     public String getName() {

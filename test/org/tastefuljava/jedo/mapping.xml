@@ -32,7 +32,7 @@
         <id>
             <property name="id" column="ID"/>
         </id>
-        <property name="folderId" column="FOLDER_ID"/>
+        <reference name="folder" column="FOLDER_ID"/>
         <property name="name" column="NAME"/>
         <property name="timestamp" column="TIMESTAMP"/>
         <property name="width" column="WIDTH"/>
@@ -59,11 +59,12 @@
         <insert get-generated-keys="true">
             INSERT INTO pictures(FOLDER_ID,NAME,TIMESTAMP,WIDTH,HEIGHT,LATITUDE,
                 LONGITUDE,ALTITUDE)
-            VALUES(${folderId},${name},${timestamp:TIMESTAMP},${width},${height},
-                ${gpsData.latitude},${gpsData.longitude},${gpsData.altitude})
+            VALUES(${folder.id},${name},${timestamp:TIMESTAMP},${width},
+                ${height},${gpsData.latitude},${gpsData.longitude},
+                ${gpsData.altitude})
         </insert>
         <update>
-            UPDATE pictures SET FOLDER_ID=${folderId},NAME=${name},
+            UPDATE pictures SET FOLDER_ID=${folder.id},NAME=${name},
                 TIMESTAMP=${timestamp:TIMESTAMP},WIDTH=${width},
                 HEIGHT=${height},LATITUDE=${gpsData.latitude},
                 LONGITUDE=${gpsData.longitude},

@@ -23,8 +23,7 @@ public class ClassMapper {
 
     private final Class<?> clazz;
     private final PropertyMapper[] idProps;
-    private final PropertyMapper[] props;
-    private final ComponentMapper[] comps;
+    private final FieldMapper[] fields;
     private final Map<String,Statement> queries;
     private final Statement load;
     private final Statement insert;
@@ -35,10 +34,8 @@ public class ClassMapper {
         this.clazz = builder.clazz;
         this.idProps = builder.idProps.toArray(
                 new PropertyMapper[builder.idProps.size()]);
-        this.props = builder.props.toArray(
-                new PropertyMapper[builder.props.size()]);
-        this.comps = builder.comps.toArray(
-                new ComponentMapper[builder.comps.size()]);
+        this.fields = builder.fields.toArray(
+                new FieldMapper[builder.fields.size()]);
         this.queries = builder.queries;
         this.load = builder.load;
         this.insert = builder.insert;
@@ -62,7 +59,18 @@ public class ClassMapper {
         }
     }
 
-    public Object getIdFromResultSet(ResultSet rs) {
+    public ObjectId newId(Object[] values) {
+        if (values.length != idProps.length) {
+            throw new JedoException("Wrong number of columns: expected "
+                    + idProps.length + " found " + values.length);
+        }
+        for (int i = 0; i < idProps.length; ++i) {
+            values[i] = idProps[i].convert(values[i]);
+        }
+        return new ObjectId(clazz, values);
+    }
+
+    public ObjectId getIdFromResultSet(ResultSet rs) {
         if (idProps == null || idProps.length == 0) {
             return null;
         } else {
@@ -74,11 +82,11 @@ public class ClassMapper {
         }
     }
 
-    public Object getInstance(Cache<?,?> ucache, ResultSet rs) {
+    public Object getInstance(Connection cnt, Cache<?,?> ucache, ResultSet rs) {
+        Object oid = getIdFromResultSet(rs);
         @SuppressWarnings("unchecked")
         Cache<Object,Object> cache = (Cache<Object,Object>) ucache;
-        Object id = getIdFromResultSet(rs);
-        Object obj = cache.get(id);
+        Object obj = cache.get(oid);
         if (obj != null) {
             return obj;
         }
@@ -88,15 +96,12 @@ public class ClassMapper {
             LOG.log(Level.SEVERE, null, ex);
         }
         for (PropertyMapper prop: idProps) {
-            prop.setValue(obj, prop.fromResultSet(rs));
+            prop.setValue(obj, prop.fromResultSet(cnt, cache, rs));
         }
-        for (PropertyMapper prop: props) {
-            prop.setValue(obj, prop.fromResultSet(rs));
+        for (FieldMapper prop: fields) {
+            prop.setValue(obj, prop.fromResultSet(cnt, cache, rs));
         }
-        for (ComponentMapper comp: comps) {
-            comp.collect(obj, rs);
-        }
-        cache.put(id, obj);
+        cache.put(oid, obj);
         return obj;
     }
 
@@ -105,7 +110,7 @@ public class ClassMapper {
             throw new JedoException(
                     "No loader for class " + clazz.getName());
         }
-        ObjectId oid = new ObjectId(clazz, parms);
+        ObjectId oid = newId(parms);
         @SuppressWarnings("unchecked")
         Cache<Object,Object> cache = (Cache<Object,Object>)ucache;
         Object obj = cache.get(oid);
@@ -130,7 +135,7 @@ public class ClassMapper {
         try (PreparedStatement pstmt = stmt.prepare(cnt, null, parms);
                 ResultSet rs = pstmt.executeQuery()) {
             if (rs.next()) {
-                result = getInstance(cache, rs);
+                result = getInstance(cnt, cache, rs);
                 if (rs.next()) {
                     throw new JedoException("Only one result allowed");
                 }
@@ -154,7 +159,7 @@ public class ClassMapper {
         try (PreparedStatement pstmt = stmt.prepare(cnt, null, parms);
                 ResultSet rs = pstmt.executeQuery()) {
             while (rs.next()) {
-                result.add(getInstance(cache, rs));
+                result.add(getInstance(cnt, cache, rs));
             }
         } catch (SQLException ex) {
             LOG.log(Level.SEVERE, null, ex);
@@ -209,6 +214,12 @@ public class ClassMapper {
         }
     }
 
+    void fixReferences(Map<Class<?>, ClassMapper> map) {
+        for (FieldMapper fm: fields) {
+            fm.fixReferences(map);
+        }
+    }
+
     public void writeTo(XMLWriter out) {
         out.startTag("class");
         out.attribute("name", clazz.getName());
@@ -218,11 +229,8 @@ public class ClassMapper {
                 pm.writeTo(out);
             }
             out.endTag();
-            for (PropertyMapper pm: props) {
+            for (FieldMapper pm: fields) {
                 pm.writeTo(out);
-            }
-            for (ComponentMapper cm: comps) {
-                cm.writeTo(out);
             }
             if (load != null) {
                 load.writeTo(out, "load", null);
@@ -246,8 +254,7 @@ public class ClassMapper {
     public static class Builder {
         private final Class<?> clazz;
         private List<PropertyMapper> idProps = new ArrayList<>();
-        private List<PropertyMapper> props = new ArrayList<>();
-        private List<ComponentMapper> comps = new ArrayList<>();
+        private List<FieldMapper> fields = new ArrayList<>();
         private final Map<String,Statement> queries = new HashMap<>();
         private Statement load;
         private Statement insert;
@@ -258,17 +265,25 @@ public class ClassMapper {
             this.clazz = clazz;
         }
 
-        public Builder(String packageName, String className)
-                throws ClassNotFoundException {
+        public Builder(String packageName, String className) {
             this(loadClass(packageName, className));
         }
 
+        public Class<?> getMappedClass() {
+            return clazz;
+        }
+
         public void addIdProp(String field, String column) {
-            idProps.add(newPropertyMapper(field, column));
+            idProps.add(newProperty(field, column));
         }
 
         public void addProp(String field, String column) {
-            props.add(newPropertyMapper(field, column));
+            fields.add(newProperty(field, column));
+        }
+
+        public void addReference(String field, String[] columns) {
+            ReferenceMapper ref = newReference(field, columns);
+            fields.add(ref);
         }
 
         public ComponentMapper.Builder newComponent(String name) {
@@ -277,7 +292,7 @@ public class ClassMapper {
         }
 
         public void addComponent(ComponentMapper cm) {
-            comps.add(cm);
+            fields.add(cm);
         }
 
         public Statement.Builder newStatement(String[] paramNames) {
@@ -316,13 +331,26 @@ public class ClassMapper {
             delete = stmt;
         }
 
-        public ClassMapper getMapper() {
+        ClassMapper getMapper() {
             return new ClassMapper(this);
         }
 
-        private PropertyMapper newPropertyMapper(String name, String column) {
+        private PropertyMapper newProperty(String name, String column) {
             Field field = ClassUtil.getInstanceField(clazz, name);
+            if (field == null) {
+                throw new JedoException("Field " + name
+                        + " not found in class " + clazz.getName());
+            }
             return new PropertyMapper(field, column);
+        }
+
+        private ReferenceMapper newReference(String name, String[] columns) {
+            Field field = ClassUtil.getInstanceField(clazz, name);
+            if (field == null) {
+                throw new JedoException("Field " + name
+                        + " not found in class " + clazz.getName());
+            }
+            return new ReferenceMapper(field, columns);
         }
 
         private String[] getIdFieldNames() {
@@ -336,17 +364,22 @@ public class ClassMapper {
         private String[] getIdColumns() {
             String[] result = new String[idProps.size()];
             for (int i = 0; i < idProps.size(); ++i) {
-                result[i] = idProps.get(i).getFieldName();
+                result[i] = idProps.get(i).getColumn();
             }
             return result;
         }
 
         private static Class<?> loadClass(String packageName,
-                String className) throws ClassNotFoundException {
-            String fullName = packageName == null
-                    ? className : packageName + "." + className;
-            ClassLoader cl = Thread.currentThread().getContextClassLoader();
-            return cl.loadClass(fullName);
+                String className) {
+            try {
+                String fullName = packageName == null
+                        ? className : packageName + "." + className;
+                ClassLoader cl = Thread.currentThread().getContextClassLoader();
+                return cl.loadClass(fullName);
+            } catch (ClassNotFoundException ex) {
+                LOG.log(Level.SEVERE, null, ex);
+                throw new JedoException(ex.getMessage());
+            }
         }
     }
 }
