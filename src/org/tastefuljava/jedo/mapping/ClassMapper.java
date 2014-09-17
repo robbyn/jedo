@@ -9,6 +9,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -43,7 +44,7 @@ public class ClassMapper {
         this.delete = builder.delete;
     }
 
-    public Class<?> getMappedClass() {
+    Class<?> getMappedClass() {
         return clazz;
     }
 
@@ -153,9 +154,15 @@ public class ClassMapper {
         if (stmt == null) {
             throw new JedoException("No query named " + name);
         }
+        List<Object> result = new ArrayList<>();
+        query(cnt, ucache, stmt, parms, result);
+        return result;
+    }
+
+    public void query(Connection cnt, Cache<?,?> ucache, Statement stmt,
+            Object[] parms, Collection<Object> result) {
         @SuppressWarnings(value = "unchecked")
         final Cache<Object, Object> cache = (Cache<Object, Object>) ucache;
-        List<Object> result = new ArrayList<>();
         try (PreparedStatement pstmt = stmt.prepare(cnt, null, parms);
                 ResultSet rs = pstmt.executeQuery()) {
             while (rs.next()) {
@@ -164,8 +171,7 @@ public class ClassMapper {
         } catch (SQLException ex) {
             LOG.log(Level.SEVERE, null, ex);
             throw new JedoException(ex.getMessage());
-        }
-        return result;
+        }        
     }
 
     public void insert(Connection cnt, Cache<?,?> ucache, Object obj) {
@@ -218,6 +224,10 @@ public class ClassMapper {
         for (FieldMapper fm: fields) {
             fm.fixReferences(map);
         }
+    }
+
+    Statement getQuery(String queryName) {
+        return queries.get(queryName);
     }
 
     public void writeTo(XMLWriter out) {
@@ -286,6 +296,12 @@ public class ClassMapper {
             fields.add(ref);
         }
 
+        public void addCollection(String field, String query,
+                String[] columns) {
+            CollectionMapper ref = newReference(field, query, columns);
+            fields.add(ref);
+        }
+
         public ComponentMapper.Builder newComponent(String name) {
             return new ComponentMapper.Builder(
                     ClassUtil.getInstanceField(clazz, name));
@@ -351,6 +367,16 @@ public class ClassMapper {
                         + " not found in class " + clazz.getName());
             }
             return new ReferenceMapper(field, columns);
+        }
+
+        private CollectionMapper newReference(String name, String query,
+                String[] columns) {
+            Field field = ClassUtil.getInstanceField(clazz, name);
+            if (field == null) {
+                throw new JedoException("Field " + name
+                        + " not found in class " + clazz.getName());
+            }
+            return new CollectionMapper(field, query, columns);
         }
 
         private String[] getIdFieldNames() {

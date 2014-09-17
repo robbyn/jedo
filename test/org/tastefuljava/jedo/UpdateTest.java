@@ -9,7 +9,7 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.junit.Assert;
+import static org.junit.Assert.*;
 import org.tastefuljava.jedo.testdb.Folder;
 import org.tastefuljava.jedo.testdb.GpsData;
 import org.tastefuljava.jedo.testdb.Picture;
@@ -40,29 +40,29 @@ public class UpdateTest extends JedoTestBase {
 
     @Test
     public void testInit() {
-        Assert.assertNotNull("Mapper is null", mapper);
-        Assert.assertNotNull("JDBC connection is null", cnt);
-        Assert.assertNotNull("Session is null", session);
+        assertNotNull("Mapper is null", mapper);
+        assertNotNull("JDBC connection is null", cnt);
+        assertNotNull("Session is null", session);
     }
 
     @Test
     public void testRoot() {
         Folder root = session.queryOne(Folder.class, "rootFolder", "root");
-        Assert.assertNotNull("Root is null", root);
-        Assert.assertNull("Root is not a root", root.getParentId());
-        Assert.assertTrue("Root is not a root", root.isRoot());
-        Assert.assertEquals("Wrong folder name", "root", root.getName());
+        assertNotNull("Root is null", root);
+        assertNull("Root is not a root", root.getParent());
+        assertTrue("Root is not a root", root.isRoot());
+        assertEquals("Wrong folder name", "root", root.getName());
         Folder sub1 = getFolder("root/sub1");
-        Assert.assertNotNull("Folder is null", sub1);
-        Assert.assertEquals("Wrong parent id",
-                (Integer)root.getId(), sub1.getParentId());
-        Assert.assertEquals("Wrong name",
+        assertNotNull("Folder is null", sub1);
+        assertSame("Wrong parent",
+                root, sub1.getParent());
+        assertEquals("Wrong name",
                 "sub1", sub1.getName());
         Folder sub2 = getFolder("root/sub2");
-        Assert.assertNotNull("Folder is null", sub2);
-        Assert.assertEquals("Wrong parent id",
-                (Integer)root.getId(), sub2.getParentId());
-        Assert.assertEquals("Wrong name",
+        assertNotNull("Folder is null", sub2);
+        assertSame("Wrong parent id",
+                root, sub2.getParent());
+        assertEquals("Wrong name",
                 "sub2", sub2.getName());
     }
 
@@ -75,18 +75,18 @@ public class UpdateTest extends JedoTestBase {
         pic.setName("mybeautifulpic.jpg");
         pic.setSize(1024, 768);
         session.insert(pic);
-        Assert.assertTrue("Picture ID is zero", pic.getId() != 0);
+        assertTrue("Picture ID is zero", pic.getId() != 0);
         int picId = pic.getId();
-        Assert.assertSame("Reread failed",
+        assertSame("Reread failed",
                 pic, session.load(Picture.class, pic.getId()));
         session.commit(); // should clear the cache
         terminate();
         open();
         Picture pic2 = session.load(Picture.class, picId);
         Folder folder2 = getFolder("root/sub1");
-        Assert.assertNotSame("Cache not cleared", pic, pic2);
-        Assert.assertEquals("Wrong name", "mybeautifulpic.jpg", pic2.getName());
-        Assert.assertSame("Different folder loaded", folder2, pic2.getFolder());
+        assertNotSame("Cache not cleared", pic, pic2);
+        assertEquals("Wrong name", "mybeautifulpic.jpg", pic2.getName());
+        assertSame("Different folder loaded", folder2, pic2.getFolder());
     }
 
     @Test
@@ -98,15 +98,15 @@ public class UpdateTest extends JedoTestBase {
         pic.setName("mybeautifulpic.jpg");
         pic.setSize(1024, 768);
         session.insert(pic);
-        Assert.assertTrue("Picture ID is zero", pic.getId() != 0);
+        assertTrue("Picture ID is zero", pic.getId() != 0);
         int picId = pic.getId();
-        Assert.assertSame("Reread failed",
+        assertSame("Reread failed",
                 pic, session.load(Picture.class, pic.getId()));
         session.commit(); // should clear the cache
         terminate();
         open();
         Picture pic2 = session.load(Picture.class, picId);
-        Assert.assertNotSame("Cache not cleared", pic, pic2);
+        assertNotSame("Cache not cleared", pic, pic2);
         pic2.setName("anothername.jpg");
         Date now = new Date();
         pic2.setTimestamp(now);
@@ -115,10 +115,10 @@ public class UpdateTest extends JedoTestBase {
         terminate();
         open();
         Picture pic3 = session.load(Picture.class, picId);
-        Assert.assertNotSame("Cache not cleared", pic3, pic2);
-        Assert.assertNotSame("Cache not cleared", pic3, pic);
-        Assert.assertEquals("Wrong name", "anothername.jpg", pic3.getName());
-        Assert.assertEquals("Wrong date", now, pic3.getTimestamp());
+        assertNotSame("Cache not cleared", pic3, pic2);
+        assertNotSame("Cache not cleared", pic3, pic);
+        assertEquals("Wrong name", "anothername.jpg", pic3.getName());
+        assertEquals("Wrong date", now, pic3.getTimestamp());
     }
 
     @Test
@@ -130,9 +130,9 @@ public class UpdateTest extends JedoTestBase {
         pic.setName("mybeautifulpic.jpg");
         pic.setSize(1024, 768);
         session.insert(pic);
-        Assert.assertTrue("Picture ID is zero", pic.getId() != 0);
+        assertTrue("Picture ID is zero", pic.getId() != 0);
         int picId = pic.getId();
-        Assert.assertSame("Reread failed",
+        assertSame("Reread failed",
                 pic, session.load(Picture.class, pic.getId()));
         session.commit(); // should clear the cache
         terminate();
@@ -143,7 +143,7 @@ public class UpdateTest extends JedoTestBase {
         terminate();
         open();
         Picture pic3 = session.load(Picture.class, picId);
-        Assert.assertNull("Cache not deleted", pic3);
+        assertNull("Cache not deleted", pic3);
     }
 
     @Test
@@ -155,15 +155,15 @@ public class UpdateTest extends JedoTestBase {
         pic.setName("mybeautifulpic.jpg");
         pic.setSize(1024, 768);
         session.insert(pic);
-        Assert.assertTrue("Picture ID is zero", pic.getId() != 0);
+        assertTrue("Picture ID is zero", pic.getId() != 0);
         int picId = pic.getId();
-        Assert.assertSame("Reread failed",
+        assertSame("Reread failed",
                 pic, session.load(Picture.class, pic.getId()));
         // no commit
         terminate();
         open();
         Picture pic2 = session.load(Picture.class, picId);
-        Assert.assertNull("Not rollbacked", pic2);
+        assertNull("Not rollbacked", pic2);
     }
 
     @Test
@@ -179,20 +179,20 @@ public class UpdateTest extends JedoTestBase {
         gps.setLongitude(7);
         pic.setGpsData(gps);
         session.insert(pic);
-        Assert.assertTrue("Picture ID is zero", pic.getId() != 0);
+        assertTrue("Picture ID is zero", pic.getId() != 0);
         int picId = pic.getId();
-        Assert.assertSame("Reread failed",
+        assertSame("Reread failed",
                 pic, session.load(Picture.class, pic.getId()));
         session.commit(); // should clear the cache
         terminate();
         open();
         Picture pic2 = session.load(Picture.class, picId);
         GpsData gps2 = pic2.getGpsData();
-        Assert.assertNotNull("Component not present", gps2);
-        Assert.assertNull("Unexpected value here", gps2.getAltitude());
-        Assert.assertEquals("Different values",
+        assertNotNull("Component not present", gps2);
+        assertNull("Unexpected value here", gps2.getAltitude());
+        assertEquals("Different values",
                 gps.getLatitude(), gps2.getLatitude(), 0.0000001);
-        Assert.assertEquals("Different values",
+        assertEquals("Different values",
                 gps.getLongitude(), gps2.getLongitude(), 0.0000001);
     }
 }

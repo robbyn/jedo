@@ -3,7 +3,9 @@ package org.tastefuljava.jedo.util;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.sql.Types;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.util.Collection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.tastefuljava.jedo.JedoException;
@@ -86,5 +88,26 @@ public class ClassUtil {
             LOG.log(Level.SEVERE, null, ex);
             return null;
         }
+    }
+
+    public static Class<?> getElementType(Field field) {
+        if (!Collection.class.isAssignableFrom(field.getType())) {
+            throw new JedoException("Not a collection");
+        }
+        Type type = field.getGenericType();
+        if (!(type instanceof ParameterizedType)) {
+            throw new JedoException("Not a parameterized type");
+        }
+        ParameterizedType ptype = (ParameterizedType)type;
+        Type[] argTypes = ptype.getActualTypeArguments();
+        if (argTypes.length != 1) {
+            throw new JedoException("Wrong number of arguments");
+        }
+        Type atype = argTypes[0];
+        if (!(atype instanceof Class)) {
+            throw new JedoException("Element type is not a class");
+        }
+        Class<?> result = (Class<?>)atype;
+        return result;
     }
 }

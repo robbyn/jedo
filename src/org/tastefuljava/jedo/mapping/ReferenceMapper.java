@@ -9,7 +9,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.tastefuljava.jedo.JedoException;
 import org.tastefuljava.jedo.cache.Cache;
-import org.tastefuljava.jedo.cache.ObjectId;
 import org.tastefuljava.jedo.util.XMLWriter;
 
 public class ReferenceMapper extends FieldMapper {

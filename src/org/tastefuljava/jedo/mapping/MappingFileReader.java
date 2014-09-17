@@ -109,6 +109,14 @@ public class MappingFileReader {
                         classBuilder.addReference(name, column.split("[,]"));
                     }
                     break;
+                case "collection": {
+                        String name = attrs.getValue("name");
+                        String column = attrs.getValue("column");
+                        String query = attrs.getValue("query");
+                        classBuilder.addCollection(name, query,
+                                column.split("[,]"));
+                    }
+                    break;
                 case "component":
                     compBuilder = classBuilder.newComponent(
                             attrs.getValue("name"));
