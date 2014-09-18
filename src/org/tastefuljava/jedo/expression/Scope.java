@@ -68,6 +68,10 @@ public abstract class Scope {
                 return new Expression.RuntimeExpr(self, name);
             } else {
                 Method g = ClassUtil.getPropGetter(clazz, name);
+                if (g == null) {
+                    throw new JedoException("No getter found for " + name
+                            + " in class " + clazz.getName());
+                }
                 return new Expression.GetterExpr(self, g);
             }
         }
