@@ -6,6 +6,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -76,19 +77,20 @@ public class CollectionMapper extends FieldMapper {
             Cache<Object, Object> cache, Object[] args) {
         switch (fetchMode) {
             case EAGER: {
-                    Collection<?> result;
                     if (field.getType() == Set.class
                             || field.getType() == Collection.class) {
-                        result = new HashSet<>();
+                        Set<?> result = new HashSet<>();
+                        fetch(cnt, cache, args, result);
+                        return Collections.unmodifiableSet(result);
                     } else if (field.getType() == List.class) {
-                        result = new ArrayList<>();
+                        List<?> result = new ArrayList<>();
+                        fetch(cnt, cache, args, result);
+                        return Collections.unmodifiableList(result);
                     } else {
                         throw new JedoException(
                                 "Unsupported collection field type "
                                  + field.getType().getName());
                     }
-                    fetch(cnt, cache, args, result);
-                    return result;
                 }
             case LAZY:
                 if (field.getType() == Set.class

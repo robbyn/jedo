@@ -3,6 +3,7 @@ package org.tastefuljava.jedo.mapping;
 import java.sql.Connection;
 import java.util.Collection;
 import java.util.Iterator;
+import org.tastefuljava.jedo.JedoException;
 import org.tastefuljava.jedo.cache.Cache;
 
 public abstract class LazyCollection<T> implements Collection<T> {
@@ -51,12 +52,12 @@ public abstract class LazyCollection<T> implements Collection<T> {
 
     @Override
     public boolean add(T e) {
-        return get().add(e);
+        throw new JedoException("Cannot modify collection");
     }
 
     @Override
     public boolean remove(Object o) {
-        return get().remove(o);
+        throw new JedoException("Cannot modify collection");
     }
 
     @Override
@@ -66,12 +67,12 @@ public abstract class LazyCollection<T> implements Collection<T> {
 
     @Override
     public boolean addAll(Collection<? extends T> c) {
-        return get().addAll(c);
+        throw new JedoException("Cannot modify collection");
     }
 
     @Override
     public boolean removeAll(Collection<?> c) {
-        return get().removeAll(c);
+        throw new JedoException("Cannot modify collection");
     }
 
     @Override
@@ -81,7 +82,7 @@ public abstract class LazyCollection<T> implements Collection<T> {
 
     @Override
     public void clear() {
-        get().clear();
+        throw new JedoException("Cannot modify collection");
     }
 
     protected Collection<T> get() {

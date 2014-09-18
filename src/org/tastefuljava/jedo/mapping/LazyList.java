@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.ListIterator;
+import org.tastefuljava.jedo.JedoException;
 import org.tastefuljava.jedo.cache.Cache;
 
 public class LazyList<T> extends LazyCollection<T> implements List<T> {
@@ -24,7 +25,7 @@ public class LazyList<T> extends LazyCollection<T> implements List<T> {
 
     @Override
     public boolean addAll(int index, Collection<? extends T> c) {
-        return list().addAll(index, c);
+        throw new JedoException("Cannot modify collection");
     }
 
     @Override
@@ -34,17 +35,17 @@ public class LazyList<T> extends LazyCollection<T> implements List<T> {
 
     @Override
     public T set(int index, T element) {
-        return list().set(index, element);
+        throw new JedoException("Cannot modify collection");
     }
 
     @Override
     public void add(int index, T element) {
-        list().add(index, element);
+        throw new JedoException("Cannot modify collection");
     }
 
     @Override
     public T remove(int index) {
-        return list().remove(index);
+        throw new JedoException("Cannot modify collection");
     }
 
     @Override

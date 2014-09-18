@@ -8,9 +8,9 @@
         <reference name="parent" column="PARENT_ID"/>
         <property name="name" column="NAME"/>
         <collection name="subfolders" column="ID" query="subfolders"
-                fetch-mode="eager"/>
-        <collection name="pictures" column="ID" query="inFolder"
                 fetch-mode="lazy"/>
+        <collection name="pictures" column="ID" query="inFolder"
+                fetch-mode="eager"/>
 
         <load>
             SELECT * FROM folders
@@ -53,12 +53,12 @@
         </load>
         <query name="byName" parameters="folder,name">
             SELECT * FROM pictures
-            WHERE PARENT_ID=${folder.id}
+            WHERE FOLDER_ID=${folder.id}
                 AND NAME=${name}
         </query>
         <query name="inFolder" parameters="folderId">
             SELECT * FROM pictures
-            WHERE PARENT_ID=${folderId}
+            WHERE FOLDER_ID=${folderId}
         </query>
         <insert get-generated-keys="true">
             INSERT INTO pictures(FOLDER_ID,NAME,TIMESTAMP,WIDTH,HEIGHT,LATITUDE,
