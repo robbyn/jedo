@@ -28,6 +28,7 @@
     name CDATA #REQUIRED
     column CDATA #REQUIRED
     query CDATA #REQUIRED
+    fetch-mode (eager|lazy) #IMPLIED
 >
 
 <!ELEMENT load (#PCDATA)>

@@ -28,7 +28,11 @@ public class ReferenceMapper extends FieldMapper {
         try {
             Object[] values = new Object[columns.length];
             for (int i = 0; i < columns.length; ++i) {
-                values[i] = rs.getObject(columns[i]);
+                Object val = rs.getObject(columns[i]);
+                values[i] = val;
+                if (val == null) {
+                    return null;
+                }
             }
             return targetClass.load(cnt, cache, values);
         } catch (SQLException ex) {

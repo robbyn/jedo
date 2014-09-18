@@ -4,7 +4,9 @@ import java.lang.reflect.Field;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -23,11 +25,14 @@ public class CollectionMapper extends FieldMapper {
     private final String queryName;
     private ClassMapper elmClass;
     private Statement query;
+    private FetchMode fetchMode;
 
-    CollectionMapper(Field field, String queryName, String[] columns) {
+    CollectionMapper(Field field, String queryName, String[] columns,
+            FetchMode fetchMode) {
         super(field);
         this.columns = columns;
         this.queryName = queryName;
+        this.fetchMode = fetchMode;
     }
 
     @Override
@@ -38,15 +43,7 @@ public class CollectionMapper extends FieldMapper {
             for (int i = 0; i < columns.length; ++i) {
                 values[i] = rs.getObject(columns[i]);
             }
-            if (field.getType() == Set.class
-                    || field.getType() == Collection.class) {
-                return new LazySet<>(cnt, cache, this, values);
-            } else if (field.getType() == List.class) {
-                return new LazyList<>(cnt, cache, this, values);
-            } else {
-                throw new JedoException("Unsupported collection field type "
-                        + field.getType().getName());
-            }
+            return createCollection(cnt, cache, values);
         } catch (SQLException ex) {
             LOG.log(Level.SEVERE, null, ex);
             throw new JedoException(ex.getMessage());
@@ -73,6 +70,39 @@ public class CollectionMapper extends FieldMapper {
         @SuppressWarnings("unchecked")
         Collection<Object> col = (Collection<Object>)result;
         elmClass.query(cnt, cache, query, args, col);
+    }
+
+    private Collection<?> createCollection(Connection cnt,
+            Cache<Object, Object> cache, Object[] args) {
+        switch (fetchMode) {
+            case EAGER: {
+                    Collection<?> result;
+                    if (field.getType() == Set.class
+                            || field.getType() == Collection.class) {
+                        result = new HashSet<>();
+                    } else if (field.getType() == List.class) {
+                        result = new ArrayList<>();
+                    } else {
+                        throw new JedoException(
+                                "Unsupported collection field type "
+                                 + field.getType().getName());
+                    }
+                    fetch(cnt, cache, args, result);
+                    return result;
+                }
+            case LAZY:
+                if (field.getType() == Set.class
+                        || field.getType() == Collection.class) {
+                    return new LazySet<>(cnt, cache, this, args);
+                } else if (field.getType() == List.class) {
+                    return new LazyList<>(cnt, cache, this, args);
+                } else {
+                    throw new JedoException("Unsupported collection field type "
+                            + field.getType().getName());
+                }
+            default:
+                throw new JedoException("Invalid fetch mode: " + fetchMode);
+        }
     }
 
     @Override
