@@ -26,15 +26,16 @@ public class ReferenceMapper extends FieldMapper {
     @Override
     public Object fromResultSet(Connection cnt, Cache<Object,Object> cache, ResultSet rs) {
         try {
+            boolean allNull = true;
             Object[] values = new Object[columns.length];
             for (int i = 0; i < columns.length; ++i) {
                 Object val = rs.getObject(columns[i]);
                 values[i] = val;
-                if (val == null) {
-                    return null;
+                if (val != null) {
+                    allNull = false;
                 }
             }
-            return targetClass.load(cnt, cache, values);
+            return allNull ? null : targetClass.load(cnt, cache, values);
         } catch (SQLException ex) {
             LOG.log(Level.SEVERE, null, ex);
             throw new JedoException(ex.getMessage());
