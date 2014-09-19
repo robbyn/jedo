@@ -2,7 +2,6 @@ package org.tastefuljava.jedo.mapping;
 
 import org.tastefuljava.jedo.util.XMLWriter;
 import org.tastefuljava.jedo.util.Reflection;
-import org.tastefuljava.jedo.cache.ObjectId;
 import java.lang.reflect.Field;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
