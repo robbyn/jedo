@@ -9,7 +9,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.tastefuljava.jedo.JedoException;
 import org.tastefuljava.jedo.util.XMLWriter;
-import org.tastefuljava.jedo.util.ClassUtil;
+import org.tastefuljava.jedo.util.Reflection;
 
 public class Parameter {
     private static final Logger LOG
@@ -34,7 +34,7 @@ public class Parameter {
         if (stype == null) {
             return new Parameter(expr);
         }
-        int type = ClassUtil.getConstant(Types.class, stype, int.class);
+        int type = Reflection.getConstant(Types.class, stype, int.class);
         final String slength = matcher.group(3);
         if (slength == null) {
             return new Parameter(expr, type);

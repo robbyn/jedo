@@ -1,10 +1,12 @@
 package org.tastefuljava.jedo.testdb;
 
 import java.util.List;
+import org.tastefuljava.jedo.Ref;
+import org.tastefuljava.jedo.SimpleRef;
 
 public class Folder {
     private int id;
-    private Folder parent;
+    private Ref<Folder> parent = new SimpleRef<>();
     private String name;
     private String title;
     private String description;
@@ -16,11 +18,11 @@ public class Folder {
     }
 
     public Folder getParent() {
-        return parent;
+        return parent.get();
     }
 
     public void setParentId(Folder parent) {
-        this.parent = parent;
+        this.parent.set(parent);
     }
 
     public String getName() {
@@ -48,7 +50,7 @@ public class Folder {
     }
 
     public boolean isRoot() {
-        return parent == null;
+        return parent.get() == null;
     }
 
     public List<Folder> getSubfolders() {

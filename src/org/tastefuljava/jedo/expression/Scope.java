@@ -6,7 +6,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
 import org.tastefuljava.jedo.JedoException;
-import org.tastefuljava.jedo.util.ClassUtil;
+import org.tastefuljava.jedo.Ref;
+import org.tastefuljava.jedo.util.Reflection;
 
 public abstract class Scope {
     private static final Logger LOG = Logger.getLogger(Scope.class.getName());
@@ -44,12 +45,17 @@ public abstract class Scope {
 
         @Override
         public Expression resolve(String name) {
-            Field f = ClassUtil.getInstanceField(clazz, name);
+            Field f = Reflection.getInstanceField(clazz, name);
             if (f == null) {
                 throw new JedoException("Field " + name
                         + " not found in class " + clazz.getName());
             }
-            return new Expression.FieldExpr(self, f);
+            Expression result = new Expression.FieldExpr(self, f);
+            if (f.getType() == Ref.class) {
+                result = new Expression.Deref(result,
+                        Reflection.getReferencedType(f));
+            }
+            return result;
         }
     }
 
@@ -67,7 +73,7 @@ public abstract class Scope {
             if (clazz == null) {
                 return new Expression.RuntimeExpr(self, name);
             } else {
-                Method g = ClassUtil.getPropGetter(clazz, name);
+                Method g = Reflection.getPropGetter(clazz, name);
                 if (g == null) {
                     throw new JedoException("No getter found for " + name
                             + " in class " + clazz.getName());

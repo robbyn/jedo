@@ -9,14 +9,15 @@ import java.util.Collection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.tastefuljava.jedo.JedoException;
+import org.tastefuljava.jedo.Ref;
 
-public class ClassUtil {
+public class Reflection {
     private static final Logger LOG
-            = Logger.getLogger(ClassUtil.class.getName());
+            = Logger.getLogger(Reflection.class.getName());
 
     private static final Class<?>[] EMPTY_CLASS_ARRAY = {};
 
-    private ClassUtil() {
+    private Reflection() {
     }
 
     public static Class<? extends Object> loadClass(String packageName,
@@ -90,9 +91,10 @@ public class ClassUtil {
         }
     }
 
-    public static Class<?> getElementType(Field field) {
-        if (!Collection.class.isAssignableFrom(field.getType())) {
-            throw new JedoException("Not a collection");
+    public static Class<?> getReferencedType(Field field) {
+        Class<?> ftype = field.getType();
+        if (ftype != Ref.class && !Collection.class.isAssignableFrom(ftype)) {
+            throw new JedoException("Not a reference type");
         }
         Type type = field.getGenericType();
         if (!(type instanceof ParameterizedType)) {

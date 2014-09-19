@@ -8,7 +8,10 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.tastefuljava.jedo.JedoException;
+import org.tastefuljava.jedo.Ref;
+import org.tastefuljava.jedo.SimpleRef;
 import org.tastefuljava.jedo.cache.Cache;
+import org.tastefuljava.jedo.util.Reflection;
 import org.tastefuljava.jedo.util.XMLWriter;
 
 public class ReferenceMapper extends FieldMapper {
@@ -17,14 +20,17 @@ public class ReferenceMapper extends FieldMapper {
 
     private ClassMapper targetClass;
     private final String[] columns;
+    private final FetchMode fetchMode;
 
-    public ReferenceMapper(Field field, String[] columns) {
+    public ReferenceMapper(Field field, String[] columns, FetchMode fetchMode) {
         super(field);
         this.columns = columns;
+        this.fetchMode = fetchMode;
     }
 
     @Override
-    public Object fromResultSet(Connection cnt, Cache<Object,Object> cache, ResultSet rs) {
+    public Object fromResultSet(Connection cnt, Cache<Object,Object> cache,
+            ResultSet rs) {
         try {
             boolean allNull = true;
             Object[] values = new Object[columns.length];
@@ -35,7 +41,16 @@ public class ReferenceMapper extends FieldMapper {
                     allNull = false;
                 }
             }
-            return allNull ? null : targetClass.load(cnt, cache, values);
+            if (field.getType() != Ref.class) {
+                return allNull
+                        ? null : targetClass.load(cnt, cache, values);
+            } else if (allNull || fetchMode == FetchMode.EAGER) {
+                Object result = allNull
+                        ? null : targetClass.load(cnt, cache, values);
+                return new SimpleRef<>(result);
+            } else {
+                return new LazyRef<>(cnt, cache, targetClass, values);
+            }
         } catch (SQLException ex) {
             LOG.log(Level.SEVERE, null, ex);
             throw new JedoException(ex.getMessage());
@@ -44,7 +59,11 @@ public class ReferenceMapper extends FieldMapper {
 
     @Override
     void fixReferences(Map<Class<?>, ClassMapper> map) {
-        targetClass = map.get(field.getType());
+        Class<?> type = field.getType();
+        if (type == Ref.class) {
+            type = Reflection.getReferencedType(field);
+        }
+        targetClass = map.get(type);
         if (targetClass == null) {
             throw new JedoException("Unresolved reference target class: "
                     + field.getType().getName());

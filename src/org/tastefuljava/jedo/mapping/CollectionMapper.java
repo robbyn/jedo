@@ -15,7 +15,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.tastefuljava.jedo.JedoException;
 import org.tastefuljava.jedo.cache.Cache;
-import org.tastefuljava.jedo.util.ClassUtil;
+import org.tastefuljava.jedo.util.Reflection;
 import org.tastefuljava.jedo.util.XMLWriter;
 
 public class CollectionMapper extends FieldMapper {
@@ -24,9 +24,9 @@ public class CollectionMapper extends FieldMapper {
 
     private final String[] columns;
     private final String queryName;
+    private final FetchMode fetchMode;
     private ClassMapper elmClass;
     private Statement query;
-    private FetchMode fetchMode;
 
     CollectionMapper(Field field, String queryName, String[] columns,
             FetchMode fetchMode) {
@@ -53,7 +53,7 @@ public class CollectionMapper extends FieldMapper {
 
     @Override
     void fixReferences(Map<Class<?>, ClassMapper> map) {
-        Class<?> clazz = ClassUtil.getElementType(field);
+        Class<?> clazz = Reflection.getReferencedType(field);
         elmClass = map.get(clazz);
         if (elmClass == null) {
             throw new JedoException("Unresolved collection element class: "

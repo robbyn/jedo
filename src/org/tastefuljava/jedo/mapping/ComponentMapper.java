@@ -10,7 +10,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.tastefuljava.jedo.JedoException;
 import org.tastefuljava.jedo.cache.Cache;
-import org.tastefuljava.jedo.util.ClassUtil;
+import org.tastefuljava.jedo.util.Reflection;
 
 public class ComponentMapper extends FieldMapper {
     private static final Logger LOG
@@ -79,7 +79,7 @@ public class ComponentMapper extends FieldMapper {
         }
 
         private PropertyMapper newPropertyMapper(String name, String column) {
-            Field f = ClassUtil.getInstanceField(field.getType(), name);
+            Field f = Reflection.getInstanceField(field.getType(), name);
             if (f == null) {
                 throw new JedoException("Field " + name
                         + " not in class " + field.getType().getName());

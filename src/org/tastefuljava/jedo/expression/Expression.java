@@ -6,7 +6,8 @@ import java.lang.reflect.Method;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.tastefuljava.jedo.JedoException;
-import org.tastefuljava.jedo.util.ClassUtil;
+import org.tastefuljava.jedo.Ref;
+import org.tastefuljava.jedo.util.Reflection;
 
 public abstract class Expression {
     private static final Logger LOG
@@ -107,7 +108,7 @@ public abstract class Expression {
                 if (obj == null) {
                     return null;
                 }
-                Method getter = ClassUtil.getPropGetter(
+                Method getter = Reflection.getPropGetter(
                         obj.getClass(), propName);
                 return getter.invoke(obj);
             } catch (IllegalArgumentException | IllegalAccessException
@@ -155,6 +156,27 @@ public abstract class Expression {
         public String toString() {
             String exp = getter.getName() + "()";
             return object == THIS ? exp : object + "." + exp;
+        }
+    }
+
+    static class Deref extends Expression {
+        private Expression ref;
+        private Class<?> type;
+
+        public Deref(Expression ref, Class<?> type) {
+            this.ref = ref;
+            this.type = type;
+        }
+
+        @Override
+        public Class<?> getType() {
+            return type;
+        }
+
+        @Override
+        public Object evaluate(Object self, Object[] parms) {
+            Ref<?> r = (Ref<?>) ref.evaluate(self, parms);
+            return r == null ? null : r.get();
         }
     }
 

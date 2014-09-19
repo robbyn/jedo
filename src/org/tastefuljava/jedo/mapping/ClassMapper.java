@@ -1,7 +1,7 @@
 package org.tastefuljava.jedo.mapping;
 
 import org.tastefuljava.jedo.util.XMLWriter;
-import org.tastefuljava.jedo.util.ClassUtil;
+import org.tastefuljava.jedo.util.Reflection;
 import org.tastefuljava.jedo.cache.ObjectId;
 import java.lang.reflect.Field;
 import java.sql.Connection;
@@ -291,8 +291,9 @@ public class ClassMapper {
             fields.add(newProperty(field, column));
         }
 
-        public void addReference(String field, String[] columns) {
-            ReferenceMapper ref = newReference(field, columns);
+        public void addReference(String field, String[] columns,
+                String fetchMode) {
+            ReferenceMapper ref = newReference(field, columns, fetchMode);
             fields.add(ref);
         }
 
@@ -305,7 +306,7 @@ public class ClassMapper {
 
         public ComponentMapper.Builder newComponent(String name) {
             return new ComponentMapper.Builder(
-                    ClassUtil.getInstanceField(clazz, name));
+                    Reflection.getInstanceField(clazz, name));
         }
 
         public void addComponent(ComponentMapper cm) {
@@ -353,7 +354,7 @@ public class ClassMapper {
         }
 
         private PropertyMapper newProperty(String name, String column) {
-            Field field = ClassUtil.getInstanceField(clazz, name);
+            Field field = Reflection.getInstanceField(clazz, name);
             if (field == null) {
                 throw new JedoException("Field " + name
                         + " not found in class " + clazz.getName());
@@ -361,30 +362,37 @@ public class ClassMapper {
             return new PropertyMapper(field, column);
         }
 
-        private ReferenceMapper newReference(String name, String[] columns) {
-            Field field = ClassUtil.getInstanceField(clazz, name);
+        private ReferenceMapper newReference(String name, String[] columns,
+                String fetchMode) {
+            Field field = Reflection.getInstanceField(clazz, name);
             if (field == null) {
                 throw new JedoException("Field " + name
                         + " not found in class " + clazz.getName());
             }
-            return new ReferenceMapper(field, columns);
+            return new ReferenceMapper(field, columns,
+                    fetchMode(fetchMode, FetchMode.EAGER));
         }
 
         private CollectionMapper newCollection(String name, String query,
                 String[] columns, String fetchMode) {
-            Field field = ClassUtil.getInstanceField(clazz, name);
+            Field field = Reflection.getInstanceField(clazz, name);
             if (field == null) {
                 throw new JedoException("Field " + name
                         + " not found in class " + clazz.getName());
             }
+            return new CollectionMapper(field, query, columns,
+                    fetchMode(fetchMode, FetchMode.LAZY));
+        }
+
+        private FetchMode fetchMode(String fetchMode, FetchMode def) {
             FetchMode fm = null;
             if (fetchMode !=  null) {
                 fm = FetchMode.fromString(fetchMode);
             }
             if (fm == null) {
-                fm = FetchMode.LAZY;
+                fm = def;
             }
-            return new CollectionMapper(field, query, columns, fm);
+            return fm;
         }
 
         private String[] getIdFieldNames() {
