@@ -135,11 +135,9 @@ public class MappingFileReader {
                     break;
                 case "collection": {
                         String name = attrs.getValue("name");
-                        String column = attrs.getValue("column");
                         String query = attrs.getValue("query");
                         String fetchMode = attrs.getValue("fetch-mode");
-                        classBuilder.addCollection(name, query,
-                                column.split("[,]"), fetchMode);
+                        classBuilder.addCollection(name, query, fetchMode);
                     }
                     break;
                 case "component":

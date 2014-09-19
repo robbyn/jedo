@@ -3,7 +3,6 @@ package org.tastefuljava.jedo.mapping;
 import java.lang.reflect.Field;
 import java.sql.Connection;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -11,7 +10,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.tastefuljava.jedo.JedoException;
 import org.tastefuljava.jedo.cache.Cache;
@@ -22,16 +20,15 @@ public class CollectionMapper extends FieldMapper {
     private static final Logger LOG
             = Logger.getLogger(CollectionMapper.class.getName());
 
-    private final String[] columns;
     private final String queryName;
     private final FetchMode fetchMode;
+    private ClassMapper contClass;
     private ClassMapper elmClass;
     private Statement query;
 
-    CollectionMapper(Field field, String queryName, String[] columns,
+    CollectionMapper(Field field, String queryName,
             FetchMode fetchMode) {
         super(field);
-        this.columns = columns;
         this.queryName = queryName;
         this.fetchMode = fetchMode;
     }
@@ -39,20 +36,13 @@ public class CollectionMapper extends FieldMapper {
     @Override
     public Object fromResultSet(Connection cnt, Cache<Object, Object> cache,
             ResultSet rs) {
-        try {
-            Object[] values = new Object[columns.length];
-            for (int i = 0; i < columns.length; ++i) {
-                values[i] = rs.getObject(columns[i]);
-            }
-            return createCollection(cnt, cache, values);
-        } catch (SQLException ex) {
-            LOG.log(Level.SEVERE, null, ex);
-            throw new JedoException(ex.getMessage());
-        }
+        Object[] values = contClass.getIdValuesFromResultSet(rs);
+        return createCollection(cnt, cache, values);
     }
 
     @Override
-    void fixReferences(Map<Class<?>, ClassMapper> map) {
+    void fixReferences(ClassMapper contClass, Map<Class<?>, ClassMapper> map) {
+        this.contClass = contClass;
         Class<?> clazz = Reflection.getReferencedType(field);
         elmClass = map.get(clazz);
         if (elmClass == null) {
@@ -64,6 +54,12 @@ public class CollectionMapper extends FieldMapper {
             throw new JedoException("Query " + queryName
                     + " not found in class " + clazz.getName());
         }
+    }
+
+    @Override
+    void afterInsert(Connection cnt, Cache<Object, Object> cache, Object obj) {
+        Object[] values = contClass.getIdValues(obj);
+        this.setValue(obj, createCollection(cnt, cache, values));
     }
 
     void fetch(Connection cnt, Cache<Object, Object> cache, Object[] args,
@@ -112,19 +108,6 @@ public class CollectionMapper extends FieldMapper {
         out.startTag("collection");
         out.attribute("name", field.getName());
         out.attribute("query", queryName);
-        out.attribute("column", columnList());
         out.endTag();
-    }
-
-    private String columnList() {
-        StringBuilder buf = new StringBuilder();
-        if (columns.length > 0) {
-            buf.append(columns[0]);
-            for (int i = 1; i < columns.length; ++i) {
-                buf.append(',');
-                buf.append(columns[i]);
-            }
-        }
-        return buf.toString();
     }
 }

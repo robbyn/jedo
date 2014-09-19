@@ -51,8 +51,10 @@ public class Cache<K,T> {
         while (refQueue.poll() != null) {
             try {
                 @SuppressWarnings("unchecked")
-                Ref ref = (Ref)refQueue.remove(1);
-                map.remove(ref.key);
+                Ref ref = (Ref)refQueue.remove(10);
+                if (ref != null) {
+                    map.remove(ref.key);
+                }
             } catch (IllegalArgumentException | InterruptedException ex) {
                 LOG.log(Level.SEVERE, null, ex);
             }

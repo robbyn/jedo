@@ -58,7 +58,7 @@ public class ReferenceMapper extends FieldMapper {
     }
 
     @Override
-    void fixReferences(Map<Class<?>, ClassMapper> map) {
+    void fixReferences(ClassMapper contClass, Map<Class<?>, ClassMapper> map) {
         Class<?> type = field.getType();
         if (type == Ref.class) {
             type = Reflection.getReferencedType(field);

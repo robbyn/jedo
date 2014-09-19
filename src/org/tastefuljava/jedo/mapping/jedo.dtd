@@ -27,7 +27,6 @@
 <!ELEMENT collection EMPTY>
 <!ATTLIST collection
     name CDATA #REQUIRED
-    column CDATA #REQUIRED
     query CDATA #REQUIRED
     fetch-mode (eager|lazy) #IMPLIED
 >

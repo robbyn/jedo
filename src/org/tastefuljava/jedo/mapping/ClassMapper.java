@@ -52,12 +52,16 @@ public class ClassMapper {
         if (idProps == null || idProps.length == 0) {
             return null;
         } else {
-            Object[] values = new Object[idProps.length];
-            for (int i = 0; i < idProps.length; ++i) {
-                values[i] = idProps[i].getValue(obj);
-            }
-            return new ObjectId(clazz, values);
+            return new ObjectId(clazz, getIdValues(obj));
         }
+    }
+
+    Object[] getIdValues(Object obj) {
+        Object[] values = new Object[idProps.length];
+        for (int i = 0; i < idProps.length; ++i) {
+            values[i] = idProps[i].getValue(obj);
+        }
+        return values;
     }
 
     public ObjectId newId(Object[] values) {
@@ -71,15 +75,19 @@ public class ClassMapper {
         return new ObjectId(clazz, values);
     }
 
+    Object[] getIdValuesFromResultSet(ResultSet rs) {
+        Object[] values = new Object[idProps.length];
+        for (int i = 0; i < idProps.length; ++i) {
+            values[i] = idProps[i].fromResultSet(rs);
+        }
+        return values;
+    }
+
     public ObjectId getIdFromResultSet(ResultSet rs) {
         if (idProps == null || idProps.length == 0) {
             return null;
         } else {
-            Object[] values = new Object[idProps.length];
-            for (int i = 0; i < idProps.length; ++i) {
-                values[i] = idProps[i].fromResultSet(rs);
-            }
-            return new ObjectId(clazz, values);
+            return new ObjectId(clazz, getIdValuesFromResultSet(rs));
         }
     }
 
@@ -185,6 +193,9 @@ public class ClassMapper {
             @SuppressWarnings("unchecked")
             Cache<Object,Object> cache = (Cache<Object,Object>)ucache;
             cache.put(getId(obj), obj);
+            for (FieldMapper prop: fields) {
+                prop.afterInsert(cnt, cache, obj);
+            }
         } catch (SQLException ex) {
             LOG.log(Level.SEVERE, null, ex);
             throw new JedoException(ex.getMessage());
@@ -222,7 +233,7 @@ public class ClassMapper {
 
     void fixReferences(Map<Class<?>, ClassMapper> map) {
         for (FieldMapper fm: fields) {
-            fm.fixReferences(map);
+            fm.fixReferences(this, map);
         }
     }
 
@@ -298,9 +309,8 @@ public class ClassMapper {
         }
 
         public void addCollection(String field, String query,
-                String[] columns, String fetchMode) {
-            CollectionMapper ref
-                    = newCollection(field, query, columns, fetchMode);
+                String fetchMode) {
+            CollectionMapper ref = newCollection(field, query, fetchMode);
             fields.add(ref);
         }
 
@@ -374,13 +384,13 @@ public class ClassMapper {
         }
 
         private CollectionMapper newCollection(String name, String query,
-                String[] columns, String fetchMode) {
+                String fetchMode) {
             Field field = Reflection.getInstanceField(clazz, name);
             if (field == null) {
                 throw new JedoException("Field " + name
                         + " not found in class " + clazz.getName());
             }
-            return new CollectionMapper(field, query, columns,
+            return new CollectionMapper(field, query,
                     fetchMode(fetchMode, FetchMode.LAZY));
         }
 

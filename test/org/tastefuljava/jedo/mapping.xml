@@ -7,10 +7,8 @@
         </id>
         <reference name="parent" column="PARENT_ID" fetch-mode="lazy"/>
         <property name="name" column="NAME"/>
-        <collection name="subfolders" column="ID" query="subfolders"
-                fetch-mode="lazy"/>
-        <collection name="pictures" column="ID" query="inFolder"
-                fetch-mode="eager"/>
+        <collection name="subfolders" query="subfolders" fetch-mode="lazy"/>
+        <collection name="pictures" query="inFolder" fetch-mode="eager"/>
 
         <load>
             SELECT * FROM folders

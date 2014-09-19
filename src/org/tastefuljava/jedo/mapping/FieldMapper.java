@@ -48,6 +48,9 @@ public abstract class FieldMapper {
             Cache<Object,Object> cache, ResultSet rs);
     public abstract void writeTo(XMLWriter out);
 
-    void fixReferences(Map<Class<?>, ClassMapper> map) {
+    void fixReferences(ClassMapper contClass, Map<Class<?>, ClassMapper> map) {
+    }
+
+    void afterInsert(Connection cnt, Cache<Object, Object> cache, Object obj) {
     }
 }
