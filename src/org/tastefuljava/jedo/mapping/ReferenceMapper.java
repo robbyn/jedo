@@ -9,7 +9,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.tastefuljava.jedo.JedoException;
 import org.tastefuljava.jedo.Ref;
-import org.tastefuljava.jedo.SimpleRef;
+import org.tastefuljava.jedo.Ref;
 import org.tastefuljava.jedo.cache.Cache;
 import org.tastefuljava.jedo.util.Reflection;
 import org.tastefuljava.jedo.util.XMLWriter;
@@ -47,7 +47,7 @@ public class ReferenceMapper extends FieldMapper {
             } else if (allNull || fetchMode == FetchMode.EAGER) {
                 Object result = allNull
                         ? null : targetClass.load(cnt, cache, values);
-                return new SimpleRef<>(result);
+                return new Ref<>(result);
             } else {
                 return new LazyRef<>(cnt, cache, targetClass, values);
             }

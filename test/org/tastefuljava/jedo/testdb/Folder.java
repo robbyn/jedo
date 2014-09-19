@@ -2,11 +2,10 @@ package org.tastefuljava.jedo.testdb;
 
 import java.util.List;
 import org.tastefuljava.jedo.Ref;
-import org.tastefuljava.jedo.SimpleRef;
 
 public class Folder {
     private int id;
-    private Ref<Folder> parent = new SimpleRef<>();
+    private Ref<Folder> parent = new Ref<>();
     private String name;
     private String title;
     private String description;
