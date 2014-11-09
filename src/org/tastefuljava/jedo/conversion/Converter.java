@@ -1,5 +1,7 @@
 package org.tastefuljava.jedo.conversion;
 
+import java.sql.Clob;
+import java.sql.SQLException;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -7,9 +9,13 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.tastefuljava.jedo.JedoException;
 
 public abstract class Converter<S,T> {
+    private static final Logger LOG
+            = Logger.getLogger(Converter.class.getName());
     public static final Converter IDENTITY;
 
     private static Map<Class<?>,Map<Class<?>,Converter>> CONVERTERS
@@ -211,6 +217,25 @@ public abstract class Converter<S,T> {
             @Override
             public Double convert(Float value) {
                 return value == null ? null : value.doubleValue();
+            }
+        });
+        register(Clob.class, String.class, new Converter<Clob,String>() {
+            @Override
+            public String convert(Clob value) {
+                try {
+                    if (value == null) {
+                        return null;
+                    }
+                    long length = value.length();
+                    if (length > Integer.MAX_VALUE) {
+                        throw new JedoException("Text too long to be converter"
+                                + " into a String");
+                    }
+                    return value.getSubString(0, (int)length);
+                } catch (SQLException ex) {
+                    LOG.log(Level.SEVERE, null, ex);
+                    throw new JedoException(ex.getMessage());
+                }
             }
         });
     }
