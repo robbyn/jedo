@@ -61,7 +61,7 @@ public abstract class Converter<S,T> {
         int pos = 0;
         Class<?> to = targetType;
         LinkedConverter cur = null;
-        while (from != to) {
+        while (!match(from, to)) {
             Map<Class<?>,Converter> map = CONVERTERS.get(to);
             if (map != null) {
                 for (Map.Entry<Class<?>,Converter> e: map.entrySet()) {
@@ -69,7 +69,7 @@ public abstract class Converter<S,T> {
                     Converter c = e.getValue();
                     boolean found = false;
                     for (LinkedConverter lc: list) {
-                        found = lc.from == f;
+                        found = match(f, lc.from);
                         if (found) {
                             break;
                         }
@@ -93,6 +93,11 @@ public abstract class Converter<S,T> {
                 : cur.link == null
                       ? cur.conv : cur;
         return result;
+    }
+
+    @SuppressWarnings("unchecked")
+    private static boolean match(Class<?> from, Class<?> to) {
+        return to.isAssignableFrom(from);
     }
 
     private static class LinkedConverter<S,T> extends Converter<S,T> {
@@ -227,11 +232,13 @@ public abstract class Converter<S,T> {
                         return null;
                     }
                     long length = value.length();
-                    if (length > Integer.MAX_VALUE) {
+                    if (length == 0) {
+                        return "";
+                    } else if (length > Integer.MAX_VALUE) {
                         throw new JedoException("Text too long to be converter"
                                 + " into a String");
                     }
-                    return value.getSubString(0, (int)length);
+                    return value.getSubString(1, (int)length);
                 } catch (SQLException ex) {
                     LOG.log(Level.SEVERE, null, ex);
                     throw new JedoException(ex.getMessage());
