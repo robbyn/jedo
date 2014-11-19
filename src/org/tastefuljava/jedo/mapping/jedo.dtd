@@ -3,7 +3,7 @@
 <!ATTLIST mapping package CDATA #IMPLIED>
 
 <!ELEMENT class (id?,(property|component|reference|collection)*,
-        load?,query*,insert?,update?,delete?)>
+        load?,query*,insert?,update?,delete?,statement*)>
 <!ATTLIST class name CDATA #REQUIRED>
 
 <!ELEMENT id (property+)>
@@ -45,3 +45,9 @@
 <!ELEMENT update (#PCDATA)>
 
 <!ELEMENT delete (#PCDATA)>
+
+<!ELEMENT statement (#PCDATA)>
+<!ATTLIST statement
+    name CDATA #REQUIRED
+    parameters CDATA #IMPLIED
+>

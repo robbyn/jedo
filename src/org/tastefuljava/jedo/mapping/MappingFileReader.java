@@ -145,17 +145,20 @@ public class MappingFileReader {
                             attrs.getValue("name"));
                     break;
                 case "query":
+                case "statement":
                     queryName = attrs.getValue("name");
                     String s = attrs.getValue("parameters");
                     String[] paramNames = s == null
                             ? EMPTY_STRING_ARRAY : s.split("[ ,]+");
-                    stmtBuilder = classBuilder.newStatement(paramNames);
+                    boolean keys = "true".equals(attrs.getValue(
+                                    "get-generated-keys"));
+                    stmtBuilder = classBuilder.newStatement(paramNames, keys);
                     break;
                 case "load":
                     stmtBuilder = classBuilder.newLoadStatement();
                     break;
                 case "insert":
-                    stmtBuilder = classBuilder.newInsertStatement(
+                    stmtBuilder = classBuilder.newStatement(
                             "true".equals(attrs.getValue(
                                     "get-generated-keys")));
                     break;
@@ -185,6 +188,12 @@ public class MappingFileReader {
                     break;
                 case "query":
                     classBuilder.addQuery(
+                            queryName, stmtBuilder.getStatement());
+                    queryName = null;
+                    stmtBuilder = null;
+                    break;
+                case "statement":
+                    classBuilder.addStatement(
                             queryName, stmtBuilder.getStatement());
                     queryName = null;
                     stmtBuilder = null;

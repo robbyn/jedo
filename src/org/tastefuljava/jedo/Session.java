@@ -68,8 +68,39 @@ public class Session implements Closeable {
                     "Class is not mapped " + clazz.getName());
         }
         @SuppressWarnings("unchecked")
-                List<T> result = (List<T>) cm.query(cnt, cache, name, parms);
+        List<T> result = (List<T>) cm.query(cnt, cache, name, parms);
         return result;
+    }
+
+    public void invoke(Class<?> clazz, String name, Object... parms) {
+        invokeA(clazz, name, parms);
+    }
+
+    public void invokeA(Class<?> clazz, String name, Object[] parms) {
+        ClassMapper cm = mapper.getClassMapper(clazz);
+        if (cm == null) {
+            throw new JedoException(
+                    "Class is not mapped " + clazz.getName());
+        }
+        cm.invoke(cnt, cache, name, parms);
+    }
+
+    public void apply(Object obj, String name, Object... parms) {
+        applyA(obj, name, parms);
+    }
+
+    public void applyA(Object obj, String name, Object[] parms) {
+        ClassMapper cm = mapper.getClassMapper(obj.getClass());
+        if (cm == null) {
+            throw new JedoException(
+                    "Class is not mapped " + obj.getClass().getName());
+        }
+        Object[] p = new Object[parms.length+1];
+        p[0] = obj;
+        for (int i = 0; i < parms.length; ++i) {
+            p[i+1] = parms[i];
+        }
+        cm.invoke(cnt, cache, name, p);
     }
 
     public void insert(Object obj) {

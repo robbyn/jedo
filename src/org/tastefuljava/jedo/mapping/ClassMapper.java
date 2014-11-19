@@ -25,6 +25,7 @@ public class ClassMapper {
     private final PropertyMapper[] idProps;
     private final FieldMapper[] fields;
     private final Map<String,Statement> queries;
+    private final Map<String,Statement> stmts;
     private final Statement load;
     private final Statement insert;
     private final Statement update;
@@ -37,6 +38,7 @@ public class ClassMapper {
         this.fields = builder.fields.toArray(
                 new FieldMapper[builder.fields.size()]);
         this.queries = builder.queries;
+        this.stmts = builder.stmts;
         this.load = builder.load;
         this.insert = builder.insert;
         this.update = builder.update;
@@ -181,6 +183,23 @@ public class ClassMapper {
         }        
     }
 
+    public void invoke(Connection cnt, Cache<?,?> ucache, String name,
+            Object[] parms) {
+        Statement stmt = stmts.get(name);
+        if (stmt == null) {
+            throw new JedoException(
+                    "No statement " + name + " for " + clazz.getName());
+        }
+        @SuppressWarnings(value = "unchecked")
+        final Cache<Object, Object> cache = (Cache<Object, Object>) ucache;
+        try (PreparedStatement pstmt = stmt.prepare(cnt, null, parms)) {
+            pstmt.executeUpdate();
+        } catch (SQLException ex) {
+            LOG.log(Level.SEVERE, null, ex);
+            throw new JedoException(ex.getMessage());
+        }        
+    }
+
     public void insert(Connection cnt, Cache<?,?> ucache, Object obj) {
         if (insert == null) {
             throw new JedoException(
@@ -276,6 +295,7 @@ public class ClassMapper {
         private List<PropertyMapper> idProps = new ArrayList<>();
         private List<FieldMapper> fields = new ArrayList<>();
         private final Map<String,Statement> queries = new HashMap<>();
+        private final Map<String,Statement> stmts = new HashMap<>();
         private Statement load;
         private Statement insert;
         private Statement update;
@@ -323,11 +343,16 @@ public class ClassMapper {
         }
 
         public Statement.Builder newStatement(String[] paramNames) {
-            return new Statement.Builder(clazz, paramNames);
+            return newStatement(paramNames, false);
         }
 
-        public Statement.Builder newInsertStatement(boolean generatedKeys) {
-            Statement.Builder stmt = new Statement.Builder(clazz, null);
+        public Statement.Builder newStatement(boolean generatedKeys) {
+            return newStatement(null, generatedKeys);
+        }
+
+        public Statement.Builder newStatement(String[] paramNames,
+                boolean generatedKeys) {
+            Statement.Builder stmt = new Statement.Builder(clazz, paramNames);
             if (generatedKeys) {
                 stmt.setGeneratedKeys(getIdColumns());
             }
@@ -335,11 +360,15 @@ public class ClassMapper {
         }
 
         public Statement.Builder newLoadStatement() {
-            return newStatement(getIdFieldNames());
+            return Builder.this.newStatement(getIdFieldNames());
         }
 
         public void addQuery(String name, Statement stmt) {
             queries.put(name, stmt);
+        }
+
+        public void addStatement(String name, Statement stmt) {
+            stmts.put(name, stmt);
         }
 
         public void setLoad(Statement stmt) {
