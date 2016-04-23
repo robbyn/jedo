@@ -7,8 +7,7 @@ import java.util.Map;
 import java.util.logging.Logger;
 
 public class Cache<K,T> {
-    private static final Logger LOG
-            = Logger.getLogger(Cache.class.getName());
+    private static final Logger LOG = Logger.getLogger(Cache.class.getName());
 
     private final Map<K,Ref> map = new HashMap<>();
     private ReferenceQueue<T> refQueue = new ReferenceQueue<>();
