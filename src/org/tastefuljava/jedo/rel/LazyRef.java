@@ -1,10 +1,11 @@
-package org.tastefuljava.jedo.mapping;
+package org.tastefuljava.jedo.rel;
 
 import java.sql.Connection;
 import org.tastefuljava.jedo.Ref;
 import org.tastefuljava.jedo.cache.Cache;
+import org.tastefuljava.jedo.mapping.ClassMapper;
 
-class LazyRef<T> extends Ref<T> {
+public class LazyRef<T> extends Ref<T> {
     private final Connection cnt;
     private final Cache<Object,Object> cache;
     private final ClassMapper cm;

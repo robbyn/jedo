@@ -1,5 +1,6 @@
 package org.tastefuljava.jedo.mapping;
 
+import org.tastefuljava.jedo.rel.LazyRef;
 import java.lang.reflect.Field;
 import java.sql.Connection;
 import java.sql.ResultSet;

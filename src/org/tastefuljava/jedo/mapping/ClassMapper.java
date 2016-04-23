@@ -1,5 +1,6 @@
 package org.tastefuljava.jedo.mapping;
 
+import org.tastefuljava.jedo.rel.ObjectId;
 import org.tastefuljava.jedo.util.XMLWriter;
 import org.tastefuljava.jedo.util.Reflection;
 import java.lang.reflect.Field;
