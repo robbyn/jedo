@@ -26,9 +26,11 @@ public class Cache<K,T> {
     public T getOrPut(K key, T obj) {
         cleanup();
         Ref ref = map.get(key);
-        T result = ref == null ? null : ref.get();
-        if (result != null) {
-            return result;
+        if (ref != null) {
+            T result = ref.get();
+            if (result != null) {
+                return result;
+            }
         }
         map.put(key, new Ref(key, obj));
         return obj;
