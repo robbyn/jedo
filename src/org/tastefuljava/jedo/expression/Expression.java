@@ -160,8 +160,8 @@ public abstract class Expression {
     }
 
     static class Deref extends Expression {
-        private Expression ref;
-        private Class<?> type;
+        private final Expression ref;
+        private final Class<?> type;
 
         public Deref(Expression ref, Class<?> type) {
             this.ref = ref;
