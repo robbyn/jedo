@@ -52,6 +52,7 @@ public class ComponentMapper extends FieldMapper {
         }
     }
 
+    @Override
     public void writeTo(XMLWriter out) {
         out.startTag("component");
         out.attribute("name", field.getName());

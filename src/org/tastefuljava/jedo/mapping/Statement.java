@@ -84,7 +84,8 @@ public class Statement {
         private final List<Parameter> params = new ArrayList<>();
         private final StringBuilder buf = new StringBuilder();
         private final StringBuilder expr = new StringBuilder();
-        int st = 1;
+
+        private int st = 1;
 
         public Builder(Class<?> clazz, String[] paramNames) {
             this.scope = paramNames == null
