@@ -4,14 +4,11 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Logger;
 import org.tastefuljava.jedo.JedoException;
 import org.tastefuljava.jedo.Ref;
 import org.tastefuljava.jedo.util.Reflection;
 
 public abstract class Scope {
-    private static final Logger LOG = Logger.getLogger(Scope.class.getName());
-
     protected Scope() {
     }
 
