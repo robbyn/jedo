@@ -10,8 +10,8 @@ import org.tastefuljava.jedo.cache.Cache;
 import org.tastefuljava.jedo.mapping.CollectionMapper;
 
 public class LazyList<T> extends LazyCollection<T> implements List<T> {
-    public LazyList(Connection cnt, Cache<Object, Object> cache,
-            CollectionMapper mapper, Object[] args) {
+    public LazyList(Connection cnt, Cache cache, CollectionMapper mapper,
+            Object[] args) {
         super(cnt, cache, mapper, args);
     }
 

@@ -8,7 +8,7 @@ import org.tastefuljava.jedo.cache.Cache;
 import org.tastefuljava.jedo.mapping.CollectionMapper;
 
 public class LazySet<T> extends LazyCollection<T> implements Set<T> {
-    public LazySet(Connection cnt, Cache<Object, Object> cache,
+    public LazySet(Connection cnt, Cache cache,
             CollectionMapper mapper, Object[] args) {
         super(cnt, cache, mapper, args);
     }

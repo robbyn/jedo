@@ -44,13 +44,13 @@ public abstract class FieldMapper {
         }
     }
 
-    public abstract Object fromResultSet(Connection cnt,
-            Cache<Object,Object> cache, ResultSet rs);
+    public abstract Object fromResultSet(Connection cnt, Cache cache,
+            ResultSet rs);
     public abstract void writeTo(XMLWriter out);
 
     void fixReferences(ClassMapper contClass, Map<Class<?>, ClassMapper> map) {
     }
 
-    void afterInsert(Connection cnt, Cache<Object, Object> cache, Object obj) {
+    void afterInsert(Connection cnt, Cache cache, Object obj) {
     }
 }

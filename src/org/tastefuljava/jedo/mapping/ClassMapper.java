@@ -93,10 +93,8 @@ public class ClassMapper {
         }
     }
 
-    public Object getInstance(Connection cnt, Cache<?,?> ucache, ResultSet rs) {
+    public Object getInstance(Connection cnt, Cache cache, ResultSet rs) {
         Object oid = getIdFromResultSet(rs);
-        @SuppressWarnings("unchecked")
-        Cache<Object,Object> cache = (Cache<Object,Object>) ucache;
         Object obj = cache.get(oid);
         if (obj != null) {
             return obj;
@@ -116,14 +114,12 @@ public class ClassMapper {
         return obj;
     }
 
-    public Object load(Connection cnt, Cache<?,?> ucache, Object[] parms) {
+    public Object load(Connection cnt, Cache cache, Object[] parms) {
         if (load == null) {
             throw new JedoException(
                     "No loader for class " + clazz.getName());
         }
         ObjectId oid = newId(parms);
-        @SuppressWarnings("unchecked")
-        Cache<Object,Object> cache = (Cache<Object,Object>)ucache;
         Object obj = cache.get(oid);
         if (obj == null) {
             obj = queryOne(load, cnt, cache, parms);
@@ -158,21 +154,19 @@ public class ClassMapper {
         return result;
     }
 
-    public List<Object> query(Connection cnt, Cache<?,?> ucache, String name,
+    public List<Object> query(Connection cnt, Cache cache, String name,
             Object[] parms) {
         Statement stmt = queries.get(name);
         if (stmt == null) {
             throw new JedoException("No query named " + name);
         }
         List<Object> result = new ArrayList<>();
-        query(cnt, ucache, stmt, parms, result);
+        query(cnt, cache, stmt, parms, result);
         return result;
     }
 
-    public void query(Connection cnt, Cache<?,?> ucache, Statement stmt,
+    public void query(Connection cnt, Cache cache, Statement stmt,
             Object[] parms, Collection<Object> result) {
-        @SuppressWarnings(value = "unchecked")
-        final Cache<Object, Object> cache = (Cache<Object, Object>) ucache;
         try (PreparedStatement pstmt = stmt.prepare(cnt, null, parms);
                 ResultSet rs = pstmt.executeQuery()) {
             while (rs.next()) {
@@ -184,15 +178,13 @@ public class ClassMapper {
         }        
     }
 
-    public void invoke(Connection cnt, Cache<?,?> ucache, String name,
+    public void invoke(Connection cnt, Cache cache, String name,
             Object[] parms) {
         Statement stmt = stmts.get(name);
         if (stmt == null) {
             throw new JedoException(
                     "No statement " + name + " for " + clazz.getName());
         }
-        @SuppressWarnings(value = "unchecked")
-        final Cache<Object, Object> cache = (Cache<Object, Object>) ucache;
         try (PreparedStatement pstmt = stmt.prepare(cnt, null, parms)) {
             pstmt.executeUpdate();
         } catch (SQLException ex) {
@@ -201,7 +193,7 @@ public class ClassMapper {
         }        
     }
 
-    public void insert(Connection cnt, Cache<?,?> ucache, Object obj) {
+    public void insert(Connection cnt, Cache cache, Object obj) {
         if (insert == null) {
             throw new JedoException(
                     "No inserter for " + clazz.getName());
@@ -209,8 +201,6 @@ public class ClassMapper {
         try (final PreparedStatement stmt = insert.prepare(cnt, obj, null)) {
             stmt.executeUpdate();
             insert.collectKeys(stmt, idProps, obj);
-            @SuppressWarnings("unchecked")
-            Cache<Object,Object> cache = (Cache<Object,Object>)ucache;
             cache.put(getId(obj), obj);
             for (FieldMapper prop: fields) {
                 prop.afterInsert(cnt, cache, obj);
@@ -234,15 +224,13 @@ public class ClassMapper {
         }
     }
 
-    public void delete(Connection cnt, Cache<?,?> ucache, Object obj) {
+    public void delete(Connection cnt, Cache cache, Object obj) {
         if (delete == null) {
             throw new JedoException(
                     "No deleter for " + clazz.getName());
         }
         try (PreparedStatement stmt = delete.prepare(cnt, obj, null)) {
             stmt.executeUpdate();
-            @SuppressWarnings("unchecked")
-            Cache<Object,Object> cache = (Cache<Object,Object>)ucache;
             cache.remove(getId(obj));
         } catch (SQLException ex) {
             LOG.log(Level.SEVERE, null, ex);

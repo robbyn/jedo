@@ -10,7 +10,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.tastefuljava.jedo.JedoException;
 import org.tastefuljava.jedo.Ref;
-import org.tastefuljava.jedo.Ref;
 import org.tastefuljava.jedo.cache.Cache;
 import org.tastefuljava.jedo.util.Reflection;
 import org.tastefuljava.jedo.util.XMLWriter;
@@ -30,7 +29,7 @@ public class ReferenceMapper extends FieldMapper {
     }
 
     @Override
-    public Object fromResultSet(Connection cnt, Cache<Object,Object> cache,
+    public Object fromResultSet(Connection cnt, Cache cache,
             ResultSet rs) {
         try {
             boolean allNull = true;

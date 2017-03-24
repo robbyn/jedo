@@ -9,11 +9,11 @@ import org.tastefuljava.jedo.mapping.CollectionMapper;
 
 public abstract class LazyCollection<T> implements Collection<T> {
     private final Connection cnt;
-    private final Cache<Object,Object> cache;
+    private final Cache cache;
     private final CollectionMapper mapper;
     private final Object[] args;
 
-    protected LazyCollection(Connection cnt, Cache<Object,Object> cache,
+    protected LazyCollection(Connection cnt, Cache cache,
             CollectionMapper mapper, Object[] args) {
         this.cnt = cnt;
         this.cache = cache;

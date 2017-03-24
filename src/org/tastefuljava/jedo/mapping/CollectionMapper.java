@@ -12,16 +12,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.Logger;
 import org.tastefuljava.jedo.JedoException;
 import org.tastefuljava.jedo.cache.Cache;
 import org.tastefuljava.jedo.util.Reflection;
 import org.tastefuljava.jedo.util.XMLWriter;
 
 public class CollectionMapper extends FieldMapper {
-    private static final Logger LOG
-            = Logger.getLogger(CollectionMapper.class.getName());
-
     private final String queryName;
     private final FetchMode fetchMode;
     private ClassMapper contClass;
@@ -36,13 +32,13 @@ public class CollectionMapper extends FieldMapper {
     }
 
     @Override
-    public Object fromResultSet(Connection cnt, Cache<Object, Object> cache,
+    public Object fromResultSet(Connection cnt, Cache cache,
             ResultSet rs) {
         Object[] values = contClass.getIdValuesFromResultSet(rs);
         return createCollection(cnt, cache, values);
     }
 
-    public void fetch(Connection cnt, Cache<Object, Object> cache, Object[] args,
+    public void fetch(Connection cnt, Cache cache, Object[] args,
             Collection<?> result) {
         @SuppressWarnings("unchecked")
         Collection<Object> col = (Collection<Object>)result;
@@ -66,13 +62,13 @@ public class CollectionMapper extends FieldMapper {
     }
 
     @Override
-    void afterInsert(Connection cnt, Cache<Object, Object> cache, Object obj) {
+    void afterInsert(Connection cnt, Cache cache, Object obj) {
         Object[] values = contClass.getIdValues(obj);
         this.setValue(obj, createCollection(cnt, cache, values));
     }
 
-    private Collection<?> createCollection(Connection cnt,
-            Cache<Object, Object> cache, Object[] args) {
+    private Collection<?> createCollection(Connection cnt, Cache cache,
+            Object[] args) {
         switch (fetchMode) {
             case EAGER: {
                     if (field.getType() == Set.class

@@ -6,28 +6,28 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
 
-public class Cache<K,T> {
+public class Cache {
     private static final Logger LOG = Logger.getLogger(Cache.class.getName());
 
-    private final Map<K,Ref> map = new HashMap<>();
-    private ReferenceQueue<T> refQueue = new ReferenceQueue<>();
+    private final Map<Object,Ref> map = new HashMap<>();
+    private ReferenceQueue<Object> refQueue = new ReferenceQueue<>();
 
-    public void put(K key, T obj) {
+    public void put(Object key, Object obj) {
         cleanup();
         map.put(key, new Ref(key, obj));
     }
 
-    public T get(K key) {
+    public Object get(Object key) {
         cleanup();
         Ref ref = map.get(key);
         return ref == null ? null : ref.get();
     }
 
-    public T getOrPut(K key, T obj) {
+    public Object getOrPut(Object key, Object obj) {
         cleanup();
         Ref ref = map.get(key);
         if (ref != null) {
-            T result = ref.get();
+            Object result = ref.get();
             if (result != null) {
                 return result;
             }
@@ -36,7 +36,7 @@ public class Cache<K,T> {
         return obj;
     }
 
-    public T remove(K key) {
+    public Object remove(Object key) {
         cleanup();
         Ref ref = map.remove(key);
         return ref == null ? null : ref.get();
@@ -58,10 +58,10 @@ public class Cache<K,T> {
         }
     }
 
-    private class Ref extends WeakReference<T> {
-        private final K key;
+    private class Ref extends WeakReference<Object> {
+        private final Object key;
 
-        public Ref(K key, T obj) {
+        public Ref(Object key, Object obj) {
             super(obj, refQueue);
             this.key = key;
         }
