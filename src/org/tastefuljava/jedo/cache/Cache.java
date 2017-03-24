@@ -5,25 +5,26 @@ import java.lang.ref.WeakReference;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
+import org.tastefuljava.jedo.rel.ObjectId;
 
 public class Cache {
     private static final Logger LOG = Logger.getLogger(Cache.class.getName());
 
-    private final Map<Object,Ref> map = new HashMap<>();
+    private final Map<ObjectId,Ref> map = new HashMap<>();
     private ReferenceQueue<Object> refQueue = new ReferenceQueue<>();
 
-    public void put(Object key, Object obj) {
+    public void put(ObjectId key, Object obj) {
         cleanup();
         map.put(key, new Ref(key, obj));
     }
 
-    public Object get(Object key) {
+    public Object get(ObjectId key) {
         cleanup();
         Ref ref = map.get(key);
         return ref == null ? null : ref.get();
     }
 
-    public Object getOrPut(Object key, Object obj) {
+    public Object getOrPut(ObjectId key, Object obj) {
         cleanup();
         Ref ref = map.get(key);
         if (ref != null) {
@@ -36,7 +37,7 @@ public class Cache {
         return obj;
     }
 
-    public Object remove(Object key) {
+    public Object remove(ObjectId key) {
         cleanup();
         Ref ref = map.remove(key);
         return ref == null ? null : ref.get();
@@ -59,9 +60,9 @@ public class Cache {
     }
 
     private class Ref extends WeakReference<Object> {
-        private final Object key;
+        private final ObjectId key;
 
-        public Ref(Object key, Object obj) {
+        public Ref(ObjectId key, Object obj) {
             super(obj, refQueue);
             this.key = key;
         }

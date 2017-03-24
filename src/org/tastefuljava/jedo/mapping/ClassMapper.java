@@ -50,7 +50,7 @@ public class ClassMapper {
         return clazz;
     }
 
-    public Object getId(Object obj) {
+    public ObjectId getId(Object obj) {
         if (idProps == null || idProps.length == 0) {
             return null;
         } else {
@@ -94,7 +94,7 @@ public class ClassMapper {
     }
 
     public Object getInstance(Connection cnt, Cache cache, ResultSet rs) {
-        Object oid = getIdFromResultSet(rs);
+        ObjectId oid = getIdFromResultSet(rs);
         Object obj = cache.get(oid);
         if (obj != null) {
             return obj;
