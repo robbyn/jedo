@@ -4,12 +4,9 @@ import java.lang.ref.ReferenceQueue;
 import java.lang.ref.WeakReference;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Logger;
 import org.tastefuljava.jedo.rel.ObjectId;
 
 public class Cache {
-    private static final Logger LOG = Logger.getLogger(Cache.class.getName());
-
     private final Map<ObjectId,Ref> map = new HashMap<>();
     private ReferenceQueue<Object> refQueue = new ReferenceQueue<>();
 
