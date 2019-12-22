@@ -37,7 +37,7 @@ public class CollectionTest extends JedoTestBase {
         assertTrue(folder.getSubfolders().size() == 1);
         Folder sub2 = getFolder("root/sub2");
         assertTrue(folder.getSubfolders().remove(sub2));
-        assertTrue(folder.getSubfolders().size() == 0);
+        assertTrue(folder.getSubfolders().isEmpty());
         assertSame("Folder not rooted", sub1, getFolder("sub1"));
         assertSame("Folder not rooted", sub2, getFolder("sub2"));
         assertTrue(sub1.getSubfolders().add(sub2));
