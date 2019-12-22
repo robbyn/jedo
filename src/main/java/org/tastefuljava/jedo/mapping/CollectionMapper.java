@@ -51,6 +51,14 @@ public class CollectionMapper extends FieldMapper {
         elmClass.query(cnt, cache, fetch, new Object[]{parent}, col);
     }
 
+    public ClassMapper getContainerClass() {
+        return contClass;
+    }
+
+    public ClassMapper getElementClass() {
+        return elmClass;
+    }
+
     public Statement getClear() {
         return clear;
     }

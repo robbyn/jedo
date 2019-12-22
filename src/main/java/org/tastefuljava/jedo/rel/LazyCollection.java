@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import org.tastefuljava.jedo.JedoException;
 import org.tastefuljava.jedo.cache.Cache;
+import org.tastefuljava.jedo.mapping.ClassMapper;
 import org.tastefuljava.jedo.mapping.CollectionMapper;
 import org.tastefuljava.jedo.mapping.Statement;
 
@@ -61,7 +62,8 @@ public abstract class LazyCollection<T> implements Collection<T> {
         }
         boolean result = get().add(e);
         if (result) {
-            stmt.executeUpdate(cnt, parent, new Object[] {parent, e});
+            ClassMapper cm = mapper.getElementClass();
+            cm.insert(cnt, cache, stmt, e, new Object[] {parent, e});
         }
         return result;
     }
@@ -74,7 +76,7 @@ public abstract class LazyCollection<T> implements Collection<T> {
         }
         boolean result = get().remove(o);
         if (result) {
-            stmt.executeUpdate(cnt, parent, new Object[] {parent, o});
+            stmt.executeUpdate(cnt, o, new Object[] {parent, o});
         }
         return result;
     }

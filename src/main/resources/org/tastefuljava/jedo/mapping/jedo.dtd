@@ -66,6 +66,7 @@
 <!ATTLIST add
     parent CDATA "parent"
     element CDATA "element"
+    get-generated-keys (true|false) #IMPLIED
 >
 <!ELEMENT remove (#PCDATA)>
 <!ATTLIST remove

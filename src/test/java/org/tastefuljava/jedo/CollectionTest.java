@@ -10,7 +10,6 @@ import org.tastefuljava.jedo.testdb.Folder;
 import org.tastefuljava.jedo.testdb.JedoTestBase;
 
 public class CollectionTest extends JedoTestBase {
-
     @Before
     public void setUp()
             throws IOException, ClassNotFoundException, SQLException {

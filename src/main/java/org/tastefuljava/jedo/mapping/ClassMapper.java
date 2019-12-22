@@ -196,13 +196,28 @@ public class ClassMapper {
             throw new JedoException(
                     "No inserter for " + clazz.getName());
         }
-        try (final PreparedStatement stmt = insert.prepare(cnt, obj, null)) {
+        insert(cnt, cache, insert, obj, null);
+    }
+
+    public void insert(Connection cnt, Cache cache, Statement ins, Object obj,
+            Object[] parms) {
+        try (PreparedStatement stmt = insert.prepare(cnt, obj, parms)) {
             stmt.executeUpdate();
-            insert.collectKeys(stmt, idProps, obj);
-            cache.put(getId(obj), obj);
+            collectKeys(ins, stmt, obj, cache);
             for (FieldMapper prop: fields) {
                 prop.afterInsert(cnt, cache, obj);
             }
+        } catch (SQLException ex) {
+            LOG.log(Level.SEVERE, null, ex);
+            throw new JedoException(ex.getMessage());
+        }
+    }
+
+    public void collectKeys(Statement statement, PreparedStatement stmt,
+            Object obj, Cache cache) {
+        try {
+            statement.collectKeys(stmt, idProps, obj);
+            cache.put(getId(obj), obj);
         } catch (SQLException ex) {
             LOG.log(Level.SEVERE, null, ex);
             throw new JedoException(ex.getMessage());
