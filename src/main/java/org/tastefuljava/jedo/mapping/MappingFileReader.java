@@ -63,6 +63,7 @@ public class MappingFileReader {
 
         private String packageName;
         private ClassMapper.Builder classBuilder;
+        private CollectionMapper.Builder collectionBuilder;
         private boolean inId;
         private ComponentMapper.Builder compBuilder;
         private Statement.Builder stmtBuilder;
@@ -137,7 +138,8 @@ public class MappingFileReader {
                         String name = attrs.getValue("name");
                         String query = attrs.getValue("query");
                         String fetchMode = attrs.getValue("fetch-mode");
-                        classBuilder.addCollection(name, query, fetchMode);
+                        collectionBuilder = classBuilder.newCollection(
+                                name, query, fetchMode);
                     }
                     break;
                 case "component":
@@ -145,7 +147,7 @@ public class MappingFileReader {
                             attrs.getValue("name"));
                     break;
                 case "query":
-                case "statement":
+                case "statement": {
                     queryName = attrs.getValue("name");
                     String s = attrs.getValue("parameters");
                     String[] paramNames = s == null
@@ -154,6 +156,7 @@ public class MappingFileReader {
                                     "get-generated-keys"));
                     stmtBuilder = classBuilder.newStatement(paramNames, keys);
                     break;
+                }
                 case "load":
                     stmtBuilder = classBuilder.newLoadStatement();
                     break;
@@ -166,6 +169,36 @@ public class MappingFileReader {
                 case "delete":
                     stmtBuilder = classBuilder.newStatement(null);
                     break;
+                case "fetch": {
+                    String[] paramNames = {
+                        attrs.getValue("parent")
+                    };
+                    stmtBuilder = classBuilder.newStatement(paramNames);
+                    break;
+                }
+                case "clear": {
+                    String[] paramNames = {
+                        attrs.getValue("parent")
+                    };
+                    stmtBuilder = classBuilder.newStatement(paramNames);
+                    break;
+                }
+                case "add": {
+                    String[] paramNames = {
+                        attrs.getValue("parent"),
+                        attrs.getValue("element")
+                    };
+                    stmtBuilder = classBuilder.newStatement(paramNames);
+                    break;
+                }
+                case "remove": {
+                    String[] paramNames = {
+                        attrs.getValue("parent"),
+                        attrs.getValue("element")
+                    };
+                    stmtBuilder = classBuilder.newStatement(paramNames);
+                    break;
+                }
             }
         }
 
@@ -185,6 +218,11 @@ public class MappingFileReader {
                 case "component":
                     classBuilder.addComponent(compBuilder.getMapper());
                     compBuilder = null;
+                    break;
+                case "collection":
+                    classBuilder.addCollection(
+                            new CollectionMapper(collectionBuilder));
+                    collectionBuilder = null;
                     break;
                 case "query":
                     classBuilder.addQuery(
@@ -212,6 +250,22 @@ public class MappingFileReader {
                     break;
                 case "delete":
                     classBuilder.setDelete(stmtBuilder.getStatement());
+                    stmtBuilder = null;
+                    break;
+                case "fetch":
+                    collectionBuilder.setFetch(stmtBuilder.getStatement());
+                    stmtBuilder = null;
+                    break;
+                case "clear":
+                    collectionBuilder.setClear(stmtBuilder.getStatement());
+                    stmtBuilder = null;
+                    break;
+                case "add":
+                    collectionBuilder.setAdd(stmtBuilder.getStatement());
+                    stmtBuilder = null;
+                    break;
+                case "remove":
+                    collectionBuilder.setRemove(stmtBuilder.getStatement());
                     stmtBuilder = null;
                     break;
             }

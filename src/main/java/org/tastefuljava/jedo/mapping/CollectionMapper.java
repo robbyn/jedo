@@ -22,19 +22,24 @@ public class CollectionMapper extends FieldMapper {
     private final FetchMode fetchMode;
     private ClassMapper contClass;
     private ClassMapper elmClass;
-    private Statement query;
+    private Statement fetch;
+    private final Statement clear;
+    private final Statement add;
+    private final Statement remove;
 
-    CollectionMapper(Field field, String queryName,
-            FetchMode fetchMode) {
-        super(field);
-        this.queryName = queryName;
-        this.fetchMode = fetchMode;
+    CollectionMapper(Builder builder) {
+        super(builder.field);
+        this.queryName = builder.queryName;
+        this.fetchMode = builder.fetchMode;
+        this.fetch = builder.fetch;
+        this.add = builder.add;
+        this.clear = builder.clear;
+        this.remove = builder.remove;
     }
 
     @Override
-    public Object fromResultSet(Connection cnt, Cache cache,
-            Object obj, ResultSet rs) {
-        Object[] values = contClass.getIdValuesFromResultSet(rs);
+    public Object fromResultSet(Connection cnt, Cache cache, Object obj,
+            ResultSet rs) {
         return createCollection(cnt, cache, obj);
     }
 
@@ -42,7 +47,7 @@ public class CollectionMapper extends FieldMapper {
             Collection<?> result) {
         @SuppressWarnings("unchecked")
         Collection<Object> col = (Collection<Object>)result;
-        elmClass.query(cnt, cache, query, new Object[]{parent}, col);
+        elmClass.query(cnt, cache, fetch, new Object[]{parent}, col);
     }
 
     @Override
@@ -54,10 +59,12 @@ public class CollectionMapper extends FieldMapper {
             throw new JedoException("Unresolved collection element class: "
                     + field.getType().getName());
         }
-        query = elmClass.getQuery(queryName);
-        if (query == null) {
-            throw new JedoException("Query " + queryName
-                    + " not found in class " + clazz.getName());
+        if (fetch == null && queryName != null) {
+            fetch = elmClass.getQuery(queryName);
+            if (fetch == null) {
+                throw new JedoException("Query " + queryName
+                        + " not found in class " + clazz.getName());
+            }
         }
     }
 
@@ -106,6 +113,51 @@ public class CollectionMapper extends FieldMapper {
         out.startTag("collection");
         out.attribute("name", field.getName());
         out.attribute("query", queryName);
+        if (fetch != null) {
+            fetch.writeTo(out, "fetch", null);
+        }
+        if (clear != null) {
+            clear.writeTo(out, "clear", null);
+        }
+        if (add != null) {
+            add.writeTo(out, "add", null);
+        }
+        if (remove != null) {
+            remove.writeTo(out, "remove", null);
+        }
         out.endTag();
+    }
+
+    public static class Builder {
+        private final Field field;
+        private final String queryName;
+        private final FetchMode fetchMode;
+        private Statement fetch;
+        private Statement clear;
+        private Statement add;
+        private Statement remove;
+
+        public Builder(Field field, String queryName,
+            FetchMode fetchMode) {
+            this.field = field;
+            this.queryName = queryName;
+            this.fetchMode = fetchMode;
+        }
+
+        public void setFetch(Statement fetch) {
+            this.fetch = fetch;
+        }
+
+        public void setClear(Statement clear) {
+            this.clear = clear;
+        }
+
+        public void setAdd(Statement add) {
+            this.add = add;
+        }
+
+        public void setRemove(Statement remove) {
+            this.remove = remove;
+        }
     }
 }

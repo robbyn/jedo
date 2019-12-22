@@ -319,10 +319,19 @@ public class ClassMapper {
             fields.add(ref);
         }
 
-        public void addCollection(String field, String query,
+        public CollectionMapper.Builder newCollection(String name, String query,
                 String fetchMode) {
-            CollectionMapper ref = newCollection(field, query, fetchMode);
-            fields.add(ref);
+            Field field = Reflection.getInstanceField(clazz, name);
+            if (field == null) {
+                throw new JedoException("Field " + name
+                        + " not found in class " + clazz.getName());
+            }
+            return new CollectionMapper.Builder(field, query,
+                    fetchMode(fetchMode, FetchMode.LAZY));
+        }
+
+        public void addCollection(CollectionMapper ref) {
+             fields.add(ref);
         }
 
         public ComponentMapper.Builder newComponent(String name) {
@@ -401,17 +410,6 @@ public class ClassMapper {
             }
             return new ReferenceMapper(field, columns,
                     fetchMode(fetchMode, FetchMode.EAGER));
-        }
-
-        private CollectionMapper newCollection(String name, String query,
-                String fetchMode) {
-            Field field = Reflection.getInstanceField(clazz, name);
-            if (field == null) {
-                throw new JedoException("Field " + name
-                        + " not found in class " + clazz.getName());
-            }
-            return new CollectionMapper(field, query,
-                    fetchMode(fetchMode, FetchMode.LAZY));
         }
 
         private FetchMode fetchMode(String fetchMode, FetchMode def) {

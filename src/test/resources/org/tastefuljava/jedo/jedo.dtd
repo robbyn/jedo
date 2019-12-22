@@ -3,7 +3,7 @@
 <!ATTLIST mapping package CDATA #IMPLIED>
 
 <!ELEMENT class (id?,(property|component|reference|collection)*,
-        load?,query*,insert?,update?,delete?)>
+        load?,query*,insert?,update?,delete?,statement*)>
 <!ATTLIST class name CDATA #REQUIRED>
 
 <!ELEMENT id (property+)>
@@ -21,12 +21,14 @@
 <!ATTLIST reference
     name CDATA #REQUIRED
     column CDATA #REQUIRED
+    fetch-mode (eager|lazy) #IMPLIED
 >
 
-<!ELEMENT collection EMPTY>
+<!ELEMENT collection (fetch|clear|add|remove)*>
 <!ATTLIST collection
     name CDATA #REQUIRED
-    query CDATA #REQUIRED
+    query CDATA #IMPLIED
+    fetch-mode (eager|lazy) #IMPLIED
 >
 
 <!ELEMENT load (#PCDATA)>
@@ -43,3 +45,30 @@
 <!ELEMENT update (#PCDATA)>
 
 <!ELEMENT delete (#PCDATA)>
+
+<!ELEMENT statement (#PCDATA)>
+<!ATTLIST statement
+    name CDATA #REQUIRED
+    parameters CDATA #IMPLIED
+>
+
+<!-- Collection queries -->
+
+<!ELEMENT fetch (#PCDATA)>
+<!ATTLIST fetch
+    parent CDATA "parent"
+>
+<!ELEMENT clear (#PCDATA)>
+<!ATTLIST clear
+    parent CDATA "parent"
+>
+<!ELEMENT add (#PCDATA)>
+<!ATTLIST add
+    parent CDATA "parent"
+    element CDATA "element"
+>
+<!ELEMENT remove (#PCDATA)>
+<!ATTLIST remove
+    parent CDATA "parent"
+    element CDATA "element"
+>

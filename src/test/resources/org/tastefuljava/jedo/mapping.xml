@@ -7,8 +7,18 @@
         </id>
         <reference name="parent" column="PARENT_ID" fetch-mode="lazy"/>
         <property name="name" column="NAME"/>
-        <collection name="subfolders" query="subfolders" fetch-mode="lazy"/>
-        <collection name="pictures" query="inFolder" fetch-mode="eager"/>
+        <collection name="subfolders" fetch-mode="lazy">
+            <fetch>
+                SELECT * FROM folders
+                WHERE PARENT_ID=${parent.id}
+            </fetch>
+        </collection>
+        <collection name="pictures" fetch-mode="eager">
+            <fetch parent="folder">
+                SELECT * FROM pictures
+                WHERE FOLDER_ID=${folder.id}
+            </fetch>
+        </collection>
 
         <load>
             SELECT * FROM folders
@@ -23,10 +33,6 @@
             SELECT * FROM folders
             WHERE PARENT_ID=${parent.id}
                 AND NAME=${name}
-        </query>
-        <query name="subfolders" parameters="parent">
-            SELECT * FROM folders
-            WHERE PARENT_ID=${parent.id}
         </query>
     </class>
 
@@ -53,10 +59,6 @@
             SELECT * FROM pictures
             WHERE FOLDER_ID=${folder.id}
                 AND NAME=${name}
-        </query>
-        <query name="inFolder" parameters="folder">
-            SELECT * FROM pictures
-            WHERE FOLDER_ID=${folder.id}
         </query>
         <insert get-generated-keys="true">
             INSERT INTO pictures(FOLDER_ID,NAME,TIMESTAMP,WIDTH,HEIGHT,LATITUDE,
