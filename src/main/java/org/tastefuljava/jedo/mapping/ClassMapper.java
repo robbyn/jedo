@@ -108,11 +108,11 @@ public class ClassMapper {
             LOG.log(Level.SEVERE, null, ex);
         }
         for (PropertyMapper prop: idProps) {
-            prop.setValue(obj, prop.fromResultSet(cnt, cache, rs));
+            prop.setValue(obj, prop.fromResultSet(cnt, cache, obj, rs));
         }
         cache.put(oid, obj);
         for (FieldMapper prop: fields) {
-            prop.setValue(obj, prop.fromResultSet(cnt, cache, rs));
+            prop.setValue(obj, prop.fromResultSet(cnt, cache, obj, rs));
         }
         return obj;
     }

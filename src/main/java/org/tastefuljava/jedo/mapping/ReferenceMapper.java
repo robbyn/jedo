@@ -29,7 +29,7 @@ public class ReferenceMapper extends FieldMapper {
     }
 
     @Override
-    public Object fromResultSet(Connection cnt, Cache cache,
+    public Object fromResultSet(Connection cnt, Cache cache, Object obj,
             ResultSet rs) {
         try {
             boolean allNull = true;

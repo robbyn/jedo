@@ -33,16 +33,16 @@ public class CollectionMapper extends FieldMapper {
 
     @Override
     public Object fromResultSet(Connection cnt, Cache cache,
-            ResultSet rs) {
+            Object obj, ResultSet rs) {
         Object[] values = contClass.getIdValuesFromResultSet(rs);
-        return createCollection(cnt, cache, values);
+        return createCollection(cnt, cache, obj);
     }
 
-    public void fetch(Connection cnt, Cache cache, Object[] args,
+    public void fetch(Connection cnt, Cache cache, Object parent,
             Collection<?> result) {
         @SuppressWarnings("unchecked")
         Collection<Object> col = (Collection<Object>)result;
-        elmClass.query(cnt, cache, query, args, col);
+        elmClass.query(cnt, cache, query, new Object[]{parent}, col);
     }
 
     @Override
@@ -68,17 +68,17 @@ public class CollectionMapper extends FieldMapper {
     }
 
     private Collection<?> createCollection(Connection cnt, Cache cache,
-            Object[] args) {
+            Object parent) {
         switch (fetchMode) {
             case EAGER: {
                     if (field.getType() == Set.class
                             || field.getType() == Collection.class) {
                         Set<?> result = new HashSet<>();
-                        fetch(cnt, cache, args, result);
+                        fetch(cnt, cache, parent, result);
                         return Collections.unmodifiableSet(result);
                     } else if (field.getType() == List.class) {
                         List<?> result = new ArrayList<>();
-                        fetch(cnt, cache, args, result);
+                        fetch(cnt, cache, parent, result);
                         return Collections.unmodifiableList(result);
                     } else {
                         throw new JedoException(
@@ -89,9 +89,9 @@ public class CollectionMapper extends FieldMapper {
             case LAZY:
                 if (field.getType() == Set.class
                         || field.getType() == Collection.class) {
-                    return new LazySet<>(cnt, cache, this, args);
+                    return new LazySet<>(cnt, cache, this, parent);
                 } else if (field.getType() == List.class) {
-                    return new LazyList<>(cnt, cache, this, args);
+                    return new LazyList<>(cnt, cache, this, parent);
                 } else {
                     throw new JedoException("Unsupported collection field type "
                             + field.getType().getName());

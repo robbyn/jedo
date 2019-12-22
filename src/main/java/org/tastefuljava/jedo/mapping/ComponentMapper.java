@@ -26,7 +26,8 @@ public class ComponentMapper extends FieldMapper {
     }
 
     @Override
-    public Object fromResultSet(Connection cnt, Cache cache, ResultSet rs) {
+    public Object fromResultSet(Connection cnt, Cache cache, Object obj,
+            ResultSet rs) {
         try {
             boolean allNull = true;
             Object[] values = new Object[props.length];

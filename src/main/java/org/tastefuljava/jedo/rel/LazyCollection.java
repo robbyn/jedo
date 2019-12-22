@@ -11,14 +11,14 @@ public abstract class LazyCollection<T> implements Collection<T> {
     private final Connection cnt;
     private final Cache cache;
     private final CollectionMapper mapper;
-    private final Object[] args;
+    private final Object parent;
 
     protected LazyCollection(Connection cnt, Cache cache,
-            CollectionMapper mapper, Object[] args) {
+            CollectionMapper mapper, Object parent) {
         this.cnt = cnt;
         this.cache = cache;
         this.mapper = mapper;
-        this.args = args;
+        this.parent = parent;
     }
 
     @Override
@@ -88,7 +88,7 @@ public abstract class LazyCollection<T> implements Collection<T> {
 
     protected Collection<T> get() {
         Collection<T> col = newCollection();
-        mapper.fetch(cnt, cache, args, col);
+        mapper.fetch(cnt, cache, parent, col);
         return col;
     }
 

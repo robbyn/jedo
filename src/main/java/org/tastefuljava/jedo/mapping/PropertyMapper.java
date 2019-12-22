@@ -27,7 +27,8 @@ public class PropertyMapper extends FieldMapper {
     }
 
     @Override
-    public Object fromResultSet(Connection cnt, Cache cache, ResultSet rs) {
+    public Object fromResultSet(Connection cnt, Cache cache, Object obj, 
+            ResultSet rs) {
         try {
             return convert(rs.getObject(column));
         } catch (SQLException ex) {
@@ -38,7 +39,7 @@ public class PropertyMapper extends FieldMapper {
     }
 
     public Object fromResultSet(ResultSet rs) {
-        return fromResultSet(null, null, rs);
+        return fromResultSet(null, null, null, rs);
     }
 
     public Object fromResultSet(ResultSet rs, int ix) {
