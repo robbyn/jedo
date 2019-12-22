@@ -14,6 +14,7 @@ import java.util.Map;
 import java.util.Set;
 import org.tastefuljava.jedo.JedoException;
 import org.tastefuljava.jedo.cache.Cache;
+import org.tastefuljava.jedo.rel.LazyCollection;
 import org.tastefuljava.jedo.util.Reflection;
 import org.tastefuljava.jedo.util.XMLWriter;
 
@@ -50,6 +51,18 @@ public class CollectionMapper extends FieldMapper {
         elmClass.query(cnt, cache, fetch, new Object[]{parent}, col);
     }
 
+    public Statement getClear() {
+        return clear;
+    }
+
+    public Statement getAdd() {
+        return add;
+    }
+
+    public Statement getRemove() {
+        return remove;
+    }
+
     @Override
     void fixReferences(ClassMapper contClass, Map<Class<?>, ClassMapper> map) {
         this.contClass = contClass;
@@ -76,36 +89,26 @@ public class CollectionMapper extends FieldMapper {
 
     private Collection<?> createCollection(Connection cnt, Cache cache,
             Object parent) {
+        LazyCollection<?> col;
+        if (field.getType() == Set.class
+                || field.getType() == Collection.class) {
+            col = new LazySet<>(cnt, cache, this, parent);
+        } else if (field.getType() == List.class) {
+            col = new LazyList<>(cnt, cache, this, parent);
+        } else {
+            throw new JedoException("Unsupported collection field type "
+                    + field.getType().getName());
+        }
         switch (fetchMode) {
-            case EAGER: {
-                    if (field.getType() == Set.class
-                            || field.getType() == Collection.class) {
-                        Set<?> result = new HashSet<>();
-                        fetch(cnt, cache, parent, result);
-                        return Collections.unmodifiableSet(result);
-                    } else if (field.getType() == List.class) {
-                        List<?> result = new ArrayList<>();
-                        fetch(cnt, cache, parent, result);
-                        return Collections.unmodifiableList(result);
-                    } else {
-                        throw new JedoException(
-                                "Unsupported collection field type "
-                                 + field.getType().getName());
-                    }
-                }
+            case EAGER:
+                col.get();
+                break;
             case LAZY:
-                if (field.getType() == Set.class
-                        || field.getType() == Collection.class) {
-                    return new LazySet<>(cnt, cache, this, parent);
-                } else if (field.getType() == List.class) {
-                    return new LazyList<>(cnt, cache, this, parent);
-                } else {
-                    throw new JedoException("Unsupported collection field type "
-                            + field.getType().getName());
-                }
+                break;
             default:
                 throw new JedoException("Invalid fetch mode: " + fetchMode);
         }
+        return col;
     }
 
     @Override

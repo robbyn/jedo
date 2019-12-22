@@ -18,6 +18,19 @@
                 SELECT * FROM pictures
                 WHERE FOLDER_ID=${folder.id}
             </fetch>
+            <add parent="folder" element="picture">
+                UPDATE pictures
+                SET FOLDER_ID=${folder.id}
+                WHERE ID=${picture.id}
+            </add>
+            <remove parent="folder" element="picture">
+                DELETE FROM pictures
+                WHERE FOLDER_ID=${folder.id} AND ID=${picture.id}
+            </remove>
+            <clear parent="folder">
+                DELETE FROM pictures
+                WHERE FOLDER_ID=${folder.id}
+            </clear>
         </collection>
 
         <load>

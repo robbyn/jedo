@@ -188,12 +188,7 @@ public class ClassMapper {
             throw new JedoException(
                     "No statement " + name + " for " + clazz.getName());
         }
-        try (PreparedStatement pstmt = stmt.prepare(cnt, null, parms)) {
-            pstmt.executeUpdate();
-        } catch (SQLException ex) {
-            LOG.log(Level.SEVERE, null, ex);
-            throw new JedoException(ex.getMessage());
-        }        
+        stmt.executeUpdate(cnt, null, parms);
     }
 
     public void insert(Connection cnt, Cache cache, Object obj) {

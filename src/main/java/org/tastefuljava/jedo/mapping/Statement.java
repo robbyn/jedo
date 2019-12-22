@@ -68,6 +68,15 @@ public class Statement {
         }
     }
 
+    public void executeUpdate(Connection cnt, Object self, Object[] parms) {
+        try (PreparedStatement pstmt = prepare(cnt, self, parms)) {
+            pstmt.executeUpdate();
+        } catch (SQLException ex) {
+            LOG.log(Level.SEVERE, null, ex);
+            throw new JedoException(ex.getMessage());
+        }        
+    }
+
     public void writeTo(XMLWriter out, String type, String name) {
         out.startTag(type);
         out.attribute("name", name);
