@@ -61,6 +61,9 @@
             WHERE PARENT_ID=${parent.id}
                 AND NAME=${name}
         </query>
+        <insert get-generated-keys="true">
+            INSERT INTO folders(PARENT_ID,NAME) VALUES(${parent.id},${name})
+        </insert>
     </class>
 
     <class name="Picture">

@@ -67,9 +67,7 @@ public class CollectionMapper extends FieldMapper {
         Collection<Object> newCol = createCollection(cnt, cache, obj);
         this.setValue(obj, newCol);
         if (prevCol != null) {
-            for (Object elm: prevCol) {
-                newCol.add(elm);
-            }
+            newCol.addAll(prevCol);
         }
     }
 

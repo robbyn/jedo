@@ -1,16 +1,17 @@
 package org.tastefuljava.jedo.testdb;
 
+import java.util.ArrayList;
 import java.util.List;
 import org.tastefuljava.jedo.Ref;
 
 public class Folder {
     private int id;
-    private Ref<Folder> parent = new Ref<>();
+    private final Ref<Folder> parent = new Ref<>();
     private String name;
     private String title;
     private String description;
-    private List<Folder> subfolders;
-    private List<Picture> pictures;
+    private final List<Folder> subfolders = new ArrayList<>();
+    private final List<Picture> pictures = new ArrayList<>();
 
     public int getId() {
         return id;
