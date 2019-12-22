@@ -118,11 +118,11 @@ public class MappingFileReader {
                         String name = attrs.getValue("name");
                         String column = attrs.getValue("column");
                         if (inId) {
-                            classBuilder.addIdProp(name, column);
+                            classBuilder.addIdField(name, column);
                         } else if (compBuilder != null) {
                             compBuilder.addProp(name, column);
                         } else {
-                            classBuilder.addProp(name, column);
+                            classBuilder.addField(name, column);
                         }
                     }
                     break;

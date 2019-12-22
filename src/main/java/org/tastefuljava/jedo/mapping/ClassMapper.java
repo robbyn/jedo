@@ -24,7 +24,7 @@ public class ClassMapper {
             = Logger.getLogger(ClassMapper.class.getName());
 
     private final Class<?> clazz;
-    private final SimpleFieldMapper[] idProps;
+    private final SimpleFieldMapper[] idFields;
     private final FieldMapper[] fields;
     private final Map<String,Statement> queries;
     private final Map<String,Statement> stmts;
@@ -35,7 +35,7 @@ public class ClassMapper {
 
     private ClassMapper(Builder builder) {
         this.clazz = builder.clazz;
-        this.idProps = builder.buildIdProps();
+        this.idFields = builder.buildIdFields();
         this.fields = builder.buildFields();
         this.queries = builder.buildQueries();
         this.stmts = builder.buildStatements();
@@ -50,7 +50,7 @@ public class ClassMapper {
     }
 
     public ObjectId getId(Object obj) {
-        if (idProps == null || idProps.length == 0) {
+        if (idFields == null || idFields.length == 0) {
             return null;
         } else {
             return new ObjectId(clazz, getIdValues(obj));
@@ -58,34 +58,23 @@ public class ClassMapper {
     }
 
     Object[] getIdValues(Object obj) {
-        Object[] values = new Object[idProps.length];
-        for (int i = 0; i < idProps.length; ++i) {
-            values[i] = idProps[i].getValue(obj);
+        Object[] values = new Object[idFields.length];
+        for (int i = 0; i < idFields.length; ++i) {
+            values[i] = idFields[i].getValue(obj);
         }
         return values;
     }
 
-    public ObjectId newId(Object[] values) {
-        if (values.length != idProps.length) {
-            throw new JedoException("Wrong number of columns: expected "
-                    + idProps.length + " found " + values.length);
-        }
-        for (int i = 0; i < idProps.length; ++i) {
-            values[i] = idProps[i].convert(values[i]);
-        }
-        return new ObjectId(clazz, values);
-    }
-
     Object[] getIdValuesFromResultSet(ResultSet rs) {
-        Object[] values = new Object[idProps.length];
-        for (int i = 0; i < idProps.length; ++i) {
-            values[i] = idProps[i].fromResultSet(rs);
+        Object[] values = new Object[idFields.length];
+        for (int i = 0; i < idFields.length; ++i) {
+            values[i] = idFields[i].fromResultSet(rs);
         }
         return values;
     }
 
     public ObjectId getIdFromResultSet(ResultSet rs) {
-        if (idProps == null || idProps.length == 0) {
+        if (idFields == null || idFields.length == 0) {
             return null;
         } else {
             return new ObjectId(clazz, getIdValuesFromResultSet(rs));
@@ -94,9 +83,12 @@ public class ClassMapper {
 
     public Object getInstance(Connection cnt, Cache cache, ResultSet rs) {
         ObjectId oid = getIdFromResultSet(rs);
-        Object obj = cache.get(oid);
-        if (obj != null) {
-            return obj;
+        Object obj;
+        if (oid != null) {
+            obj = cache.get(oid);
+            if (obj != null) {
+                return obj;
+            }
         }
         try {
             obj = clazz.getConstructor().newInstance();
@@ -104,13 +96,16 @@ public class ClassMapper {
                 | NoSuchMethodException | SecurityException
                 | InvocationTargetException ex) {
             LOG.log(Level.SEVERE, null, ex);
+            throw new JedoException(ex.getMessage());
         }
-        for (SimpleFieldMapper prop: idProps) {
-            prop.setValue(obj, prop.fromResultSet(cnt, cache, obj, rs));
+        for (SimpleFieldMapper field: idFields) {
+            field.setValue(obj, field.fromResultSet(cnt, cache, obj, rs));
         }
-        cache.put(oid, obj);
-        for (FieldMapper prop: fields) {
-            prop.setValue(obj, prop.fromResultSet(cnt, cache, obj, rs));
+        if (oid != null) {
+            cache.put(oid, obj);
+        }
+        for (FieldMapper field: fields) {
+            field.setValue(obj, field.fromResultSet(cnt, cache, obj, rs));
         }
         return obj;
     }
@@ -214,7 +209,7 @@ public class ClassMapper {
     public void collectKeys(Statement statement, PreparedStatement stmt,
             Object obj, Cache cache) {
         try {
-            statement.collectKeys(stmt, idProps, obj);
+            statement.collectKeys(stmt, idFields, obj);
             cache.put(getId(obj), obj);
         } catch (SQLException ex) {
             LOG.log(Level.SEVERE, null, ex);
@@ -256,9 +251,9 @@ public class ClassMapper {
     public void writeTo(XMLWriter out) {
         out.startTag("class");
         out.attribute("name", clazz.getName());
-        if (idProps.length > 0) {
+        if (idFields.length > 0) {
             out.startTag("id");
-            for (SimpleFieldMapper pm: idProps) {
+            for (SimpleFieldMapper pm: idFields) {
                 pm.writeTo(out);
             }
             out.endTag();
@@ -290,10 +285,21 @@ public class ClassMapper {
         }
     }
 
+    private ObjectId newId(Object[] values) {
+        if (values.length != idFields.length) {
+            throw new JedoException("Wrong number of columns: expected "
+                    + idFields.length + " found " + values.length);
+        }
+        for (int i = 0; i < idFields.length; ++i) {
+            values[i] = idFields[i].convert(values[i]);
+        }
+        return new ObjectId(clazz, values);
+    }
+
     public static class Builder {
         private final Class<?> clazz;
-        private List<SimpleFieldMapper.Builder> idProps = new ArrayList<>();
-        private List<FieldMapper.Builder<? extends FieldMapper>> fields
+        private final List<SimpleFieldMapper.Builder> idField = new ArrayList<>();
+        private final List<FieldMapper.Builder<? extends FieldMapper>> fields
                 = new ArrayList<>();
         private final Map<String,Statement.Builder> queries = new HashMap<>();
         private final Map<String,Statement.Builder> stmts = new HashMap<>();
@@ -314,12 +320,12 @@ public class ClassMapper {
             return clazz;
         }
 
-        public void addIdProp(String field, String column) {
-            idProps.add(newProperty(field, column));
+        public void addIdField(String field, String column) {
+            idField.add(newSimpleField(field, column));
         }
 
-        public void addProp(String field, String column) {
-            fields.add(newProperty(field, column));
+        public void addField(String field, String column) {
+            fields.add(newSimpleField(field, column));
         }
 
         public void addReference(String field, String[] columns,
@@ -397,10 +403,10 @@ public class ClassMapper {
             delete = stmt;
         }
 
-        private SimpleFieldMapper[] buildIdProps() {
-            SimpleFieldMapper[] result = new SimpleFieldMapper[idProps.size()];
+        private SimpleFieldMapper[] buildIdFields() {
+            SimpleFieldMapper[] result = new SimpleFieldMapper[idField.size()];
             for (int i = 0; i < result.length; ++i) {
-                result[i] = idProps.get(i).build();
+                result[i] = idField.get(i).build();
             }
             return result;
         }
@@ -449,7 +455,8 @@ public class ClassMapper {
             return new ClassMapper(this);
         }
 
-        private SimpleFieldMapper.Builder newProperty(String name, String column) {
+        private SimpleFieldMapper.Builder newSimpleField(
+                String name, String column) {
             Field field = Reflection.getInstanceField(clazz, name);
             if (field == null) {
                 throw new JedoException("Field " + name
@@ -481,17 +488,17 @@ public class ClassMapper {
         }
 
         private String[] getIdFieldNames() {
-            String[] result = new String[idProps.size()];
-            for (int i = 0; i < idProps.size(); ++i) {
-                result[i] = idProps.get(i).getFieldName();
+            String[] result = new String[idField.size()];
+            for (int i = 0; i < idField.size(); ++i) {
+                result[i] = idField.get(i).getFieldName();
             }
             return result;
         }
 
         private String[] getIdColumns() {
-            String[] result = new String[idProps.size()];
-            for (int i = 0; i < idProps.size(); ++i) {
-                result[i] = idProps.get(i).getColumn();
+            String[] result = new String[idField.size()];
+            for (int i = 0; i < idField.size(); ++i) {
+                result[i] = idField.get(i).getColumn();
             }
             return result;
         }
