@@ -4,6 +4,7 @@ import org.tastefuljava.jedo.rel.ObjectId;
 import org.tastefuljava.jedo.util.XMLWriter;
 import org.tastefuljava.jedo.util.Reflection;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -100,8 +101,10 @@ public class ClassMapper {
             return obj;
         }
         try {
-            obj = clazz.newInstance();
-        } catch (InstantiationException | IllegalAccessException ex) {
+            obj = clazz.getConstructor().newInstance();
+        } catch (InstantiationException | IllegalAccessException
+                | NoSuchMethodException | SecurityException
+                | InvocationTargetException ex) {
             LOG.log(Level.SEVERE, null, ex);
         }
         for (PropertyMapper prop: idProps) {

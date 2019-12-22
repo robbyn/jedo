@@ -2,6 +2,7 @@ package org.tastefuljava.jedo.mapping;
 
 import org.tastefuljava.jedo.util.XMLWriter;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.util.ArrayList;
@@ -39,14 +40,15 @@ public class ComponentMapper extends FieldMapper {
             if (allNull) {
                 return null;
             } else {
-                Object comp = field.getType().newInstance();
+                Object comp = field.getType().getConstructor().newInstance();
                 for (int i = 0; i < props.length; ++i) {
                     props[i].setValue(comp, values[i]);
                 }
                 return comp;
             }
-        } catch (IllegalArgumentException | IllegalAccessException
-                | InstantiationException ex) {
+        } catch (IllegalAccessException | InstantiationException
+                | NoSuchMethodException | SecurityException
+                | InvocationTargetException ex) {
             LOG.log(Level.SEVERE, null, ex);
             throw new JedoException(ex.getMessage());
         }
