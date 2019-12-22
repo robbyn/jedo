@@ -24,9 +24,9 @@
             WHERE PARENT_ID=${parent.id}
                 AND NAME=${name}
         </query>
-        <query name="subfolders" parameters="parentId">
+        <query name="subfolders" parameters="parent">
             SELECT * FROM folders
-            WHERE PARENT_ID=${parentId}
+            WHERE PARENT_ID=${parent.id}
         </query>
     </class>
 
@@ -54,9 +54,9 @@
             WHERE FOLDER_ID=${folder.id}
                 AND NAME=${name}
         </query>
-        <query name="inFolder" parameters="folderId">
+        <query name="inFolder" parameters="folder">
             SELECT * FROM pictures
-            WHERE FOLDER_ID=${folderId}
+            WHERE FOLDER_ID=${folder.id}
         </query>
         <insert get-generated-keys="true">
             INSERT INTO pictures(FOLDER_ID,NAME,TIMESTAMP,WIDTH,HEIGHT,LATITUDE,
