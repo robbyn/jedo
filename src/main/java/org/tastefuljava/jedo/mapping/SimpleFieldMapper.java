@@ -11,13 +11,13 @@ import org.tastefuljava.jedo.JedoException;
 import org.tastefuljava.jedo.cache.Cache;
 import org.tastefuljava.jedo.conversion.Converter;
 
-public class PropertyMapper extends FieldMapper {
+public class SimpleFieldMapper extends FieldMapper {
     private static final Logger LOG
-            = Logger.getLogger(PropertyMapper.class.getName());
+            = Logger.getLogger(SimpleFieldMapper.class.getName());
 
     private final String column;
 
-    private PropertyMapper(Builder builder) {
+    private SimpleFieldMapper(Builder builder) {
         super(builder.field);
         this.column = builder.column;
     }
@@ -64,7 +64,7 @@ public class PropertyMapper extends FieldMapper {
         out.endTag();
     }
 
-    public static class Builder extends FieldMapper.Builder<PropertyMapper> {
+    public static class Builder extends FieldMapper.Builder<SimpleFieldMapper> {
         private final String column;
 
         public Builder(Field field, String column) {
@@ -77,8 +77,8 @@ public class PropertyMapper extends FieldMapper {
         }
 
         @Override
-        public PropertyMapper build() {
-            return new PropertyMapper(this);
+        public SimpleFieldMapper build() {
+            return new SimpleFieldMapper(this);
         }
     }
 }

@@ -12,7 +12,7 @@ import org.tastefuljava.jedo.util.XMLWriter;
 
 public abstract class FieldMapper {
     private static final Logger LOG
-            = Logger.getLogger(PropertyMapper.class.getName());
+            = Logger.getLogger(SimpleFieldMapper.class.getName());
 
     protected final Field field;
 

@@ -17,7 +17,7 @@ public class ComponentMapper extends FieldMapper {
     private static final Logger LOG
             = Logger.getLogger(ComponentMapper.class.getName());
 
-    private final PropertyMapper[] props;
+    private final SimpleFieldMapper[] props;
 
     private ComponentMapper(Builder builder) {
         super(builder.field);
@@ -58,14 +58,14 @@ public class ComponentMapper extends FieldMapper {
     public void writeTo(XMLWriter out) {
         out.startTag("component");
         out.attribute("name", field.getName());
-        for (PropertyMapper prop: props) {
+        for (SimpleFieldMapper prop: props) {
             prop.writeTo(out);
         }
         out.endTag();
     }
 
     public static class Builder extends FieldMapper.Builder<ComponentMapper> {
-        private final List<PropertyMapper.Builder> props = new ArrayList<>();
+        private final List<SimpleFieldMapper.Builder> props = new ArrayList<>();
 
         public Builder(Field field) {
             super(field);
@@ -79,18 +79,18 @@ public class ComponentMapper extends FieldMapper {
             return new ComponentMapper(this);
         }
 
-        private PropertyMapper.Builder newPropertyMapper(String name,
+        private SimpleFieldMapper.Builder newPropertyMapper(String name,
                 String column) {
             Field f = Reflection.getInstanceField(field.getType(), name);
             if (f == null) {
                 throw new JedoException("Field " + name
                         + " not in class " + field.getType().getName());
             }
-            return new PropertyMapper.Builder(f, column);
+            return new SimpleFieldMapper.Builder(f, column);
         }
 
-        private PropertyMapper[] buildProps() {
-            PropertyMapper[] result = new PropertyMapper[props.size()];
+        private SimpleFieldMapper[] buildProps() {
+            SimpleFieldMapper[] result = new SimpleFieldMapper[props.size()];
             for (int i = 0; i < result.length; ++i) {
                 result[i] = props.get(i).build();
             }

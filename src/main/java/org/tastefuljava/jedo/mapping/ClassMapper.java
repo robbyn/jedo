@@ -24,7 +24,7 @@ public class ClassMapper {
             = Logger.getLogger(ClassMapper.class.getName());
 
     private final Class<?> clazz;
-    private final PropertyMapper[] idProps;
+    private final SimpleFieldMapper[] idProps;
     private final FieldMapper[] fields;
     private final Map<String,Statement> queries;
     private final Map<String,Statement> stmts;
@@ -105,7 +105,7 @@ public class ClassMapper {
                 | InvocationTargetException ex) {
             LOG.log(Level.SEVERE, null, ex);
         }
-        for (PropertyMapper prop: idProps) {
+        for (SimpleFieldMapper prop: idProps) {
             prop.setValue(obj, prop.fromResultSet(cnt, cache, obj, rs));
         }
         cache.put(oid, obj);
@@ -258,7 +258,7 @@ public class ClassMapper {
         out.attribute("name", clazz.getName());
         if (idProps.length > 0) {
             out.startTag("id");
-            for (PropertyMapper pm: idProps) {
+            for (SimpleFieldMapper pm: idProps) {
                 pm.writeTo(out);
             }
             out.endTag();
@@ -292,7 +292,7 @@ public class ClassMapper {
 
     public static class Builder {
         private final Class<?> clazz;
-        private List<PropertyMapper.Builder> idProps = new ArrayList<>();
+        private List<SimpleFieldMapper.Builder> idProps = new ArrayList<>();
         private List<FieldMapper.Builder<? extends FieldMapper>> fields
                 = new ArrayList<>();
         private final Map<String,Statement.Builder> queries = new HashMap<>();
@@ -397,8 +397,8 @@ public class ClassMapper {
             delete = stmt;
         }
 
-        private PropertyMapper[] buildIdProps() {
-            PropertyMapper[] result = new PropertyMapper[idProps.size()];
+        private SimpleFieldMapper[] buildIdProps() {
+            SimpleFieldMapper[] result = new SimpleFieldMapper[idProps.size()];
             for (int i = 0; i < result.length; ++i) {
                 result[i] = idProps.get(i).build();
             }
@@ -449,13 +449,13 @@ public class ClassMapper {
             return new ClassMapper(this);
         }
 
-        private PropertyMapper.Builder newProperty(String name, String column) {
+        private SimpleFieldMapper.Builder newProperty(String name, String column) {
             Field field = Reflection.getInstanceField(clazz, name);
             if (field == null) {
                 throw new JedoException("Field " + name
                         + " not found in class " + clazz.getName());
             }
-            return new PropertyMapper.Builder(field, column);
+            return new SimpleFieldMapper.Builder(field, column);
         }
 
         private ReferenceMapper.Builder newReference(String name,
