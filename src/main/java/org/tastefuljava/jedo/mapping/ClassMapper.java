@@ -334,14 +334,14 @@ public class ClassMapper {
             fields.add(ref);
         }
 
-        public CollectionMapper.Builder newCollection(String name, String query,
+        public CollectionMapper.Builder newCollection(String name,
                 String fetchMode) {
             Field field = Reflection.getInstanceField(clazz, name);
             if (field == null) {
                 throw new JedoException("Field " + name
                         + " not found in class " + clazz.getName());
             }
-            return new CollectionMapper.Builder(field, query,
+            return new CollectionMapper.Builder(field,
                     fetchMode(fetchMode, FetchMode.LAZY));
         }
 
