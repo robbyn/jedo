@@ -12,6 +12,20 @@
                 SELECT * FROM folders
                 WHERE PARENT_ID=${parent.id}
             </fetch>
+            <add parent="parent" element="child">
+                UPDATE folders
+                SET PARENT_ID=${parent.id}
+                WHERE ID=${child.id}
+            </add>
+            <remove parent="parent" element="child">
+                UPDATE folders
+                SET PARENT_ID=NULL
+                WHERE PARENT_ID=${parent.id} AND ID=${child.id}
+            </remove>
+            <clear parent="parent">
+                DELETE FROM folders
+                WHERE FOLDER_ID=${parent.id}
+            </clear>
         </collection>
         <collection name="pictures" fetch-mode="eager">
             <fetch parent="folder">

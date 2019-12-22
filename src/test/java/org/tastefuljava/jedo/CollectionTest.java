@@ -32,5 +32,16 @@ public class CollectionTest extends JedoTestBase {
             assertSame("Wrong folder instance",
                     sub, getFolder("root/" + sub.getName()));
         }
+        Folder sub1 = getFolder("root/sub1");
+        assertTrue(folder.getSubfolders().remove(sub1));
+        assertTrue(folder.getSubfolders().size() == 1);
+        Folder sub2 = getFolder("root/sub2");
+        assertTrue(folder.getSubfolders().remove(sub2));
+        assertTrue(folder.getSubfolders().size() == 0);
+        assertSame("Folder not rooted", sub1, getFolder("sub1"));
+        assertSame("Folder not rooted", sub2, getFolder("sub2"));
+        assertTrue(sub1.getSubfolders().add(sub2));
+        assertSame("Folder not rooted", sub2, getFolder("sub1/sub2"));
+        session.commit();
     }
 }
