@@ -20,7 +20,7 @@ public abstract class FieldMapper {
         this.field = field;
     }
 
-    String getFieldName() {
+    public String getFieldName() {
         return field.getName();
     }
 
@@ -44,13 +44,27 @@ public abstract class FieldMapper {
         }
     }
 
+    public void fixForwards(Map<Class<?>, ClassMapper> map) {
+    }
+
     public abstract Object fromResultSet(Connection cnt, Cache cache,
             Object obj, ResultSet rs);
     public abstract void writeTo(XMLWriter out);
 
-    void fixReferences(ClassMapper contClass, Map<Class<?>, ClassMapper> map) {
+    void afterInsert(Connection cnt, Cache cache, Object obj) {
     }
 
-    void afterInsert(Connection cnt, Cache cache, Object obj) {
+    public static abstract class Builder<T extends FieldMapper> {
+        protected final Field field;
+
+        protected Builder(Field field) {
+            this.field = field;
+        }
+
+        public String getFieldName() {
+            return field.getName();
+        }
+
+        public abstract T build();
     }
 }

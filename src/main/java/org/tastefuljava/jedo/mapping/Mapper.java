@@ -41,10 +41,11 @@ public class Mapper {
         public Mapper getMapper() {
             Map<Class<?>,ClassMapper> map = new HashMap<>();
             for (ClassMapper.Builder cmb: classMappers.values()) {
-                map.put(cmb.getMappedClass(), cmb.getMapper());
+                ClassMapper mapper = cmb.build();
+                map.put(cmb.getMappedClass(), mapper);
             }
             for (ClassMapper cm: map.values()) {
-                cm.fixReferences(map);
+                cm.fixForwards(map);
             }
             return new Mapper(map);
         }

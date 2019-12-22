@@ -193,7 +193,7 @@ public class Statement {
             }
         }
 
-        public Statement getStatement() {
+        public Statement build() {
             if (buf.length() > 0 && st == 1) {
                 buf.setLength(buf.length()-1);
             }

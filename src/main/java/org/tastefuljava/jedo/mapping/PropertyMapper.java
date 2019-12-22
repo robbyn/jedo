@@ -17,9 +17,9 @@ public class PropertyMapper extends FieldMapper {
 
     private final String column;
 
-    public PropertyMapper(Field field, String column) {
-        super(field);
-        this.column = column;
+    private PropertyMapper(Builder builder) {
+        super(builder.field);
+        this.column = builder.column;
     }
 
     String getColumn() {
@@ -62,5 +62,23 @@ public class PropertyMapper extends FieldMapper {
         out.attribute("name", field.getName());
         out.attribute("column", column);
         out.endTag();
+    }
+
+    public static class Builder extends FieldMapper.Builder<PropertyMapper> {
+        private final String column;
+
+        public Builder(Field field, String column) {
+            super(field);
+            this.column = column;
+        }
+
+        public String getColumn() {
+            return column;
+        }
+
+        @Override
+        public PropertyMapper build() {
+            return new PropertyMapper(this);
+        }
     }
 }

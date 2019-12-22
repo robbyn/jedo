@@ -5,10 +5,7 @@ import org.tastefuljava.jedo.rel.LazySet;
 import java.lang.reflect.Field;
 import java.sql.Connection;
 import java.sql.ResultSet;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -21,21 +18,20 @@ import org.tastefuljava.jedo.util.XMLWriter;
 public class CollectionMapper extends FieldMapper {
     private final String queryName;
     private final FetchMode fetchMode;
-    private ClassMapper contClass;
     private ClassMapper elmClass;
     private Statement fetch;
     private final Statement clear;
     private final Statement add;
     private final Statement remove;
 
-    CollectionMapper(Builder builder) {
+    private CollectionMapper(Builder builder) {
         super(builder.field);
         this.queryName = builder.queryName;
         this.fetchMode = builder.fetchMode;
-        this.fetch = builder.fetch;
-        this.add = builder.add;
-        this.clear = builder.clear;
-        this.remove = builder.remove;
+        this.fetch = builder.buildFetch();
+        this.add = builder.buildAdd();
+        this.clear = builder.buildClear();
+        this.remove = builder.buildRemove();
     }
 
     @Override
@@ -49,10 +45,6 @@ public class CollectionMapper extends FieldMapper {
         @SuppressWarnings("unchecked")
         Collection<Object> col = (Collection<Object>)result;
         elmClass.query(cnt, cache, fetch, new Object[]{parent}, col);
-    }
-
-    public ClassMapper getContainerClass() {
-        return contClass;
     }
 
     public ClassMapper getElementClass() {
@@ -72,27 +64,8 @@ public class CollectionMapper extends FieldMapper {
     }
 
     @Override
-    void fixReferences(ClassMapper contClass, Map<Class<?>, ClassMapper> map) {
-        this.contClass = contClass;
-        Class<?> clazz = Reflection.getReferencedType(field);
-        elmClass = map.get(clazz);
-        if (elmClass == null) {
-            throw new JedoException("Unresolved collection element class: "
-                    + field.getType().getName());
-        }
-        if (fetch == null && queryName != null) {
-            fetch = elmClass.getQuery(queryName);
-            if (fetch == null) {
-                throw new JedoException("Query " + queryName
-                        + " not found in class " + clazz.getName());
-            }
-        }
-    }
-
-    @Override
     void afterInsert(Connection cnt, Cache cache, Object obj) {
-        Object[] values = contClass.getIdValues(obj);
-        this.setValue(obj, createCollection(cnt, cache, values));
+        this.setValue(obj, createCollection(cnt, cache, obj));
     }
 
     private Collection<?> createCollection(Connection cnt, Cache cache,
@@ -120,6 +93,16 @@ public class CollectionMapper extends FieldMapper {
     }
 
     @Override
+    public void fixForwards(Map<Class<?>, ClassMapper> map) {
+        Class<?> clazz = Reflection.getReferencedType(field);
+        elmClass = map.get(clazz);
+        if (elmClass == null) {
+            throw new JedoException("Unresolved collection element class: "
+                    + field.getType().getName());
+        }
+    }
+
+    @Override
     public void writeTo(XMLWriter out) {
         out.startTag("collection");
         out.attribute("name", field.getName());
@@ -139,36 +122,56 @@ public class CollectionMapper extends FieldMapper {
         out.endTag();
     }
 
-    public static class Builder {
-        private final Field field;
+    public static class Builder extends FieldMapper.Builder<CollectionMapper> {
         private final String queryName;
         private final FetchMode fetchMode;
-        private Statement fetch;
-        private Statement clear;
-        private Statement add;
-        private Statement remove;
+        private Statement.Builder fetch;
+        private Statement.Builder clear;
+        private Statement.Builder add;
+        private Statement.Builder remove;
 
         public Builder(Field field, String queryName,
             FetchMode fetchMode) {
-            this.field = field;
+            super(field);
             this.queryName = queryName;
             this.fetchMode = fetchMode;
         }
 
-        public void setFetch(Statement fetch) {
+        public void setFetch(Statement.Builder fetch) {
             this.fetch = fetch;
         }
 
-        public void setClear(Statement clear) {
+        public void setClear(Statement.Builder clear) {
             this.clear = clear;
         }
 
-        public void setAdd(Statement add) {
+        public void setAdd(Statement.Builder add) {
             this.add = add;
         }
 
-        public void setRemove(Statement remove) {
+        public void setRemove(Statement.Builder remove) {
             this.remove = remove;
         }
-    }
+
+        private Statement buildFetch() {
+            return fetch == null ? null : fetch.build();
+        }
+
+        private Statement buildAdd() {
+            return add == null ? null : add.build();
+        }
+
+        private Statement buildClear() {
+            return clear == null ? null : clear.build();
+        }
+
+        private Statement buildRemove() {
+            return remove == null ? null : remove.build();
+        }
+ 
+        @Override
+        public CollectionMapper build() {
+            return new CollectionMapper(this);
+        }
+   }
 }

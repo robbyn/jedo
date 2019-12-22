@@ -35,16 +35,14 @@ public class ClassMapper {
 
     private ClassMapper(Builder builder) {
         this.clazz = builder.clazz;
-        this.idProps = builder.idProps.toArray(
-                new PropertyMapper[builder.idProps.size()]);
-        this.fields = builder.fields.toArray(
-                new FieldMapper[builder.fields.size()]);
-        this.queries = builder.queries;
-        this.stmts = builder.stmts;
-        this.load = builder.load;
-        this.insert = builder.insert;
-        this.update = builder.update;
-        this.delete = builder.delete;
+        this.idProps = builder.buildIdProps();
+        this.fields = builder.buildFields();
+        this.queries = builder.buildQueries();
+        this.stmts = builder.buildStatements();
+        this.load = builder.buildLoad();
+        this.insert = builder.buildInsert();
+        this.update = builder.buildUpdate();
+        this.delete = builder.buildDelete();
     }
 
     Class<?> getMappedClass() {
@@ -199,11 +197,11 @@ public class ClassMapper {
         insert(cnt, cache, insert, obj, null);
     }
 
-    public void insert(Connection cnt, Cache cache, Statement ins, Object obj,
+    public void insert(Connection cnt, Cache cache, Statement stmt, Object obj,
             Object[] parms) {
-        try (PreparedStatement stmt = insert.prepare(cnt, obj, parms)) {
-            stmt.executeUpdate();
-            collectKeys(ins, stmt, obj, cache);
+        try (PreparedStatement pstmt = stmt.prepare(cnt, obj, parms)) {
+            pstmt.executeUpdate();
+            collectKeys(stmt, pstmt, obj, cache);
             for (FieldMapper prop: fields) {
                 prop.afterInsert(cnt, cache, obj);
             }
@@ -251,12 +249,6 @@ public class ClassMapper {
         }
     }
 
-    void fixReferences(Map<Class<?>, ClassMapper> map) {
-        for (FieldMapper fm: fields) {
-            fm.fixReferences(this, map);
-        }
-    }
-
     Statement getQuery(String queryName) {
         return queries.get(queryName);
     }
@@ -292,16 +284,23 @@ public class ClassMapper {
         out.endTag();
     }
 
+    void fixForwards(Map<Class<?>, ClassMapper> map) {
+        for (FieldMapper fm: fields) {
+            fm.fixForwards(map);
+        }
+    }
+
     public static class Builder {
         private final Class<?> clazz;
-        private List<PropertyMapper> idProps = new ArrayList<>();
-        private List<FieldMapper> fields = new ArrayList<>();
-        private final Map<String,Statement> queries = new HashMap<>();
-        private final Map<String,Statement> stmts = new HashMap<>();
-        private Statement load;
-        private Statement insert;
-        private Statement update;
-        private Statement delete;
+        private List<PropertyMapper.Builder> idProps = new ArrayList<>();
+        private List<FieldMapper.Builder<? extends FieldMapper>> fields
+                = new ArrayList<>();
+        private final Map<String,Statement.Builder> queries = new HashMap<>();
+        private final Map<String,Statement.Builder> stmts = new HashMap<>();
+        private Statement.Builder load;
+        private Statement.Builder insert;
+        private Statement.Builder update;
+        private Statement.Builder delete;
 
         public Builder(Class<?> clazz) {
             this.clazz = clazz;
@@ -325,7 +324,7 @@ public class ClassMapper {
 
         public void addReference(String field, String[] columns,
                 String fetchMode) {
-            ReferenceMapper ref = newReference(field, columns, fetchMode);
+            ReferenceMapper.Builder ref = newReference(field, columns, fetchMode);
             fields.add(ref);
         }
 
@@ -340,7 +339,7 @@ public class ClassMapper {
                     fetchMode(fetchMode, FetchMode.LAZY));
         }
 
-        public void addCollection(CollectionMapper ref) {
+        public void addCollection(CollectionMapper.Builder ref) {
              fields.add(ref);
         }
 
@@ -349,7 +348,7 @@ public class ClassMapper {
                     Reflection.getInstanceField(clazz, name));
         }
 
-        public void addComponent(ComponentMapper cm) {
+        public void addComponent(ComponentMapper.Builder cm) {
             fields.add(cm);
         }
 
@@ -374,51 +373,99 @@ public class ClassMapper {
             return Builder.this.newStatement(getIdFieldNames());
         }
 
-        public void addQuery(String name, Statement stmt) {
+        public void addQuery(String name, Statement.Builder stmt) {
             queries.put(name, stmt);
         }
 
-        public void addStatement(String name, Statement stmt) {
+        public void addStatement(String name, Statement.Builder stmt) {
             stmts.put(name, stmt);
         }
 
-        public void setLoad(Statement stmt) {
+        public void setLoad(Statement.Builder stmt) {
             load = stmt;
         }
 
-        public void setInsert(Statement stmt) {
+        public void setInsert(Statement.Builder stmt) {
             insert = stmt;
         }
 
-        public void setUpdate(Statement stmt) {
+        public void setUpdate(Statement.Builder stmt) {
             update = stmt;
         }
 
-        public void setDelete(Statement stmt) {
+        public void setDelete(Statement.Builder stmt) {
             delete = stmt;
         }
 
-        ClassMapper getMapper() {
+        private PropertyMapper[] buildIdProps() {
+            PropertyMapper[] result = new PropertyMapper[idProps.size()];
+            for (int i = 0; i < result.length; ++i) {
+                result[i] = idProps.get(i).build();
+            }
+            return result;
+        }
+
+        private FieldMapper[] buildFields() {
+            FieldMapper[] result = new FieldMapper[fields.size()];
+            for (int i = 0; i < result.length; ++i) {
+                result[i] = fields.get(i).build();
+            }
+            return result;
+        }
+
+        private Map<String,Statement> buildQueries() {
+            Map<String,Statement> result = new HashMap<>();
+            for (Map.Entry<String,Statement.Builder> e: queries.entrySet()) {
+                result.put(e.getKey(), e.getValue().build());
+            }
+            return result;
+        }
+
+        private Map<String,Statement> buildStatements() {
+            Map<String,Statement> result = new HashMap<>();
+            for (Map.Entry<String,Statement.Builder> e: stmts.entrySet()) {
+                result.put(e.getKey(), e.getValue().build());
+            }
+            return result;
+        }
+
+        public Statement buildLoad() {
+            return load == null ? null : load.build();
+        }
+
+        public Statement buildInsert() {
+            return insert == null ? null : insert.build();
+        }
+
+        public Statement buildUpdate() {
+            return update == null ? null : update.build();
+        }
+
+        public Statement buildDelete() {
+            return delete == null ? null : delete.build();
+        }
+
+        public ClassMapper build() {
             return new ClassMapper(this);
         }
 
-        private PropertyMapper newProperty(String name, String column) {
+        private PropertyMapper.Builder newProperty(String name, String column) {
             Field field = Reflection.getInstanceField(clazz, name);
             if (field == null) {
                 throw new JedoException("Field " + name
                         + " not found in class " + clazz.getName());
             }
-            return new PropertyMapper(field, column);
+            return new PropertyMapper.Builder(field, column);
         }
 
-        private ReferenceMapper newReference(String name, String[] columns,
-                String fetchMode) {
+        private ReferenceMapper.Builder newReference(String name,
+                String[] columns, String fetchMode) {
             Field field = Reflection.getInstanceField(clazz, name);
             if (field == null) {
                 throw new JedoException("Field " + name
                         + " not found in class " + clazz.getName());
             }
-            return new ReferenceMapper(field, columns,
+            return new ReferenceMapper.Builder(field, columns,
                     fetchMode(fetchMode, FetchMode.EAGER));
         }
 

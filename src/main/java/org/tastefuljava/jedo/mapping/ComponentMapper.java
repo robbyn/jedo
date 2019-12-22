@@ -21,8 +21,7 @@ public class ComponentMapper extends FieldMapper {
 
     private ComponentMapper(Builder builder) {
         super(builder.field);
-        this.props = builder.props.toArray(
-                new PropertyMapper[builder.props.size()]);
+        this.props = builder.buildProps();
     }
 
     @Override
@@ -65,12 +64,11 @@ public class ComponentMapper extends FieldMapper {
         out.endTag();
     }
 
-    public static class Builder {
-        private final Field field;
-        private final List<PropertyMapper> props = new ArrayList<>();
+    public static class Builder extends FieldMapper.Builder<ComponentMapper> {
+        private final List<PropertyMapper.Builder> props = new ArrayList<>();
 
         public Builder(Field field) {
-            this.field = field;
+            super(field);
         }
 
         public void addProp(String field, String column) {
@@ -81,13 +79,27 @@ public class ComponentMapper extends FieldMapper {
             return new ComponentMapper(this);
         }
 
-        private PropertyMapper newPropertyMapper(String name, String column) {
+        private PropertyMapper.Builder newPropertyMapper(String name,
+                String column) {
             Field f = Reflection.getInstanceField(field.getType(), name);
             if (f == null) {
                 throw new JedoException("Field " + name
                         + " not in class " + field.getType().getName());
             }
-            return new PropertyMapper(f, column);
+            return new PropertyMapper.Builder(f, column);
+        }
+
+        private PropertyMapper[] buildProps() {
+            PropertyMapper[] result = new PropertyMapper[props.size()];
+            for (int i = 0; i < result.length; ++i) {
+                result[i] = props.get(i).build();
+            }
+            return result;
+        }
+
+        @Override
+        public ComponentMapper build() {
+            return new ComponentMapper(this);
         }
     }
 }

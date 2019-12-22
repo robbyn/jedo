@@ -22,10 +22,10 @@ public class ReferenceMapper extends FieldMapper {
     private final String[] columns;
     private final FetchMode fetchMode;
 
-    public ReferenceMapper(Field field, String[] columns, FetchMode fetchMode) {
-        super(field);
-        this.columns = columns;
-        this.fetchMode = fetchMode;
+    private ReferenceMapper(Builder builder) {
+        super(builder.field);
+        this.columns = builder.columns;
+        this.fetchMode = builder.fetchMode;
     }
 
     @Override
@@ -58,7 +58,7 @@ public class ReferenceMapper extends FieldMapper {
     }
 
     @Override
-    void fixReferences(ClassMapper contClass, Map<Class<?>, ClassMapper> map) {
+    public void fixForwards(Map<Class<?>, ClassMapper> map) {
         Class<?> type = field.getType();
         if (type == Ref.class) {
             type = Reflection.getReferencedType(field);
@@ -88,5 +88,21 @@ public class ReferenceMapper extends FieldMapper {
             }
         }
         return buf.toString();
+    }
+
+    public static class Builder extends FieldMapper.Builder<ReferenceMapper> {
+        private final String[] columns;
+        private final FetchMode fetchMode;
+
+        public Builder(Field field, String[] columns, FetchMode fetchMode) {
+            super(field);
+            this.columns = columns;
+            this.fetchMode = fetchMode;
+        }
+
+        @Override
+        public ReferenceMapper build() {
+            return new ReferenceMapper(this);
+        }
     }
 }
