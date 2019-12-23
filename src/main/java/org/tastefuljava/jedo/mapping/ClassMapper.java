@@ -376,7 +376,7 @@ public class ClassMapper {
         }
 
         public Statement.Builder newLoadStatement() {
-            return Builder.this.newStatement(getIdFieldNames());
+            return load = newStatement(getIdFieldNames());
         }
 
         public void addQuery(String name, Statement.Builder stmt) {

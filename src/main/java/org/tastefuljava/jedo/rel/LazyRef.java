@@ -27,6 +27,7 @@ public class LazyRef<T> extends Ref<T> {
         }
         @SuppressWarnings("unchecked")
         T result = (T) cm.load(cnt, cache, values);
+        set(result);
         return result;
     }
 

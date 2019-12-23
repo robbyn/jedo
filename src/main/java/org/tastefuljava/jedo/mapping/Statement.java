@@ -110,86 +110,92 @@ public class Statement {
             int end = start+length;
             for (int i = start; i < end; ++i) {
                 char c = chars[i];
-                switch (st) {
-                    case 0:
-                        if (Character.isWhitespace(c)) {
-                            buf.append(' ');
-                            st = 1;
-                        } else if (c == '-') {
-                            st = 2;
-                        } else if (c == '$') {
-                            st = 4;
-                        } else if (c == '"') {
-                            buf.append(c);
-                            st = 6;
-                        } else if (c == '\'') {
-                            buf.append(c);
-                            st = 7;
-                        } else {
-                            buf.append(c);
-                        }
-                        break;
-                    case 1:
-                        if (Character.isWhitespace(c)) {
-                            // do nothing
-                        } else if (c == '-') {
-                            st = 2;
-                        } else if (c == '$') {
-                            st = 4;
-                        } else if (c == '"') {
-                            st = 6;
-                        } else if (c == '\'') {
-                            st = 7;
-                        } else {
-                            buf.append(c);
-                            st = 0;
-                        }
-                        break;
-                    case 2:
-                        if (c == '-') {
-                            st = 3;
-                        } else {
-                            buf.append(' ');
-                        }
-                        break;
-                    case 3:
-                        if (c == '\r' || c == '\n') {
-                            st = 1;
-                        }
-                        break;
-                    case 4:
-                        if (c == '{') {
-                            st = 5;
-                            expr.setLength(0);
-                        } else {
-                            buf.append('$');
-                            buf.append(c);
-                            st = 0;
-                        }
-                        break;
-                    case 5:
-                        if (c == '}') {
-                            buf.append('?');
-                            params.add(Parameter.parse(
-                                    scope, expr.toString()));
-                            st = 0;
-                        } else {
-                            expr.append(c);
-                        }
-                        break;
-                    case 6:
+                processChar(c);
+            }
+        }
+
+        private void processChar(char c) {
+            switch (st) {
+                case 0:
+                    if (Character.isWhitespace(c)) {
+                        buf.append(' ');
+                        st = 1;
+                    } else if (c == '-') {
+                        st = 2;
+                    } else if (c == '$') {
+                        st = 4;
+                    } else if (c == '"') {
                         buf.append(c);
-                        if (c == '"') {
-                            st = 0;
-                        }
-                        break;
-                    case 7:
+                        st = 6;
+                    } else if (c == '\'') {
                         buf.append(c);
-                        if (c == '\'') {
-                            st = 0;
-                        }
-                        break;
-                }
+                        st = 7;
+                    } else {
+                        buf.append(c);
+                    }
+                    break;
+                case 1:
+                    if (Character.isWhitespace(c)) {
+                        // do nothing
+                    } else if (c == '-') {
+                        st = 2;
+                    } else if (c == '$') {
+                        st = 4;
+                    } else if (c == '"') {
+                        st = 6;
+                    } else if (c == '\'') {
+                        st = 7;
+                    } else {
+                        buf.append(c);
+                        st = 0;
+                    }
+                    break;
+                case 2:
+                    if (c == '-') {
+                        st = 3;
+                    } else {
+                        buf.append('-');
+                        st = 0;
+                        processChar(c);
+                    }
+                    break;
+                case 3:
+                    if (c == '\r' || c == '\n') {
+                        st = 1;
+                    }
+                    break;
+                case 4:
+                    if (c == '{') {
+                        st = 5;
+                        expr.setLength(0);
+                    } else {
+                        buf.append('$');
+                        st = 0;
+                        processChar(c);
+                    }
+                    break;
+                case 5:
+                    if (c == '}') {
+                        buf.append('?');
+                        params.add(Parameter.parse(
+                                scope, expr.toString()));
+                        st = 0;
+                    } else {
+                        expr.append(c);
+                    }
+                    break;
+                case 6:
+                    buf.append(c);
+                    if (c == '"') {
+                        st = 0;
+                    }
+                    break;
+                case 7:
+                    buf.append(c);
+                    if (c == '\'') {
+                        st = 0;
+                    }
+                    break;
             }
         }
 
