@@ -6,35 +6,22 @@ import java.util.HashMap;
 import java.util.Map;
 import org.tastefuljava.jedo.rel.ObjectId;
 
-public class Cache {
-    private final Map<ObjectId,Ref> map = new HashMap<>();
+public class Cache<K,T> {
+    private final Map<K,Ref> map = new HashMap<>();
     private ReferenceQueue<Object> refQueue = new ReferenceQueue<>();
 
-    public void put(ObjectId key, Object obj) {
+    public void put(K key, T obj) {
         cleanup();
         map.put(key, new Ref(key, obj));
     }
 
-    public Object get(ObjectId key) {
+    public T get(K key) {
         cleanup();
         Ref ref = map.get(key);
         return ref == null ? null : ref.get();
     }
 
-    public Object getOrPut(ObjectId key, Object obj) {
-        cleanup();
-        Ref ref = map.get(key);
-        if (ref != null) {
-            Object result = ref.get();
-            if (result != null) {
-                return result;
-            }
-        }
-        map.put(key, new Ref(key, obj));
-        return obj;
-    }
-
-    public Object remove(ObjectId key) {
+    public T remove(K key) {
         cleanup();
         Ref ref = map.remove(key);
         return ref == null ? null : ref.get();
@@ -47,7 +34,6 @@ public class Cache {
 
     private void cleanup() {
         while (true) {
-            @SuppressWarnings("unchecked")
             Ref ref = (Ref) refQueue.poll();
             if (ref == null) {
                 break;
@@ -56,10 +42,10 @@ public class Cache {
         }
     }
 
-    private class Ref extends WeakReference<Object> {
-        private final ObjectId key;
+    private class Ref extends WeakReference<T> {
+        private final K key;
 
-        public Ref(ObjectId key, Object obj) {
+        public Ref(K key, T obj) {
             super(obj, refQueue);
             this.key = key;
         }

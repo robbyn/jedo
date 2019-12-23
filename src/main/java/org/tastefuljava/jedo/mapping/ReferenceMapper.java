@@ -29,8 +29,7 @@ public class ReferenceMapper extends FieldMapper {
     }
 
     @Override
-    public Object fromResultSet(Connection cnt, Cache cache, Object obj,
-            ResultSet rs) {
+    public Object fromResultSet(Storage pm, Object obj, ResultSet rs) {
         try {
             boolean allNull = true;
             Object[] values = new Object[columns.length];
@@ -43,13 +42,13 @@ public class ReferenceMapper extends FieldMapper {
             }
             if (field.getType() != Ref.class) {
                 return allNull
-                        ? null : targetClass.load(cnt, cache, values);
+                        ? null : pm.loadFromId(targetClass, values);
             } else if (allNull || fetchMode == FetchMode.EAGER) {
                 Object result = allNull
-                        ? null : targetClass.load(cnt, cache, values);
+                        ? null : pm.loadFromId(targetClass, values);
                 return new Ref<>(result);
             } else {
-                return new LazyRef<>(cnt, cache, targetClass, values);
+                return new LazyRef<>(pm, targetClass, values);
             }
         } catch (SQLException ex) {
             LOG.log(Level.SEVERE, null, ex);

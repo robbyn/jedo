@@ -1,34 +1,45 @@
 package org.tastefuljava.jedo;
 
-import java.io.Closeable;
 import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.tastefuljava.jedo.mapping.ClassMapper;
 import org.tastefuljava.jedo.mapping.Mapper;
-import org.tastefuljava.jedo.cache.Cache;
+import org.tastefuljava.jedo.cache.CachedStorage;
+import org.tastefuljava.jedo.mapping.Storage;
 
-public class Session implements Closeable {
+public class Session implements AutoCloseable {
     private static final Logger LOG = Logger.getLogger(Session.class.getName());
 
-    private final Connection cnt;
+    private final CachedStorage context;
     private final Mapper mapper;
-    private final Cache cache = new Cache();
-    private boolean closeConnection = true;
+
+    public Session(Connection cnt, Mapper mapper) {
+        this.context = new CachedStorage(cnt);
+        this.mapper = mapper;
+    }
+
+    @Override
+    public void close() {
+        try {
+            context.close();
+        } catch (Exception ex) {
+            LOG.log(Level.SEVERE, null, ex);
+            throw new JedoException(ex.getMessage());
+        }
+    }
 
     public boolean getCloseConnection() {
-        return closeConnection;
+        return context.getCloseConnection();
     }
 
     public void setCloseConnection(boolean closeConnection) {
-        this.closeConnection = closeConnection;
+        context.setCloseConnection(closeConnection);
     }
 
-    public Session(Connection cnt, Mapper mapper) {
-        this.cnt = cnt;
-        this.mapper = mapper;
+    public void commit() {
+        context.commit();
     }
 
     public <T> T load(Class<T> clazz, Object... parms) {
@@ -41,7 +52,7 @@ public class Session implements Closeable {
             throw new JedoException(
                     "Class is not mapped " + clazz.getName());
         }
-        return clazz.cast(cm.load(cnt, cache, parms));
+        return clazz.cast(context.loadFromId(cm, parms));
     }
 
     public <T> T queryOne(Class<T> clazz, String name, Object... parms) {
@@ -54,7 +65,7 @@ public class Session implements Closeable {
             throw new JedoException(
                     "Class is not mapped " + clazz.getName());
         }
-        return clazz.cast(cm.queryOne(cnt, cache, name, parms));
+        return clazz.cast(cm.queryOne(context, name, parms));
     }
 
     public <T> List<T> query(Class<T> clazz, String name, Object... parms) {
@@ -68,7 +79,7 @@ public class Session implements Closeable {
                     "Class is not mapped " + clazz.getName());
         }
         @SuppressWarnings("unchecked")
-        List<T> result = (List<T>) cm.query(cnt, cache, name, parms);
+        List<T> result = (List<T>) cm.query(context, name, parms);
         return result;
     }
 
@@ -82,7 +93,7 @@ public class Session implements Closeable {
             throw new JedoException(
                     "Class is not mapped " + clazz.getName());
         }
-        cm.invoke(cnt, cache, name, parms);
+        cm.invoke(context, name, parms);
     }
 
     public void apply(Object obj, String name, Object... parms) {
@@ -100,7 +111,7 @@ public class Session implements Closeable {
         for (int i = 0; i < parms.length; ++i) {
             p[i+1] = parms[i];
         }
-        cm.invoke(cnt, cache, name, p);
+        cm.invoke(context, name, p);
     }
 
     public void insert(Object obj) {
@@ -110,7 +121,7 @@ public class Session implements Closeable {
             throw new JedoException(
                     "Class is not mapped " + clazz.getName());
         }
-        cm.insert(cnt, cache, obj);
+        cm.insert(context, obj);
     }
 
     public void update(Object obj) {
@@ -120,7 +131,7 @@ public class Session implements Closeable {
             throw new JedoException(
                     "Class is not mapped " + clazz.getName());
         }
-        cm.update(cnt, cache, obj);
+        cm.update(context, obj);
     }
 
     public void delete(Object obj) {
@@ -130,35 +141,6 @@ public class Session implements Closeable {
             throw new JedoException(
                     "Class is not mapped " + clazz.getName());
         }
-        cm.delete(cnt, cache, obj);
-    }
-
-    public void commit() {
-        try {
-            cache.clear();
-            cnt.commit();
-        } catch (SQLException ex) {
-            LOG.log(Level.SEVERE, null, ex);
-            throw new JedoException(ex.getMessage());
-        }
-    }
-
-    @Override
-    public void close() {
-        try {
-            cache.clear();
-            if (!cnt.isClosed()) {
-                try {
-                    cnt.rollback();
-                } finally {
-                    if (closeConnection) {
-                        cnt.close();
-                    }
-                }
-            }
-        } catch (SQLException ex) {
-            LOG.log(Level.SEVERE, null, ex);
-            throw new JedoException(ex.getMessage());
-        }
+        cm.delete(context, obj);
     }
 }

@@ -47,11 +47,11 @@ public abstract class FieldMapper {
     public void fixForwards(Map<Class<?>, ClassMapper> map) {
     }
 
-    public abstract Object fromResultSet(Connection cnt, Cache cache,
-            Object obj, ResultSet rs);
+    public abstract Object fromResultSet(Storage pm, Object obj,
+            ResultSet rs);
     public abstract void writeTo(XMLWriter out);
 
-    void afterInsert(Connection cnt, Cache cache, Object obj) {
+    void afterInsert(Storage pm, Object obj) {
     }
 
     public static abstract class Builder<T extends FieldMapper> {

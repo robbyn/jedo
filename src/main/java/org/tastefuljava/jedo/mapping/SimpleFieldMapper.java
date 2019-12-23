@@ -27,8 +27,7 @@ public class SimpleFieldMapper extends FieldMapper {
     }
 
     @Override
-    public Object fromResultSet(Connection cnt, Cache cache, Object obj, 
-            ResultSet rs) {
+    public Object fromResultSet(Storage pm, Object obj, ResultSet rs) {
         try {
             return convert(rs.getObject(column));
         } catch (SQLException ex) {
@@ -39,7 +38,7 @@ public class SimpleFieldMapper extends FieldMapper {
     }
 
     public Object fromResultSet(ResultSet rs) {
-        return fromResultSet(null, null, null, rs);
+        return fromResultSet(null, null, rs);
     }
 
     public Object fromResultSet(ResultSet rs, int ix) {

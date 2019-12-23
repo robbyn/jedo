@@ -1,21 +1,18 @@
 package org.tastefuljava.jedo.rel;
 
-import java.sql.Connection;
 import org.tastefuljava.jedo.Ref;
-import org.tastefuljava.jedo.cache.Cache;
 import org.tastefuljava.jedo.mapping.ClassMapper;
+import org.tastefuljava.jedo.mapping.Storage;
 
 public class LazyRef<T> extends Ref<T> {
-    private final Connection cnt;
-    private final Cache cache;
+    private final Storage pm;
     private final ClassMapper cm;
     private final Object[] values;
     private boolean isSet;
 
-    public LazyRef(Connection cnt, Cache cache, ClassMapper cm,
+    public LazyRef(Storage pm, ClassMapper cm,
             Object[] values) {
-        this.cnt = cnt;
-        this.cache = cache;
+        this.pm = pm;
         this.cm = cm;
         this.values = values;
     }
@@ -26,7 +23,7 @@ public class LazyRef<T> extends Ref<T> {
             return super.get();
         }
         @SuppressWarnings("unchecked")
-        T result = (T) cm.load(cnt, cache, values);
+        T result = (T) pm.loadFromId(cm, values);
         set(result);
         return result;
     }

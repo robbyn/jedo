@@ -53,7 +53,7 @@ public class Statement {
     }
 
     public void collectKeys(PreparedStatement stmt, SimpleFieldMapper[] props,
-            Object obj) throws JedoException, SQLException {
+            Object obj) throws JedoException {
         if (generatedKeys != null) {
             try (ResultSet rs = stmt.getGeneratedKeys()) {
                 if (!rs.next()) {
@@ -64,6 +64,9 @@ public class Statement {
                 for (SimpleFieldMapper prop : props) {
                     prop.setValue(obj, prop.fromResultSet(rs, ++ix));
                 }
+            } catch (SQLException ex) {
+                LOG.log(Level.SEVERE, null, ex);
+                throw new JedoException(ex.getMessage());
             }
         }
     }

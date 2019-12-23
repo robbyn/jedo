@@ -1,25 +1,21 @@
 package org.tastefuljava.jedo.rel;
 
-import java.sql.Connection;
 import java.util.Collection;
 import java.util.Iterator;
 import org.tastefuljava.jedo.JedoException;
-import org.tastefuljava.jedo.cache.Cache;
-import org.tastefuljava.jedo.mapping.ClassMapper;
 import org.tastefuljava.jedo.mapping.CollectionMapper;
 import org.tastefuljava.jedo.mapping.Statement;
+import org.tastefuljava.jedo.mapping.Storage;
 
 public abstract class LazyCollection<T> implements Collection<T> {
-    private final Connection cnt;
-    private final Cache cache;
+    private final Storage pm;
     private final CollectionMapper mapper;
     private final Object parent;
     private Collection<T> col;
 
-    protected LazyCollection(Connection cnt, Cache cache,
-            CollectionMapper mapper, Object parent) {
-        this.cnt = cnt;
-        this.cache = cache;
+    protected LazyCollection(Storage pm, CollectionMapper mapper,
+            Object parent) {
+        this.pm = pm;
         this.mapper = mapper;
         this.parent = parent;
     }
@@ -56,14 +52,9 @@ public abstract class LazyCollection<T> implements Collection<T> {
 
     @Override
     public boolean add(T e) {
-        Statement stmt = mapper.getAdd();
-        if (stmt == null) {
-            throw new JedoException("Cannot add to collection");
-        }
         boolean result = get().add(e);
         if (result) {
-            ClassMapper cm = mapper.getElementClass();
-            cm.insert(cnt, cache, stmt, e, new Object[] {parent, e});
+            mapper.add(pm, parent, e);
         }
         return result;
     }
@@ -76,7 +67,7 @@ public abstract class LazyCollection<T> implements Collection<T> {
         }
         boolean result = get().remove(o);
         if (result) {
-            stmt.executeUpdate(cnt, o, new Object[] {parent, o});
+            mapper.remove(pm, parent, o);
         }
         return result;
     }
@@ -101,7 +92,7 @@ public abstract class LazyCollection<T> implements Collection<T> {
     public boolean removeAll(Collection<?> c) {
         boolean changed = false;
         for (Object e: c) {
-            if (remove(e)) {
+            if (remove((T)e)) {
                 changed = true;
             }
         }
@@ -113,7 +104,7 @@ public abstract class LazyCollection<T> implements Collection<T> {
         boolean changed = false;
         Object[] all = get().toArray();
         for (Object e: all) {
-            if (c.contains(e) && remove(e)) {
+            if (c.contains(e) && remove((T)e)) {
                 changed = true;
             }
         }
@@ -122,11 +113,7 @@ public abstract class LazyCollection<T> implements Collection<T> {
 
     @Override
     public void clear() {
-        Statement stmt = mapper.getClear();
-        if (stmt == null) {
-            throw new JedoException("Cannot remove from collection");
-        }
-        stmt.executeUpdate(cnt, parent, new Object[] {parent});
+        mapper.clear(pm, parent);
         if (col == null) {
             col = newCollection();
         } else {
@@ -137,7 +124,7 @@ public abstract class LazyCollection<T> implements Collection<T> {
     public Collection<T> get() {
         if (col == null) {
             col = newCollection();
-            mapper.fetch(cnt, cache, parent, col);
+            mapper.fetch(pm, parent, col);
         }
         return col;
     }
