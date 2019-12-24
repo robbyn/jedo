@@ -53,8 +53,7 @@ public class Reflection {
         return null;
     }
 
-    public static <T> T getConstant(Class<?> clazz, String name,
-            Class<T> type) {
+    public static <T> T getConstant(Class<?> clazz, String name, Class<T> type) {
         try {
             Field field = clazz.getField(name);
             int mods = field.getModifiers();

@@ -114,9 +114,10 @@ public class MappingFileReader {
                 case "id":
                     inId = true;
                     break;
-                case "property": {
+                case "field": {
                         String name = attrs.getValue("name");
                         String column = attrs.getValue("column");
+                        String type = attrs.getValue("type");
                         if (inId) {
                             classBuilder.addIdField(name, column);
                         } else if (compBuilder != null) {

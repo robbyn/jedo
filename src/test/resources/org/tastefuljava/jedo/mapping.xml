@@ -3,10 +3,10 @@
 <mapping package="org.tastefuljava.jedo.testdb">
     <class name="Folder">
         <id>
-            <property name="id" column="ID"/>
+            <field name="id" column="ID"/>
         </id>
         <reference name="parent" column="PARENT_ID" fetch-mode="lazy"/>
-        <property name="name" column="NAME"/>
+        <field name="name" column="NAME"/>
         <collection name="subfolders" fetch-mode="lazy">
             <fetch>
                 SELECT * FROM folders
@@ -68,17 +68,17 @@
 
     <class name="Picture">
         <id>
-            <property name="id" column="ID"/>
+            <field name="id" column="ID"/>
         </id>
         <reference name="folder" column="FOLDER_ID"/>
-        <property name="name" column="NAME"/>
-        <property name="timestamp" column="TIMESTAMP"/>
-        <property name="width" column="WIDTH"/>
-        <property name="height" column="HEIGHT"/>
+        <field name="name" column="NAME"/>
+        <field name="timestamp" column="TIMESTAMP"/>
+        <field name="width" column="WIDTH"/>
+        <field name="height" column="HEIGHT"/>
         <component name="gpsData">
-            <property name="latitude" column="LATITUDE"/>
-            <property name="longitude" column="LONGITUDE"/>
-            <property name="altitude" column="ALTITUDE"/>
+            <field name="latitude" column="LATITUDE"/>
+            <field name="longitude" column="LONGITUDE"/>
+            <field name="altitude" column="ALTITUDE"/>
         </component>
 
         <load>

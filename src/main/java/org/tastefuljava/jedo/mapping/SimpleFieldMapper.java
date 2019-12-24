@@ -4,11 +4,13 @@ import org.tastefuljava.jedo.util.XMLWriter;
 import java.lang.reflect.Field;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Types;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.tastefuljava.jedo.JedoException;
 import org.tastefuljava.jedo.conversion.Converter;
+import org.tastefuljava.jedo.util.Reflection;
 
 public class SimpleFieldMapper extends FieldMapper {
     private static final Logger LOG
@@ -19,10 +21,6 @@ public class SimpleFieldMapper extends FieldMapper {
     private SimpleFieldMapper(Builder builder) {
         super(builder.field);
         this.column = builder.column;
-    }
-
-    String getColumn() {
-        return column;
     }
 
     @Override
