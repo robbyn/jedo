@@ -110,6 +110,10 @@ public class Statement {
             this.scope = local;
         }
 
+        public boolean hasGeneratedKeys() {
+            return generatedKeys != null;
+        }
+
         public void setGeneratedKeys(String[] keyNames) {
             generatedKeys = keyNames;
         }

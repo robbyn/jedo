@@ -3,6 +3,7 @@ package org.tastefuljava.jedo.mapping;
 import org.tastefuljava.jedo.util.XMLWriter;
 import java.util.HashMap;
 import java.util.Map;
+import org.tastefuljava.jedo.util.Reflection;
 
 public class Mapper {
     private final Map<Class<?>,ClassMapper> classMappers;
@@ -32,15 +33,23 @@ public class Mapper {
 
         public ClassMapper.Builder newClass(String packageName,
                 String className) {
-            ClassMapper.Builder builder
-                    = new ClassMapper.Builder(packageName, className);
-            classMappers.put(builder.getMappedClass(), builder);
+            Class<?> clazz = Reflection.loadClass(packageName, className);
+            return newClass(clazz);
+        }
+
+        private ClassMapper.Builder newClass(Class<?> clazz) {
+            ClassMapper.Builder builder = classMappers.get(clazz);
+            if (builder == null) {
+                builder = new ClassMapper.Builder(clazz);
+                classMappers.put(builder.getMappedClass(), builder);
+            }
             return builder;
         }
 
         public Mapper getMapper() {
             Map<Class<?>,ClassMapper> map = new HashMap<>();
             for (ClassMapper.Builder cmb: classMappers.values()) {
+                cmb.fixForwards(classMappers);
                 ClassMapper mapper = cmb.build();
                 map.put(cmb.getMappedClass(), mapper);
             }

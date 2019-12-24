@@ -39,7 +39,7 @@ public class CollectionMapper extends FieldMapper {
             Collection<?> result) {
         @SuppressWarnings("unchecked")
         Collection<Object> col = (Collection<Object>)result;
-        pm.query(elmClass, fetch, new Object[]{parent}, col);
+        pm.query(elmClass, fetch, parent, new Object[]{parent}, col);
     }
 
     public ClassMapper getElementClass() {
@@ -139,35 +139,49 @@ public class CollectionMapper extends FieldMapper {
         if (remove == null) {
             throw new JedoException("Cannot remove from collection");
         }
-        pm.executeUpdate(remove, null, new Object[]{parent, o});
+        pm.executeUpdate(remove, o, new Object[]{parent, o});
     }
 
     public static class Builder extends FieldMapper.Builder<CollectionMapper> {
         private final FetchMode fetchMode;
+        private final ClassMapper.Builder parentClass;
+        private final Class<?> elmClass;
         private Statement.Builder fetch;
         private Statement.Builder clear;
         private Statement.Builder add;
         private Statement.Builder remove;
 
-        public Builder(Field field, FetchMode fetchMode) {
+        public Builder(ClassMapper.Builder parentClass, Field field,
+                FetchMode fetchMode) {
             super(field);
+            this.parentClass = parentClass;
+            elmClass = Reflection.getReferencedType(field);
             this.fetchMode = fetchMode;
         }
 
-        public void setFetch(Statement.Builder fetch) {
-            this.fetch = fetch;
+        public Statement.Builder newFetchStatement(String... paramNames) {
+            return fetch = new Statement.Builder(
+                    parentClass.getMappedClass(), paramNames);
         }
 
-        public void setClear(Statement.Builder clear) {
-            this.clear = clear;
+        public Statement.Builder newClearStatement(String... paramNames) {
+            return clear = new Statement.Builder(
+                    parentClass.getMappedClass(), paramNames);
         }
 
-        public void setAdd(Statement.Builder add) {
-            this.add = add;
+        public Statement.Builder newAddStatement(boolean collectKeys,
+                String... paramNames) {
+            add = new Statement.Builder(elmClass, paramNames);
+            if (collectKeys) {
+                // temporarily set the gererate keys to an empty array. It will
+                // be updated with the actual column names in fixForwards.
+                add.setGeneratedKeys(new String[0]);
+            }
+            return add;
         }
 
-        public void setRemove(Statement.Builder remove) {
-            this.remove = remove;
+        public Statement.Builder newRemove(String... paramNames) {
+            return remove = new Statement.Builder(elmClass, paramNames);
         }
 
         private Statement buildFetch() {
@@ -186,6 +200,19 @@ public class CollectionMapper extends FieldMapper {
             return remove == null ? null : remove.build();
         }
  
+        @Override
+        public void fixForwards(Map<Class<?>, ClassMapper.Builder> map) {
+            if (add != null & add.hasGeneratedKeys()) {
+                ClassMapper.Builder cm = map.get(elmClass);
+                if (cm == null) {
+                    throw new JedoException(
+                            "Unresolved collection element class: " 
+                                    + field.getType().getName());
+                }
+                add.setGeneratedKeys(cm.getIdColumns());
+            }
+        }
+
         @Override
         public CollectionMapper build() {
             return new CollectionMapper(this);

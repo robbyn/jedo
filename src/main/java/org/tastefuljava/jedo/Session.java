@@ -78,7 +78,7 @@ public class Session implements AutoCloseable {
                     "Class is not mapped " + clazz.getName());
         }
         @SuppressWarnings("unchecked")
-        List<T> result = (List<T>) cm.query(pm, name, parms);
+        List<T> result = (List<T>) cm.query(pm, name, null, parms);
         return result;
     }
 

@@ -6,6 +6,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.tastefuljava.jedo.JedoException;
@@ -92,6 +93,10 @@ public class ComponentMapper extends FieldMapper {
                 result[i] = props.get(i).build();
             }
             return result;
+        }
+
+        @Override
+        public void fixForwards(Map<Class<?>, ClassMapper.Builder> map) {
         }
 
         @Override

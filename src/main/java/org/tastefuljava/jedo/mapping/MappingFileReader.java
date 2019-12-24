@@ -176,38 +176,24 @@ public class MappingFileReader {
                 case "delete":
                     stmtBuilder = classBuilder.newStatement(null);
                     break;
-                case "fetch": {
-                    String[] paramNames = {
-                        attrs.getValue("parent")
-                    };
-                    stmtBuilder = classBuilder.newStatement(paramNames);
+                case "fetch":
+                    stmtBuilder = collectionBuilder.newFetchStatement(
+                            attrs.getValue("parent"));
                     break;
-                }
-                case "clear": {
-                    String[] paramNames = {
-                        attrs.getValue("parent")
-                    };
-                    stmtBuilder = classBuilder.newStatement(paramNames);
+                case "clear":
+                    stmtBuilder = collectionBuilder.newClearStatement(
+                            attrs.getValue("parent"));
                     break;
-                }
-                case "add": {
+                case "add":
                     boolean keys = "true".equals(attrs.getValue(
                                     "get-generated-keys"));
-                    String[] paramNames = {
-                        attrs.getValue("parent"),
-                        attrs.getValue("element")
-                    };
-                    stmtBuilder = classBuilder.newStatement(paramNames, keys);
+                    stmtBuilder = collectionBuilder.newAddStatement(keys,
+                            attrs.getValue("parent"), attrs.getValue("element"));
                     break;
-                }
-                case "remove": {
-                    String[] paramNames = {
-                        attrs.getValue("parent"),
-                        attrs.getValue("element")
-                    };
-                    stmtBuilder = classBuilder.newStatement(paramNames);
+                case "remove":
+                    stmtBuilder = collectionBuilder.newRemove(
+                            attrs.getValue("parent"), attrs.getValue("element"));
                     break;
-                }
             }
         }
 
@@ -257,19 +243,15 @@ public class MappingFileReader {
                     stmtBuilder = null;
                     break;
                 case "fetch":
-                    collectionBuilder.setFetch(stmtBuilder);
                     stmtBuilder = null;
                     break;
                 case "clear":
-                    collectionBuilder.setClear(stmtBuilder);
                     stmtBuilder = null;
                     break;
                 case "add":
-                    collectionBuilder.setAdd(stmtBuilder);
                     stmtBuilder = null;
                     break;
                 case "remove":
-                    collectionBuilder.setRemove(stmtBuilder);
                     stmtBuilder = null;
                     break;
             }

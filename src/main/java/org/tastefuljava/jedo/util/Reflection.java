@@ -21,11 +21,16 @@ public class Reflection {
     }
 
     public static Class<? extends Object> loadClass(String packageName,
-            String className) throws ClassNotFoundException {
-        String fullName = packageName == null
-                ? className : packageName + "." + className;
-        ClassLoader cl = Thread.currentThread().getContextClassLoader();
-        return cl.loadClass(fullName);
+            String className) {
+        try {
+            String fullName = packageName == null
+                    ? className : packageName + "." + className;
+            ClassLoader cl = Thread.currentThread().getContextClassLoader();
+            return cl.loadClass(fullName);
+        } catch (ClassNotFoundException ex) {
+            LOG.log(Level.SEVERE, null, ex);
+            throw new JedoException(ex.getMessage());
+        }
     }
 
     public static Field getInstanceField(Class<?> clazz, String name) {

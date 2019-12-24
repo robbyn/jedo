@@ -87,14 +87,14 @@ public class ClassMapper {
         return pm.queryOne(this, stmt, parms);
     }
 
-    public List<Object> query(Storage pm, String name,
+    public List<Object> query(Storage pm, String name, Object self,
             Object[] parms) {
         Statement stmt = queries.get(name);
         if (stmt == null) {
             throw new JedoException("No query named " + name);
         }
         List<Object> result = new ArrayList<>();
-        pm.query(this, stmt, parms, result);
+        pm.query(this, stmt, self, parms, result);
         return result;
     }
 
@@ -209,8 +209,10 @@ public class ClassMapper {
             this.clazz = clazz;
         }
 
-        public Builder(String packageName, String className) {
-            this(loadClass(packageName, className));
+        public void fixForwards(Map<Class<?>, ClassMapper.Builder> map) {
+            for (FieldMapper.Builder fm: fields) {
+                fm.fixForwards(map);
+            }
         }
 
         public Class<?> getMappedClass() {
@@ -238,7 +240,7 @@ public class ClassMapper {
                 throw new JedoException("Field " + name
                         + " not found in class " + clazz.getName());
             }
-            return new CollectionMapper.Builder(field,
+            return new CollectionMapper.Builder(this, field,
                     fetchMode(fetchMode, FetchMode.LAZY));
         }
 
@@ -392,25 +394,12 @@ public class ClassMapper {
             return result;
         }
 
-        private String[] getIdColumns() {
+        public String[] getIdColumns() {
             String[] result = new String[idField.size()];
             for (int i = 0; i < idField.size(); ++i) {
                 result[i] = idField.get(i).getColumn();
             }
             return result;
-        }
-
-        private static Class<?> loadClass(String packageName,
-                String className) {
-            try {
-                String fullName = packageName == null
-                        ? className : packageName + "." + className;
-                ClassLoader cl = Thread.currentThread().getContextClassLoader();
-                return cl.loadClass(fullName);
-            } catch (ClassNotFoundException ex) {
-                LOG.log(Level.SEVERE, null, ex);
-                throw new JedoException(ex.getMessage());
-            }
         }
     }
 }

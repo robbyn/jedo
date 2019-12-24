@@ -80,9 +80,9 @@ public class CachedStorage implements Storage {
     }
 
     @Override
-    public void query(ClassMapper cm, Statement stmt, Object[] parms,
+    public void query(ClassMapper cm, Statement stmt, Object self, Object[] parms,
             Collection<Object> result) {
-         try (PreparedStatement pstmt = prepareStatement(stmt, null, parms);
+         try (PreparedStatement pstmt = prepareStatement(stmt, self, parms);
                 ResultSet rs = pstmt.executeQuery()) {
             while (rs.next()) {
                 result.add(loadFromResultSet(cm, rs));

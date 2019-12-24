@@ -98,6 +98,10 @@ public class ReferenceMapper extends FieldMapper {
         }
 
         @Override
+        public void fixForwards(Map<Class<?>, ClassMapper.Builder> map) {
+        }
+
+        @Override
         public ReferenceMapper build() {
             return new ReferenceMapper(this);
         }

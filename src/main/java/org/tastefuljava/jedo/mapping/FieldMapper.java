@@ -64,5 +64,6 @@ public abstract class FieldMapper {
         }
 
         public abstract T build();
+        public abstract void fixForwards(Map<Class<?>, ClassMapper.Builder> map);
     }
 }

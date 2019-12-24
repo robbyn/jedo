@@ -4,6 +4,7 @@ import org.tastefuljava.jedo.util.XMLWriter;
 import java.lang.reflect.Field;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.tastefuljava.jedo.JedoException;
@@ -71,6 +72,10 @@ public class SimpleFieldMapper extends FieldMapper {
 
         public String getColumn() {
             return column;
+        }
+
+        @Override
+        public void fixForwards(Map<Class<?>, ClassMapper.Builder> map) {
         }
 
         @Override
