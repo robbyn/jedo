@@ -2,7 +2,6 @@ package org.tastefuljava.jedo.mapping;
 
 import org.tastefuljava.jedo.rel.LazyRef;
 import java.lang.reflect.Field;
-import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Map;
@@ -10,7 +9,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.tastefuljava.jedo.JedoException;
 import org.tastefuljava.jedo.Ref;
-import org.tastefuljava.jedo.cache.Cache;
 import org.tastefuljava.jedo.util.Reflection;
 import org.tastefuljava.jedo.util.XMLWriter;
 

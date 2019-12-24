@@ -100,9 +100,14 @@ public class Statement {
         private int st = 1;
 
         public Builder(Class<?> clazz, String[] paramNames) {
-            this.scope = paramNames == null
-                ? new Scope.FieldScope(clazz, Expression.THIS)
-                : new Scope.ParameterScope(paramNames);
+            Scope local = null;
+            if (clazz != null) {
+                local = new Scope.FieldScope(clazz, Expression.THIS, local);
+            }
+            if (paramNames != null) {
+                local = new Scope.ParameterScope(paramNames, local);
+            }
+            this.scope = local;
         }
 
         public void setGeneratedKeys(String[] keyNames) {

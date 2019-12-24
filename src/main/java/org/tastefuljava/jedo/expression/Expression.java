@@ -23,7 +23,7 @@ public abstract class Expression {
                 throw new JedoException(
                         "Could not resolve expression " + expr);
             }
-            scope = new Scope.PropertyScope(result.getType(), result);
+            scope = new Scope.PropertyScope(result.getType(), result, null);
         }
         return result;
     }

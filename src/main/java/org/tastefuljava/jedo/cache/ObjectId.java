@@ -1,4 +1,4 @@
-package org.tastefuljava.jedo.rel;
+package org.tastefuljava.jedo.cache;
 
 import org.tastefuljava.jedo.JedoException;
 

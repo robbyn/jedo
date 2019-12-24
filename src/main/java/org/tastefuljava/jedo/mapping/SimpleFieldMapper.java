@@ -2,13 +2,11 @@ package org.tastefuljava.jedo.mapping;
 
 import org.tastefuljava.jedo.util.XMLWriter;
 import java.lang.reflect.Field;
-import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.tastefuljava.jedo.JedoException;
-import org.tastefuljava.jedo.cache.Cache;
 import org.tastefuljava.jedo.conversion.Converter;
 
 public class SimpleFieldMapper extends FieldMapper {
@@ -28,6 +26,10 @@ public class SimpleFieldMapper extends FieldMapper {
 
     @Override
     public Object fromResultSet(Storage pm, Object obj, ResultSet rs) {
+        return fromResultSet(rs);
+    }
+
+    public Object fromResultSet(ResultSet rs) {
         try {
             return convert(rs.getObject(column));
         } catch (SQLException ex) {
@@ -35,10 +37,6 @@ public class SimpleFieldMapper extends FieldMapper {
             throw new JedoException("Could not get property value "
                     + field.getName());
         }
-    }
-
-    public Object fromResultSet(ResultSet rs) {
-        return fromResultSet(null, null, rs);
     }
 
     public Object fromResultSet(ResultSet rs, int ix) {

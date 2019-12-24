@@ -9,15 +9,24 @@ import org.tastefuljava.jedo.Ref;
 import org.tastefuljava.jedo.util.Reflection;
 
 public abstract class Scope {
-    protected Scope() {
+    private final Scope link;
+
+    protected Scope(Scope link) {
+        this.link = link;
     }
 
-    public abstract Expression resolve(String name);
+    public Expression resolve(String name) {
+        if (link == null) {
+            throw new JedoException("Unresolved name " + name);
+        }
+        return link.resolve(name);
+    }
 
     public static class ParameterScope extends Scope {
         private final Map<String,Expression> map = new HashMap<>();
 
-        public ParameterScope(String[] names) {
+        public ParameterScope(String[] names, Scope link) {
+            super(link);
             for (int i = 0; i < names.length; ++i) {
                 Expression expr = new Expression.ParameterExpr(i);
                 map.put(names[i], expr);
@@ -27,7 +36,11 @@ public abstract class Scope {
 
         @Override
         public Expression resolve(String name) {
-            return map.get(name);
+            Expression result = map.get(name);
+            if (result != null) {
+                return result;
+            }
+            return super.resolve(name);
         }
     }
 
@@ -35,7 +48,8 @@ public abstract class Scope {
         private final Class<?> clazz;
         private final Expression self;
 
-        public FieldScope(Class<?> clazz, Expression object) {
+        public FieldScope(Class<?> clazz, Expression object, Scope link) {
+            super(link);
             this.clazz = clazz;
             this.self = object;
         }
@@ -44,8 +58,7 @@ public abstract class Scope {
         public Expression resolve(String name) {
             Field f = Reflection.getInstanceField(clazz, name);
             if (f == null) {
-                throw new JedoException("Field " + name
-                        + " not found in class " + clazz.getName());
+                return super.resolve(name);
             }
             Expression result = new Expression.FieldExpr(self, f);
             if (f.getType() == Ref.class) {
@@ -60,7 +73,8 @@ public abstract class Scope {
         private final Class<?> clazz;
         private final Expression self;
 
-        public PropertyScope(Class<?> clazz, Expression object) {
+        public PropertyScope(Class<?> clazz, Expression object, Scope link) {
+            super(link);
             this.clazz = clazz;
             this.self = object;
         }

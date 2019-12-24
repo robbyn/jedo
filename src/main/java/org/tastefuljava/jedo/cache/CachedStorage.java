@@ -11,7 +11,6 @@ import org.tastefuljava.jedo.JedoException;
 import org.tastefuljava.jedo.Session;
 import org.tastefuljava.jedo.mapping.ClassMapper;
 import org.tastefuljava.jedo.mapping.Statement;
-import org.tastefuljava.jedo.rel.ObjectId;
 import org.tastefuljava.jedo.mapping.Storage;
 
 public class CachedStorage implements Storage {

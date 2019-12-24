@@ -7,23 +7,22 @@ import java.util.logging.Logger;
 import org.tastefuljava.jedo.mapping.ClassMapper;
 import org.tastefuljava.jedo.mapping.Mapper;
 import org.tastefuljava.jedo.cache.CachedStorage;
-import org.tastefuljava.jedo.mapping.Storage;
 
 public class Session implements AutoCloseable {
     private static final Logger LOG = Logger.getLogger(Session.class.getName());
 
-    private final CachedStorage context;
+    private final CachedStorage pm;
     private final Mapper mapper;
 
     public Session(Connection cnt, Mapper mapper) {
-        this.context = new CachedStorage(cnt);
+        this.pm = new CachedStorage(cnt);
         this.mapper = mapper;
     }
 
     @Override
     public void close() {
         try {
-            context.close();
+            pm.close();
         } catch (Exception ex) {
             LOG.log(Level.SEVERE, null, ex);
             throw new JedoException(ex.getMessage());
@@ -31,15 +30,15 @@ public class Session implements AutoCloseable {
     }
 
     public boolean getCloseConnection() {
-        return context.getCloseConnection();
+        return pm.getCloseConnection();
     }
 
     public void setCloseConnection(boolean closeConnection) {
-        context.setCloseConnection(closeConnection);
+        pm.setCloseConnection(closeConnection);
     }
 
     public void commit() {
-        context.commit();
+        pm.commit();
     }
 
     public <T> T load(Class<T> clazz, Object... parms) {
@@ -52,7 +51,7 @@ public class Session implements AutoCloseable {
             throw new JedoException(
                     "Class is not mapped " + clazz.getName());
         }
-        return clazz.cast(context.loadFromId(cm, parms));
+        return clazz.cast(pm.loadFromId(cm, parms));
     }
 
     public <T> T queryOne(Class<T> clazz, String name, Object... parms) {
@@ -65,7 +64,7 @@ public class Session implements AutoCloseable {
             throw new JedoException(
                     "Class is not mapped " + clazz.getName());
         }
-        return clazz.cast(cm.queryOne(context, name, parms));
+        return clazz.cast(cm.queryOne(pm, name, parms));
     }
 
     public <T> List<T> query(Class<T> clazz, String name, Object... parms) {
@@ -79,7 +78,7 @@ public class Session implements AutoCloseable {
                     "Class is not mapped " + clazz.getName());
         }
         @SuppressWarnings("unchecked")
-        List<T> result = (List<T>) cm.query(context, name, parms);
+        List<T> result = (List<T>) cm.query(pm, name, parms);
         return result;
     }
 
@@ -93,7 +92,7 @@ public class Session implements AutoCloseable {
             throw new JedoException(
                     "Class is not mapped " + clazz.getName());
         }
-        cm.invoke(context, name, parms);
+        cm.invoke(pm, name, parms);
     }
 
     public void apply(Object obj, String name, Object... parms) {
@@ -111,7 +110,7 @@ public class Session implements AutoCloseable {
         for (int i = 0; i < parms.length; ++i) {
             p[i+1] = parms[i];
         }
-        cm.invoke(context, name, p);
+        cm.invoke(pm, name, p);
     }
 
     public void insert(Object obj) {
@@ -121,7 +120,7 @@ public class Session implements AutoCloseable {
             throw new JedoException(
                     "Class is not mapped " + clazz.getName());
         }
-        cm.insert(context, obj);
+        cm.insert(pm, obj);
     }
 
     public void update(Object obj) {
@@ -131,7 +130,7 @@ public class Session implements AutoCloseable {
             throw new JedoException(
                     "Class is not mapped " + clazz.getName());
         }
-        cm.update(context, obj);
+        cm.update(pm, obj);
     }
 
     public void delete(Object obj) {
@@ -141,6 +140,6 @@ public class Session implements AutoCloseable {
             throw new JedoException(
                     "Class is not mapped " + clazz.getName());
         }
-        cm.delete(context, obj);
+        cm.delete(pm, obj);
     }
 }

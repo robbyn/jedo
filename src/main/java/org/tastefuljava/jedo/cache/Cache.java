@@ -4,7 +4,6 @@ import java.lang.ref.ReferenceQueue;
 import java.lang.ref.WeakReference;
 import java.util.HashMap;
 import java.util.Map;
-import org.tastefuljava.jedo.rel.ObjectId;
 
 public class Cache<K,T> {
     private final Map<K,Ref> map = new HashMap<>();
