@@ -1,23 +1,18 @@
 package org.tastefuljava.jedo.mapping;
 
-import org.tastefuljava.jedo.rel.ObjectId;
 import org.tastefuljava.jedo.util.XMLWriter;
 import org.tastefuljava.jedo.util.Reflection;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
-import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.tastefuljava.jedo.JedoException;
-import org.tastefuljava.jedo.cache.Cache;
 
 public class ClassMapper {
     private static final Logger LOG
@@ -45,19 +40,22 @@ public class ClassMapper {
         this.delete = builder.buildDelete();
     }
 
-    Class<?> getMappedClass() {
+    public Class<?> getMappedClass() {
         return clazz;
     }
 
-    public ObjectId getId(Object obj) {
-        if (idFields == null || idFields.length == 0) {
-            return null;
-        } else {
-            return new ObjectId(clazz, getIdValues(obj));
+    public Object newInstance() {
+        try {
+            return clazz.getConstructor().newInstance();
+        } catch (InstantiationException | IllegalAccessException
+                | NoSuchMethodException | SecurityException
+                | InvocationTargetException ex) {
+            LOG.log(Level.SEVERE, null, ex);
+            throw new JedoException(ex.getMessage());
         }
     }
 
-    Object[] getIdValues(Object obj) {
+    public Object[] getIdValues(Object obj) {
         Object[] values = new Object[idFields.length];
         for (int i = 0; i < idFields.length; ++i) {
             values[i] = idFields[i].getValue(obj);
@@ -65,7 +63,7 @@ public class ClassMapper {
         return values;
     }
 
-    Object[] getIdValuesFromResultSet(ResultSet rs) {
+    public Object[] getIdValuesFromResultSet(ResultSet rs) {
         Object[] values = new Object[idFields.length];
         for (int i = 0; i < idFields.length; ++i) {
             values[i] = idFields[i].fromResultSet(rs);
@@ -73,175 +71,75 @@ public class ClassMapper {
         return values;
     }
 
-    public ObjectId getIdFromResultSet(ResultSet rs) {
-        if (idFields == null || idFields.length == 0) {
-            return null;
-        } else {
-            return new ObjectId(clazz, getIdValuesFromResultSet(rs));
-        }
-    }
-
-    public Object getInstance(Connection cnt, Cache cache, ResultSet rs) {
-        ObjectId oid = getIdFromResultSet(rs);
-        Object obj;
-        if (oid != null) {
-            obj = cache.get(oid);
-            if (obj != null) {
-                return obj;
-            }
-        }
-        try {
-            obj = clazz.getConstructor().newInstance();
-        } catch (InstantiationException | IllegalAccessException
-                | NoSuchMethodException | SecurityException
-                | InvocationTargetException ex) {
-            LOG.log(Level.SEVERE, null, ex);
-            throw new JedoException(ex.getMessage());
-        }
-        for (SimpleFieldMapper field: idFields) {
-            field.setValue(obj, field.fromResultSet(cnt, cache, obj, rs));
-        }
-        if (oid != null) {
-            cache.put(oid, obj);
-        }
-        for (FieldMapper field: fields) {
-            field.setValue(obj, field.fromResultSet(cnt, cache, obj, rs));
-        }
-        return obj;
-    }
-
-    public Object load(Connection cnt, Cache cache, Object[] parms) {
+    public Object load(Storage pm, Object[] parms) {
         if (load == null) {
-            throw new JedoException(
-                    "No loader for class " + clazz.getName());
+            throw new JedoException("No loader for class " + clazz.getName());
         }
-        ObjectId oid = newId(parms);
-        Object obj = cache.get(oid);
-        if (obj == null) {
-            obj = queryOne(load, cnt, cache, parms);
-        }
-        return obj;
+        return pm.queryOne(this, load, parms);
     }
 
-    public Object queryOne(Connection cnt, Cache cache, String name,
+    public Object queryOne(Storage pm, String name,
             Object[] parms) {
         Statement stmt = queries.get(name);
         if (stmt == null) {
             throw new JedoException("No query named " + name);
         }
-        return queryOne(stmt, cnt, cache, parms);
+        return pm.queryOne(this, stmt, parms);
     }
 
-    private Object queryOne(Statement stmt, Connection cnt, Cache cache,
-            Object[] parms) {
-        Object result = null;
-        try (PreparedStatement pstmt = stmt.prepare(cnt, null, parms);
-                ResultSet rs = pstmt.executeQuery()) {
-            if (rs.next()) {
-                result = getInstance(cnt, cache, rs);
-                if (rs.next()) {
-                    throw new JedoException("Only one result allowed");
-                }
-            }
-        } catch (final SQLException ex) {
-            LOG.log(Level.SEVERE, null, ex);
-            throw new JedoException(ex.getMessage());
-        }
-        return result;
-    }
-
-    public List<Object> query(Connection cnt, Cache cache, String name,
+    public List<Object> query(Storage pm, String name, Object self,
             Object[] parms) {
         Statement stmt = queries.get(name);
         if (stmt == null) {
             throw new JedoException("No query named " + name);
         }
         List<Object> result = new ArrayList<>();
-        query(cnt, cache, stmt, parms, result);
+        pm.query(this, stmt, self, parms, result);
         return result;
     }
 
-    public void query(Connection cnt, Cache cache, Statement stmt,
-            Object[] parms, Collection<Object> result) {
-        try (PreparedStatement pstmt = stmt.prepare(cnt, null, parms);
-                ResultSet rs = pstmt.executeQuery()) {
-            while (rs.next()) {
-                result.add(getInstance(cnt, cache, rs));
-            }
-        } catch (SQLException ex) {
-            LOG.log(Level.SEVERE, null, ex);
-            throw new JedoException(ex.getMessage());
-        }        
-    }
-
-    public void invoke(Connection cnt, Cache cache, String name,
+    public void invoke(Storage pm, String name,
             Object[] parms) {
         Statement stmt = stmts.get(name);
         if (stmt == null) {
             throw new JedoException(
                     "No statement " + name + " for " + clazz.getName());
         }
-        stmt.executeUpdate(cnt, null, parms);
+        pm.executeUpdate(stmt, null, parms);
     }
 
-    public void insert(Connection cnt, Cache cache, Object obj) {
+    public void insert(Storage pm, Object obj) {
         if (insert == null) {
-            throw new JedoException(
-                    "No inserter for " + clazz.getName());
+            throw new JedoException("No inserter for " + clazz.getName());
         }
-        insert(cnt, cache, insert, obj, null);
+        pm.insert(this, insert, obj, null);
     }
 
-    public void insert(Connection cnt, Cache cache, Statement stmt, Object obj,
-            Object[] parms) {
-        try (PreparedStatement pstmt = stmt.prepare(cnt, obj, parms)) {
-            pstmt.executeUpdate();
-            collectKeys(stmt, pstmt, obj, cache);
-            for (FieldMapper prop: fields) {
-                prop.afterInsert(cnt, cache, obj);
-            }
-        } catch (SQLException ex) {
-            LOG.log(Level.SEVERE, null, ex);
-            throw new JedoException(ex.getMessage());
+    public void afterInsert(Storage pm, Object self) {
+        for (FieldMapper prop: fields) {
+            prop.afterInsert(pm, self);
         }
     }
 
     public void collectKeys(Statement statement, PreparedStatement stmt,
-            Object obj, Cache cache) {
-        try {
-            statement.collectKeys(stmt, idFields, obj);
-            cache.put(getId(obj), obj);
-        } catch (SQLException ex) {
-            LOG.log(Level.SEVERE, null, ex);
-            throw new JedoException(ex.getMessage());
-        }
+            Object obj) {
+        statement.collectKeys(stmt, idFields, obj);
     }
 
-    public void update(Connection cnt, Cache cache, Object obj) {
+    public void update(Storage pm, Object obj) {
         if (update == null) {
             throw new JedoException(
                     "No updater for " + clazz.getName());
         }
-        try (final PreparedStatement stmt = update.prepare(cnt, obj, null)) {
-            stmt.executeUpdate();
-        } catch (SQLException ex) {
-            LOG.log(Level.SEVERE, null, ex);
-            throw new JedoException(ex.getMessage());
-        }
+        pm.executeUpdate(update, obj, null);
     }
 
-    public void delete(Connection cnt, Cache cache, Object obj) {
+    public void delete(Storage pm, Object obj) {
         if (delete == null) {
             throw new JedoException(
                     "No deleter for " + clazz.getName());
         }
-        try (PreparedStatement stmt = delete.prepare(cnt, obj, null)) {
-            stmt.executeUpdate();
-            cache.remove(getId(obj));
-        } catch (SQLException ex) {
-            LOG.log(Level.SEVERE, null, ex);
-            throw new JedoException(ex.getMessage());
-        }
+        pm.delete(this, delete, obj);
     }
 
     Statement getQuery(String queryName) {
@@ -285,15 +183,14 @@ public class ClassMapper {
         }
     }
 
-    private ObjectId newId(Object[] values) {
-        if (values.length != idFields.length) {
-            throw new JedoException("Wrong number of columns: expected "
-                    + idFields.length + " found " + values.length);
+    public void setFieldsFromResultSet(Storage pm, Object obj,
+            ResultSet rs) {
+        for (SimpleFieldMapper field: idFields) {
+            field.setValue(obj, field.fromResultSet(pm, obj, rs));
         }
-        for (int i = 0; i < idFields.length; ++i) {
-            values[i] = idFields[i].convert(values[i]);
+        for (FieldMapper field: fields) {
+            field.setValue(obj, field.fromResultSet(pm, obj, rs));
         }
-        return new ObjectId(clazz, values);
     }
 
     public static class Builder {
@@ -312,8 +209,10 @@ public class ClassMapper {
             this.clazz = clazz;
         }
 
-        public Builder(String packageName, String className) {
-            this(loadClass(packageName, className));
+        public void fixForwards(Map<Class<?>, ClassMapper.Builder> map) {
+            for (FieldMapper.Builder fm: fields) {
+                fm.fixForwards(map);
+            }
         }
 
         public Class<?> getMappedClass() {
@@ -341,7 +240,7 @@ public class ClassMapper {
                 throw new JedoException("Field " + name
                         + " not found in class " + clazz.getName());
             }
-            return new CollectionMapper.Builder(field,
+            return new CollectionMapper.Builder(this, field,
                     fetchMode(fetchMode, FetchMode.LAZY));
         }
 
@@ -495,25 +394,12 @@ public class ClassMapper {
             return result;
         }
 
-        private String[] getIdColumns() {
+        public String[] getIdColumns() {
             String[] result = new String[idField.size()];
             for (int i = 0; i < idField.size(); ++i) {
                 result[i] = idField.get(i).getColumn();
             }
             return result;
-        }
-
-        private static Class<?> loadClass(String packageName,
-                String className) {
-            try {
-                String fullName = packageName == null
-                        ? className : packageName + "." + className;
-                ClassLoader cl = Thread.currentThread().getContextClassLoader();
-                return cl.loadClass(fullName);
-            } catch (ClassNotFoundException ex) {
-                LOG.log(Level.SEVERE, null, ex);
-                throw new JedoException(ex.getMessage());
-            }
         }
     }
 }

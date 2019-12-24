@@ -3,7 +3,6 @@ package org.tastefuljava.jedo;
 import java.io.IOException;
 import java.sql.SQLException;
 import org.junit.After;
-import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
 import org.tastefuljava.jedo.testdb.Folder;

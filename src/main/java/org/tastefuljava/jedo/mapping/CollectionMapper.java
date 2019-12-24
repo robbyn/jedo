@@ -3,14 +3,12 @@ package org.tastefuljava.jedo.mapping;
 import org.tastefuljava.jedo.rel.LazyList;
 import org.tastefuljava.jedo.rel.LazySet;
 import java.lang.reflect.Field;
-import java.sql.Connection;
 import java.sql.ResultSet;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.tastefuljava.jedo.JedoException;
-import org.tastefuljava.jedo.cache.Cache;
 import org.tastefuljava.jedo.rel.LazyCollection;
 import org.tastefuljava.jedo.util.Reflection;
 import org.tastefuljava.jedo.util.XMLWriter;
@@ -33,16 +31,15 @@ public class CollectionMapper extends FieldMapper {
     }
 
     @Override
-    public Object fromResultSet(Connection cnt, Cache cache, Object obj,
-            ResultSet rs) {
-        return createCollection(cnt, cache, obj);
+    public Object fromResultSet(Storage pm, Object obj, ResultSet rs) {
+        return createCollection(pm, obj);
     }
 
-    public void fetch(Connection cnt, Cache cache, Object parent,
+    public void fetch(Storage pm, Object parent,
             Collection<?> result) {
         @SuppressWarnings("unchecked")
         Collection<Object> col = (Collection<Object>)result;
-        elmClass.query(cnt, cache, fetch, new Object[]{parent}, col);
+        pm.query(elmClass, fetch, parent, new Object[]{parent}, col);
     }
 
     public ClassMapper getElementClass() {
@@ -62,23 +59,23 @@ public class CollectionMapper extends FieldMapper {
     }
 
     @Override
-    void afterInsert(Connection cnt, Cache cache, Object obj) {
+    void afterInsert(Storage pm, Object obj) {
         Collection<?> prevCol = (Collection<?>)this.getValue(obj);
-        Collection<Object> newCol = createCollection(cnt, cache, obj);
+        Collection<Object> newCol = createCollection(pm, obj);
         this.setValue(obj, newCol);
         if (prevCol != null) {
             newCol.addAll(prevCol);
         }
     }
 
-    private Collection<Object> createCollection(Connection cnt, Cache cache,
+    private Collection<Object> createCollection(Storage pm,
             Object parent) {
         LazyCollection<Object> col;
         if (field.getType() == Set.class
                 || field.getType() == Collection.class) {
-            col = new LazySet<>(cnt, cache, this, parent);
+            col = new LazySet<>(pm, this, parent);
         } else if (field.getType() == List.class) {
-            col = new LazyList<>(cnt, cache, this, parent);
+            col = new LazyList<>(pm, this, parent);
         } else {
             throw new JedoException("Unsupported collection field type "
                     + field.getType().getName());
@@ -124,32 +121,67 @@ public class CollectionMapper extends FieldMapper {
         out.endTag();
     }
 
+    public void clear(Storage pm, Object parent) {
+        if (clear == null) {
+            throw new JedoException("Cannot clear collection");
+        }
+        pm.executeUpdate(clear, parent, new Object[]{parent});
+    }
+
+    public void add(Storage pm, Object parent, Object o) {
+        if (add == null) {
+            throw new JedoException("Cannot add to collection");
+        }
+        pm.insert(elmClass, add, o, new Object[]{parent,o});
+    }
+
+    public void remove(Storage pm, Object parent, Object o) {
+        if (remove == null) {
+            throw new JedoException("Cannot remove from collection");
+        }
+        pm.executeUpdate(remove, o, new Object[]{parent, o});
+    }
+
     public static class Builder extends FieldMapper.Builder<CollectionMapper> {
         private final FetchMode fetchMode;
+        private final ClassMapper.Builder parentClass;
+        private final Class<?> elmClass;
         private Statement.Builder fetch;
         private Statement.Builder clear;
         private Statement.Builder add;
         private Statement.Builder remove;
 
-        public Builder(Field field, FetchMode fetchMode) {
+        public Builder(ClassMapper.Builder parentClass, Field field,
+                FetchMode fetchMode) {
             super(field);
+            this.parentClass = parentClass;
+            elmClass = Reflection.getReferencedType(field);
             this.fetchMode = fetchMode;
         }
 
-        public void setFetch(Statement.Builder fetch) {
-            this.fetch = fetch;
+        public Statement.Builder newFetchStatement(String... paramNames) {
+            return fetch = new Statement.Builder(
+                    parentClass.getMappedClass(), paramNames);
         }
 
-        public void setClear(Statement.Builder clear) {
-            this.clear = clear;
+        public Statement.Builder newClearStatement(String... paramNames) {
+            return clear = new Statement.Builder(
+                    parentClass.getMappedClass(), paramNames);
         }
 
-        public void setAdd(Statement.Builder add) {
-            this.add = add;
+        public Statement.Builder newAddStatement(boolean collectKeys,
+                String... paramNames) {
+            add = new Statement.Builder(elmClass, paramNames);
+            if (collectKeys) {
+                // temporarily set the gererate keys to an empty array. It will
+                // be updated with the actual column names in fixForwards.
+                add.setGeneratedKeys(new String[0]);
+            }
+            return add;
         }
 
-        public void setRemove(Statement.Builder remove) {
-            this.remove = remove;
+        public Statement.Builder newRemove(String... paramNames) {
+            return remove = new Statement.Builder(elmClass, paramNames);
         }
 
         private Statement buildFetch() {
@@ -168,6 +200,19 @@ public class CollectionMapper extends FieldMapper {
             return remove == null ? null : remove.build();
         }
  
+        @Override
+        public void fixForwards(Map<Class<?>, ClassMapper.Builder> map) {
+            if (add != null & add.hasGeneratedKeys()) {
+                ClassMapper.Builder cm = map.get(elmClass);
+                if (cm == null) {
+                    throw new JedoException(
+                            "Unresolved collection element class: " 
+                                    + field.getType().getName());
+                }
+                add.setGeneratedKeys(cm.getIdColumns());
+            }
+        }
+
         @Override
         public CollectionMapper build() {
             return new CollectionMapper(this);

@@ -1,13 +1,11 @@
 package org.tastefuljava.jedo.mapping;
 
 import java.lang.reflect.Field;
-import java.sql.Connection;
 import java.sql.ResultSet;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.tastefuljava.jedo.JedoException;
-import org.tastefuljava.jedo.cache.Cache;
 import org.tastefuljava.jedo.util.XMLWriter;
 
 public abstract class FieldMapper {
@@ -47,11 +45,11 @@ public abstract class FieldMapper {
     public void fixForwards(Map<Class<?>, ClassMapper> map) {
     }
 
-    public abstract Object fromResultSet(Connection cnt, Cache cache,
-            Object obj, ResultSet rs);
+    public abstract Object fromResultSet(Storage pm, Object obj,
+            ResultSet rs);
     public abstract void writeTo(XMLWriter out);
 
-    void afterInsert(Connection cnt, Cache cache, Object obj) {
+    void afterInsert(Storage pm, Object obj) {
     }
 
     public static abstract class Builder<T extends FieldMapper> {
@@ -66,5 +64,6 @@ public abstract class FieldMapper {
         }
 
         public abstract T build();
+        public abstract void fixForwards(Map<Class<?>, ClassMapper.Builder> map);
     }
 }
