@@ -3,14 +3,13 @@ package org.tastefuljava.jedo.mapping;
 import org.tastefuljava.jedo.util.XMLWriter;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
-import java.sql.Connection;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.tastefuljava.jedo.JedoException;
-import org.tastefuljava.jedo.cache.Cache;
 import org.tastefuljava.jedo.util.Reflection;
 
 public class ComponentMapper extends FieldMapper {
@@ -25,8 +24,7 @@ public class ComponentMapper extends FieldMapper {
     }
 
     @Override
-    public Object fromResultSet(Connection cnt, Cache cache, Object obj,
-            ResultSet rs) {
+    public Object fromResultSet(Storage pm, Object obj, ResultSet rs) {
         try {
             boolean allNull = true;
             Object[] values = new Object[props.length];
@@ -95,6 +93,10 @@ public class ComponentMapper extends FieldMapper {
                 result[i] = props.get(i).build();
             }
             return result;
+        }
+
+        @Override
+        public void fixForwards(Map<Class<?>, ClassMapper.Builder> map) {
         }
 
         @Override

@@ -1,18 +1,17 @@
 package org.tastefuljava.jedo.rel;
 
-import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.ListIterator;
 import org.tastefuljava.jedo.JedoException;
-import org.tastefuljava.jedo.cache.Cache;
 import org.tastefuljava.jedo.mapping.CollectionMapper;
+import org.tastefuljava.jedo.mapping.Storage;
 
 public class LazyList<T> extends LazyCollection<T> implements List<T> {
-    public LazyList(Connection cnt, Cache cache, CollectionMapper mapper,
+    public LazyList(Storage pm, CollectionMapper mapper,
             Object parent) {
-        super(cnt, cache, mapper, parent);
+        super(pm, mapper, parent);
     }
 
     @Override

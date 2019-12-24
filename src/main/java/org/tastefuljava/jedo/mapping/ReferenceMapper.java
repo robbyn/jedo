@@ -2,7 +2,6 @@ package org.tastefuljava.jedo.mapping;
 
 import org.tastefuljava.jedo.rel.LazyRef;
 import java.lang.reflect.Field;
-import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Map;
@@ -10,7 +9,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.tastefuljava.jedo.JedoException;
 import org.tastefuljava.jedo.Ref;
-import org.tastefuljava.jedo.cache.Cache;
 import org.tastefuljava.jedo.util.Reflection;
 import org.tastefuljava.jedo.util.XMLWriter;
 
@@ -29,8 +27,7 @@ public class ReferenceMapper extends FieldMapper {
     }
 
     @Override
-    public Object fromResultSet(Connection cnt, Cache cache, Object obj,
-            ResultSet rs) {
+    public Object fromResultSet(Storage pm, Object obj, ResultSet rs) {
         try {
             boolean allNull = true;
             Object[] values = new Object[columns.length];
@@ -43,13 +40,13 @@ public class ReferenceMapper extends FieldMapper {
             }
             if (field.getType() != Ref.class) {
                 return allNull
-                        ? null : targetClass.load(cnt, cache, values);
+                        ? null : pm.loadFromId(targetClass, values);
             } else if (allNull || fetchMode == FetchMode.EAGER) {
                 Object result = allNull
-                        ? null : targetClass.load(cnt, cache, values);
+                        ? null : pm.loadFromId(targetClass, values);
                 return new Ref<>(result);
             } else {
-                return new LazyRef<>(cnt, cache, targetClass, values);
+                return new LazyRef<>(pm, targetClass, values);
             }
         } catch (SQLException ex) {
             LOG.log(Level.SEVERE, null, ex);
@@ -98,6 +95,10 @@ public class ReferenceMapper extends FieldMapper {
             super(field);
             this.columns = columns;
             this.fetchMode = fetchMode;
+        }
+
+        @Override
+        public void fixForwards(Map<Class<?>, ClassMapper.Builder> map) {
         }
 
         @Override
