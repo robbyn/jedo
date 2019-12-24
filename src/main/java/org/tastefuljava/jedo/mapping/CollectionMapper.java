@@ -125,7 +125,7 @@ public class CollectionMapper extends FieldMapper {
         if (clear == null) {
             throw new JedoException("Cannot clear collection");
         }
-        pm.executeUpdate(clear, parent, new Object[]{parent});
+        pm.execute(clear, parent, new Object[]{parent});
     }
 
     public void add(Storage pm, Object parent, Object o) {
@@ -139,7 +139,7 @@ public class CollectionMapper extends FieldMapper {
         if (remove == null) {
             throw new JedoException("Cannot remove from collection");
         }
-        pm.executeUpdate(remove, o, new Object[]{parent, o});
+        pm.execute(remove, o, new Object[]{parent, o});
     }
 
     public static class Builder extends FieldMapper.Builder<CollectionMapper> {

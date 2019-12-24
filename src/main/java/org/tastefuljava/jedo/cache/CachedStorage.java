@@ -123,7 +123,7 @@ public class CachedStorage implements Storage {
     }
 
     @Override
-    public void executeUpdate(Statement stmt, Object self, Object[] parms) {
+    public void execute(Statement stmt, Object self, Object[] parms) {
         stmt.executeUpdate(cnt, self, parms);
     }
 

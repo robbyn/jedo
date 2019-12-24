@@ -8,7 +8,7 @@ public interface Storage extends AutoCloseable {
     public void query(ClassMapper cm, Statement stmt, Object self, Object[] parms,
             Collection<Object> result);
     public Object queryOne(ClassMapper cm, Statement stmt, Object[] parms);
-    public void executeUpdate(Statement stmt, Object self, Object[] parms);
+    public void execute(Statement stmt, Object self, Object[] parms);
     public void delete(ClassMapper cm, Statement stmt, Object self);
     public void insert(ClassMapper cm, Statement stmt, Object self,
             Object[] parms);

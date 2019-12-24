@@ -105,7 +105,7 @@ public class ClassMapper {
             throw new JedoException(
                     "No statement " + name + " for " + clazz.getName());
         }
-        pm.executeUpdate(stmt, null, parms);
+        pm.execute(stmt, null, parms);
     }
 
     public void insert(Storage pm, Object obj) {
@@ -131,7 +131,7 @@ public class ClassMapper {
             throw new JedoException(
                     "No updater for " + clazz.getName());
         }
-        pm.executeUpdate(update, obj, null);
+        pm.execute(update, obj, null);
     }
 
     public void delete(Storage pm, Object obj) {
