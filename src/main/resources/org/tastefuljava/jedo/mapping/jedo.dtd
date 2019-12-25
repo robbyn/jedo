@@ -27,7 +27,12 @@
 <!ELEMENT collection (fetch|clear|add|remove)*>
 <!ATTLIST collection
     name CDATA #REQUIRED
-    query CDATA #IMPLIED
+    fetch-mode (eager|lazy) #IMPLIED
+>
+
+<!ELEMENT list (fetch|clear|add|remove|set|add-at|remove-at)*>
+<!ATTLIST list
+    name CDATA #REQUIRED
     fetch-mode (eager|lazy) #IMPLIED
 >
 
@@ -72,4 +77,26 @@
 <!ATTLIST remove
     parent CDATA "parent"
     element CDATA "element"
+>
+
+<!-- List queries -->
+
+<!ELEMENT set-at (#PCDATA)>
+<!ATTLIST set-at
+    parent CDATA "parent"
+    element CDATA "element"
+    index CDATA "index"
+    get-generated-keys (true|false) #IMPLIED
+>
+<!ELEMENT add-at (#PCDATA)>
+<!ATTLIST add-at
+    parent CDATA "parent"
+    element CDATA "element"
+    index CDATA "index"
+    get-generated-keys (true|false) #IMPLIED
+>
+<!ELEMENT remove-at (#PCDATA)>
+<!ATTLIST remove-at
+    parent CDATA "parent"
+    index CDATA "index"
 >

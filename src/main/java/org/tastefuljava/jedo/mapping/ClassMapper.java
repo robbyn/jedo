@@ -240,12 +240,22 @@ public class ClassMapper {
                 throw new JedoException("Field " + name
                         + " not found in class " + clazz.getName());
             }
-            return new CollectionMapper.Builder(this, field,
-                    fetchMode(fetchMode, FetchMode.LAZY));
+            CollectionMapper.Builder result = new CollectionMapper.Builder(
+                    this, field, fetchMode(fetchMode, FetchMode.LAZY));
+            fields.add(result);
+            return result;
         }
 
-        public void addCollection(CollectionMapper.Builder ref) {
-             fields.add(ref);
+        public ListMapper.Builder newList(String name, String fetchMode) {
+            Field field = Reflection.getInstanceField(clazz, name);
+            if (field == null) {
+                throw new JedoException("Field " + name
+                        + " not found in class " + clazz.getName());
+            }
+            ListMapper.Builder result = new ListMapper.Builder(
+                    this, field, fetchMode(fetchMode, FetchMode.LAZY));
+            fields.add(result);
+            return result;
         }
 
         public ComponentMapper.Builder newComponent(String name) {

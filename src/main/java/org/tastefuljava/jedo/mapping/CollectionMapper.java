@@ -21,7 +21,7 @@ public class CollectionMapper extends FieldMapper {
     private final Statement add;
     private final Statement remove;
 
-    private CollectionMapper(Builder builder) {
+    protected CollectionMapper(Builder builder) {
         super(builder.field);
         this.fetchMode = builder.fetchMode;
         this.fetch = builder.buildFetch();

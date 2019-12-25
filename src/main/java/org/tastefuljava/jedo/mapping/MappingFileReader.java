@@ -64,6 +64,7 @@ public class MappingFileReader {
         private String packageName;
         private ClassMapper.Builder classBuilder;
         private CollectionMapper.Builder collectionBuilder;
+        private ListMapper.Builder listBuilder;
         private boolean inId;
         private ComponentMapper.Builder compBuilder;
         private Statement.Builder stmtBuilder;
@@ -135,12 +136,16 @@ public class MappingFileReader {
                                 fetchMode);
                     }
                     break;
-                case "collection": {
-                        String name = attrs.getValue("name");
-                        String fetchMode = attrs.getValue("fetch-mode");
-                        collectionBuilder = classBuilder.newCollection(
-                                name, fetchMode);
-                    }
+                case "collection":
+                    collectionBuilder = classBuilder.newCollection(
+                            attrs.getValue("name"),
+                            attrs.getValue("fetch-mode"));
+                    break;
+                case "list":
+                    listBuilder = classBuilder.newList(
+                            attrs.getValue("name"),
+                            attrs.getValue("fetch-mode"));
+                    collectionBuilder = listBuilder;
                     break;
                 case "component":
                     compBuilder = classBuilder.newComponent(
@@ -215,8 +220,9 @@ public class MappingFileReader {
                     classBuilder.addComponent(compBuilder);
                     compBuilder = null;
                     break;
+                case "list":
+                    listBuilder = null; // no break
                 case "collection":
-                    classBuilder.addCollection(collectionBuilder);
                     collectionBuilder = null;
                     break;
                 case "query":
