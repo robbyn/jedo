@@ -113,6 +113,7 @@ public class CachedStorage implements Storage {
 
     @Override
     public void delete(ClassMapper cm, Statement stmt, Object self) {
+        cm.beforeDelete(this, self);
         try (PreparedStatement pstmt = prepareStatement(stmt, self, null)) {
             pstmt.executeUpdate();
             cache.remove(getObjectId(cm, self));
@@ -128,17 +129,30 @@ public class CachedStorage implements Storage {
     }
 
     @Override
+    public void update(ClassMapper cm, Statement stmt, Object self,
+            Object[] parms) {
+        cm.beforeUpdate(this, self);
+        try (PreparedStatement pstmt = prepareStatement(stmt, self, parms)) {
+            pstmt.executeUpdate();
+        } catch (SQLException ex) {
+            LOG.log(Level.SEVERE, null, ex);
+            throw new JedoException(ex.getMessage());
+        }
+        cm.afterUpdate(this, self);
+    }
+
+    @Override
     public void insert(ClassMapper cm, Statement stmt, Object self,
             Object[] parms) {
         try (PreparedStatement pstmt = prepareStatement(stmt, self, parms)) {
             pstmt.executeUpdate();
             cm.collectKeys(stmt, pstmt, self);
             cache.put(getObjectId(cm, self), self);
-            cm.afterInsert(this, self);
         } catch (SQLException ex) {
             LOG.log(Level.SEVERE, null, ex);
             throw new JedoException(ex.getMessage());
         }
+        cm.afterInsert(this, self);
     }
 
     private ObjectId getObjectId(ClassMapper cm, Object obj) {

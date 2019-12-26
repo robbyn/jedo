@@ -1,13 +1,9 @@
 package org.tastefuljava.jedo.mapping;
 
-import org.tastefuljava.jedo.rel.LazyList;
-import org.tastefuljava.jedo.rel.LazySet;
 import java.lang.reflect.Field;
 import java.sql.ResultSet;
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import org.tastefuljava.jedo.JedoException;
 import org.tastefuljava.jedo.rel.LazyCollection;
 import org.tastefuljava.jedo.util.Reflection;
@@ -32,7 +28,7 @@ public abstract class CollectionMapper extends FieldMapper {
 
     @Override
     public Object fromResultSet(Storage pm, Object obj, ResultSet rs) {
-        return createCollection(pm, obj);
+        return createCollection(pm, obj, false);
     }
 
     public void fetch(Storage pm, Object parent,
@@ -61,36 +57,34 @@ public abstract class CollectionMapper extends FieldMapper {
     @Override
     void afterInsert(Storage pm, Object obj) {
         Collection<?> prevCol = (Collection<?>)this.getValue(obj);
-        Collection<Object> newCol = createCollection(pm, obj);
+        Collection<Object> newCol = createCollection(pm, obj, true);
         this.setValue(obj, newCol);
         if (prevCol != null) {
             newCol.addAll(prevCol);
         }
     }
 
-    private Collection<Object> createCollection(Storage pm,
-            Object parent) {
-        LazyCollection<Object> col;
-        if (field.getType() == Set.class
-                || field.getType() == Collection.class) {
-            col = new LazySet<>(pm, this, parent);
-        } else if (field.getType() == List.class) {
-            col = new LazyList<>(pm, this, parent);
+    private LazyCollection<Object> createCollection(Storage pm,
+            Object parent, boolean empty) {
+        LazyCollection<Object> col = newCollection(pm, parent);
+        if (empty) {
+            col.setEmpty();
         } else {
-            throw new JedoException("Unsupported collection field type "
-                    + field.getType().getName());
-        }
-        switch (fetchMode) {
-            case EAGER:
-                col.get();
-                break;
-            case LAZY:
-                break;
-            default:
-                throw new JedoException("Invalid fetch mode: " + fetchMode);
+            switch (fetchMode) {
+                case EAGER:
+                    col.get();
+                    break;
+                case LAZY:
+                    break;
+                default:
+                    throw new JedoException("Invalid fetch mode: " + fetchMode);
+            }
         }
         return col;
     }
+
+    protected abstract LazyCollection<Object> newCollection(
+            Storage pm, Object parent);
 
     @Override
     public void fixForwards(Map<Class<?>, ClassMapper> map) {
@@ -146,7 +140,7 @@ public abstract class CollectionMapper extends FieldMapper {
             extends FieldMapper.Builder<CollectionMapper> {
         private final FetchMode fetchMode;
         private final ClassMapper.Builder parentClass;
-        private final Class<?> elmClass;
+        protected final Class<?> elmClass;
         private Statement.Builder fetch;
         private Statement.Builder clear;
         private Statement.Builder add;

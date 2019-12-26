@@ -52,6 +52,15 @@ public abstract class FieldMapper {
     void afterInsert(Storage pm, Object obj) {
     }
 
+    void beforeUpdate(Storage pm, Object self) {
+    }
+
+    void afterUpdate(Storage pm, Object self) {
+    }
+
+    void beforeDelete(Storage pm, Object self) {
+    }
+
     public static abstract class Builder<T extends FieldMapper> {
         protected final Field field;
 

@@ -190,15 +190,33 @@ public class MappingFileReader {
                     stmtBuilder = collectionBuilder.newClearStatement(
                             attrs.getValue("parent"));
                     break;
-                case "add":
+                case "add": {
                     boolean keys = "true".equals(attrs.getValue(
                                     "get-generated-keys"));
                     stmtBuilder = collectionBuilder.newAddStatement(keys,
                             attrs.getValue("parent"), attrs.getValue("element"));
                     break;
+                }
                 case "remove":
                     stmtBuilder = collectionBuilder.newRemove(
                             attrs.getValue("parent"), attrs.getValue("element"));
+                    break;
+                case "set-at":
+                    stmtBuilder = listBuilder.newSetAt(attrs.getValue("parent"),
+                            attrs.getValue("element"), attrs.getValue("index"));
+                    break;
+                case "add-at": {
+                    boolean keys = "true".equals(attrs.getValue(
+                                    "get-generated-keys"));
+                    stmtBuilder = listBuilder.newAddStatement(keys,
+                            attrs.getValue("parent"), attrs.getValue("element"),
+                            attrs.getValue("index"));
+                    break;
+                }
+                case "remove-at":
+                    stmtBuilder = collectionBuilder.newRemove(
+                            attrs.getValue("parent"),
+                            attrs.getValue("index"));
                     break;
             }
         }

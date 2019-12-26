@@ -30,7 +30,7 @@
     fetch-mode (eager|lazy) #IMPLIED
 >
 
-<!ELEMENT list (fetch|clear|add|remove|set|add-at|remove-at)*>
+<!ELEMENT list (fetch|clear|add|remove|set-at|add-at|remove-at)*>
 <!ATTLIST list
     name CDATA #REQUIRED
     fetch-mode (eager|lazy) #IMPLIED

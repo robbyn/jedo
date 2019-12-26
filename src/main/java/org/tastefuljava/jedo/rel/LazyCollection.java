@@ -2,23 +2,25 @@ package org.tastefuljava.jedo.rel;
 
 import java.util.Collection;
 import java.util.Iterator;
-import org.tastefuljava.jedo.JedoException;
 import org.tastefuljava.jedo.mapping.CollectionMapper;
-import org.tastefuljava.jedo.mapping.Statement;
 import org.tastefuljava.jedo.mapping.Storage;
 
 public abstract class LazyCollection<T> implements Collection<T> {
     protected final Storage pm;
-    protected final CollectionMapper mapper;
     protected final Object parent;
     private Collection<T> col;
 
-    protected LazyCollection(Storage pm, CollectionMapper mapper,
-            Object parent) {
+    protected LazyCollection(Storage pm, Object parent) {
         this.pm = pm;
-        this.mapper = mapper;
         this.parent = parent;
     }
+
+    public void setEmpty() {
+        this.col = newCollection();
+    }
+
+    protected abstract CollectionMapper mapper();
+    public abstract Collection<T> newCollection();
 
     @Override
     public int size() {
@@ -48,28 +50,6 @@ public abstract class LazyCollection<T> implements Collection<T> {
     @Override
     public <TT> TT[] toArray(TT[] a) {
         return get().toArray(a);
-    }
-
-    @Override
-    public boolean add(T e) {
-        boolean result = get().add(e);
-        if (result) {
-            mapper.add(pm, parent, e);
-        }
-        return result;
-    }
-
-    @Override
-    public boolean remove(Object o) {
-        Statement stmt = mapper.getRemove();
-        if (stmt == null) {
-            throw new JedoException("Cannot remove from collection");
-        }
-        boolean result = get().remove(o);
-        if (result) {
-            mapper.remove(pm, parent, o);
-        }
-        return result;
     }
 
     @Override
@@ -113,9 +93,9 @@ public abstract class LazyCollection<T> implements Collection<T> {
 
     @Override
     public void clear() {
-        mapper.clear(pm, parent);
+        mapper().clear(pm, parent);
         if (col == null) {
-            col = newCollection();
+            setEmpty();
         } else {
             col.clear();
         }
@@ -123,11 +103,9 @@ public abstract class LazyCollection<T> implements Collection<T> {
 
     public Collection<T> get() {
         if (col == null) {
-            col = newCollection();
-            mapper.fetch(pm, parent, col);
+            setEmpty();
+            mapper().fetch(pm, parent, col);
         }
         return col;
     }
-
-    protected abstract Collection<T> newCollection();
 }

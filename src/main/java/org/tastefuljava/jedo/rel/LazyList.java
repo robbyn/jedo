@@ -4,21 +4,35 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.ListIterator;
-import org.tastefuljava.jedo.JedoException;
-import org.tastefuljava.jedo.mapping.CollectionMapper;
 import org.tastefuljava.jedo.mapping.ListMapper;
 import org.tastefuljava.jedo.mapping.Storage;
 
 public class LazyList<T> extends LazyCollection<T> implements List<T> {
     private boolean dirty;
+    private final ListMapper mapper;
 
-    public LazyList(Storage pm, CollectionMapper mapper,
-            Object parent) {
-        super(pm, mapper, parent);
+    public LazyList(Storage pm, ListMapper mapper, Object parent) {
+        super(pm, parent);
+        this.mapper = mapper;
+    }
+
+    public boolean isDirty() {
+        return dirty;
     }
 
     @Override
-    protected Collection<T> newCollection() {
+    public void setEmpty() {
+        super.setEmpty();
+        dirty = false;
+    }
+
+    @Override
+    protected ListMapper mapper() {
+        return mapper;
+    }
+
+    @Override
+    public List<T> newCollection() {
         return new ArrayList<>();
     }
 
@@ -55,14 +69,45 @@ public class LazyList<T> extends LazyCollection<T> implements List<T> {
     }
 
     @Override
+    public boolean add(T e) {
+        add(size(), e);
+        return true;
+    }
+
+    @Override
+    public boolean remove(Object o) {
+        int index = list().lastIndexOf(o);
+        if (index < 0) {
+            return false;
+        }
+        remove(index);
+        return true;
+    }
+
+    @Override
     public void add(int index, T element) {
-        list().add(index, element);
-        dirty = true;
+        List<T> list = list();
+        list.add(index, element);
+        if (!dirty && index+1 == list.size()) {
+            // try do it immediately
+            if (!mapper().addAt(pm, parent, element, index)) {
+                dirty = true;
+            }
+        } else {
+            dirty = true;
+        }
     }
 
     @Override
     public T remove(int index) {
-        T result = list().remove(index);
+        List<T> list = list();
+        T result = list.remove(index);
+        if (!dirty && index == list.size()) {
+            // try do it immediately
+            if (!mapper().removeAt(pm, parent, index)) {
+                dirty = true;
+            }
+        }
         dirty = true;
         return result;
     }

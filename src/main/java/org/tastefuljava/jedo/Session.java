@@ -130,9 +130,7 @@ public class Session implements AutoCloseable {
             throw new JedoException(
                     "Class is not mapped " + clazz.getName());
         }
-        cm.beforeUpdate(pm, obj);
         cm.update(pm, obj);
-        cm.afterUpdate(pm, obj);
     }
 
     public void delete(Object obj) {

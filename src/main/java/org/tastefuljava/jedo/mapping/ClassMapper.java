@@ -136,13 +136,13 @@ public class ClassMapper {
 
     public void beforeUpdate(Storage pm, Object self) {
         for (FieldMapper prop: fields) {
-            prop.afterInsert(pm, self);
+            prop.beforeUpdate(pm, self);
         }
     }
 
     public void afterUpdate(Storage pm, Object self) {
         for (FieldMapper prop: fields) {
-            prop.afterInsert(pm, self);
+            prop.afterUpdate(pm, self);
         }
     }
 
@@ -152,6 +152,12 @@ public class ClassMapper {
                     "No deleter for " + clazz.getName());
         }
         pm.delete(this, delete, obj);
+    }
+
+    public void beforeDelete(Storage pm, Object self) {
+        for (FieldMapper prop: fields) {
+            prop.beforeDelete(pm, self);
+        }
     }
 
     Statement getQuery(String queryName) {

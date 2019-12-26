@@ -1,7 +1,9 @@
 package org.tastefuljava.jedo.testdb;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import org.tastefuljava.jedo.Ref;
 
 public class Folder {
@@ -10,8 +12,8 @@ public class Folder {
     private String name;
     private String title;
     private String description;
-    private final List<Folder> subfolders = new ArrayList<>();
-    private final List<Picture> pictures = new ArrayList<>();
+    private final Set<Folder> subfolders = new HashSet<>();
+    private final Set<Picture> pictures = new HashSet<>();
 
     public int getId() {
         return id;
@@ -53,11 +55,11 @@ public class Folder {
         return parent.get() == null;
     }
 
-    public List<Folder> getSubfolders() {
+    public Set<Folder> getSubfolders() {
         return subfolders;
     }
 
-    public List<Picture> getPictures() {
+    public Set<Picture> getPictures() {
         return pictures;
     }
 }
