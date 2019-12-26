@@ -8,9 +8,9 @@ import org.tastefuljava.jedo.mapping.Statement;
 import org.tastefuljava.jedo.mapping.Storage;
 
 public abstract class LazyCollection<T> implements Collection<T> {
-    private final Storage pm;
-    private final CollectionMapper mapper;
-    private final Object parent;
+    protected final Storage pm;
+    protected final CollectionMapper mapper;
+    protected final Object parent;
     private Collection<T> col;
 
     protected LazyCollection(Storage pm, CollectionMapper mapper,

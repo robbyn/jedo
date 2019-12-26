@@ -6,9 +6,12 @@ import java.util.List;
 import java.util.ListIterator;
 import org.tastefuljava.jedo.JedoException;
 import org.tastefuljava.jedo.mapping.CollectionMapper;
+import org.tastefuljava.jedo.mapping.ListMapper;
 import org.tastefuljava.jedo.mapping.Storage;
 
 public class LazyList<T> extends LazyCollection<T> implements List<T> {
+    private boolean dirty;
+
     public LazyList(Storage pm, CollectionMapper mapper,
             Object parent) {
         super(pm, mapper, parent);
@@ -25,7 +28,12 @@ public class LazyList<T> extends LazyCollection<T> implements List<T> {
 
     @Override
     public boolean addAll(int index, Collection<? extends T> c) {
-        throw new JedoException("Cannot modify collection");
+        boolean done = false;
+        for (T elm: c) {
+            add(index++, elm);
+            done = true;
+        }
+        return done;
     }
 
     @Override
@@ -35,17 +43,28 @@ public class LazyList<T> extends LazyCollection<T> implements List<T> {
 
     @Override
     public T set(int index, T element) {
-        throw new JedoException("Cannot modify collection");
+        List<T> list = list();
+        T result = list.set(index, element);
+        if (!dirty && (mapper instanceof ListMapper)) {
+            ListMapper lm = (ListMapper)mapper;
+            if (!lm.setAt(pm, parent, element, index)) {
+                dirty = true;
+            }
+        }
+        return result;
     }
 
     @Override
     public void add(int index, T element) {
-        throw new JedoException("Cannot modify collection");
+        list().add(index, element);
+        dirty = true;
     }
 
     @Override
     public T remove(int index) {
-        throw new JedoException("Cannot modify collection");
+        T result = list().remove(index);
+        dirty = true;
+        return result;
     }
 
     @Override

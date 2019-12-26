@@ -1,19 +1,24 @@
 package org.tastefuljava.jedo.mapping;
 
 import java.lang.reflect.Field;
+import org.tastefuljava.jedo.JedoException;
 
 public class ListMapper extends CollectionMapper {
     private final Statement setAt;
-    private final Statement addAt;
-    private final Statement removeAt;
 
     private ListMapper(Builder builder) {
         super(builder);
         this.setAt = builder.buildSetAt();
-        this.addAt = builder.buildAddAt();
-        this.removeAt = builder.buildRemoveAt();
     }
- 
+
+    public boolean setAt(Storage pm, Object parent, Object o, int index) {
+        if (setAt == null) {
+            return false;
+        }
+        pm.insert(elmClass, setAt, o, new Object[]{parent, o, index});
+        return true;
+    }
+
     public static class Builder extends CollectionMapper.Builder {
         private Statement.Builder setAt;
         private Statement.Builder addAt;

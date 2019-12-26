@@ -136,8 +136,8 @@ public class MappingFileReader {
                                 fetchMode);
                     }
                     break;
-                case "collection":
-                    collectionBuilder = classBuilder.newCollection(
+                case "set":
+                    collectionBuilder = classBuilder.newSet(
                             attrs.getValue("name"),
                             attrs.getValue("fetch-mode"));
                     break;
@@ -222,7 +222,7 @@ public class MappingFileReader {
                     break;
                 case "list":
                     listBuilder = null; // no break
-                case "collection":
+                case "set":
                     collectionBuilder = null;
                     break;
                 case "query":

@@ -134,6 +134,18 @@ public class ClassMapper {
         pm.execute(update, obj, null);
     }
 
+    public void beforeUpdate(Storage pm, Object self) {
+        for (FieldMapper prop: fields) {
+            prop.afterInsert(pm, self);
+        }
+    }
+
+    public void afterUpdate(Storage pm, Object self) {
+        for (FieldMapper prop: fields) {
+            prop.afterInsert(pm, self);
+        }
+    }
+
     public void delete(Storage pm, Object obj) {
         if (delete == null) {
             throw new JedoException(
@@ -233,14 +245,14 @@ public class ClassMapper {
             fields.add(ref);
         }
 
-        public CollectionMapper.Builder newCollection(String name,
+        public SetMapper.Builder newSet(String name,
                 String fetchMode) {
             Field field = Reflection.getInstanceField(clazz, name);
             if (field == null) {
                 throw new JedoException("Field " + name
                         + " not found in class " + clazz.getName());
             }
-            CollectionMapper.Builder result = new CollectionMapper.Builder(
+            SetMapper.Builder result = new SetMapper.Builder(
                     this, field, fetchMode(fetchMode, FetchMode.LAZY));
             fields.add(result);
             return result;

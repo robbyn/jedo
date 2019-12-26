@@ -13,9 +13,9 @@ import org.tastefuljava.jedo.rel.LazyCollection;
 import org.tastefuljava.jedo.util.Reflection;
 import org.tastefuljava.jedo.util.XMLWriter;
 
-public class CollectionMapper extends FieldMapper {
+public abstract class CollectionMapper extends FieldMapper {
     private final FetchMode fetchMode;
-    private ClassMapper elmClass;
+    protected ClassMapper elmClass;
     private final Statement fetch;
     private final Statement clear;
     private final Statement add;
@@ -142,7 +142,8 @@ public class CollectionMapper extends FieldMapper {
         pm.execute(remove, o, new Object[]{parent, o});
     }
 
-    public static class Builder extends FieldMapper.Builder<CollectionMapper> {
+    public abstract static class Builder
+            extends FieldMapper.Builder<CollectionMapper> {
         private final FetchMode fetchMode;
         private final ClassMapper.Builder parentClass;
         private final Class<?> elmClass;
@@ -212,10 +213,5 @@ public class CollectionMapper extends FieldMapper {
                 add.setGeneratedKeys(cm.getIdColumns());
             }
         }
-
-        @Override
-        public CollectionMapper build() {
-            return new CollectionMapper(this);
-        }
-   }
+    }
 }

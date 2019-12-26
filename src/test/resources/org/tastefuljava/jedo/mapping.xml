@@ -7,7 +7,7 @@
         </id>
         <reference name="parent" column="PARENT_ID" fetch-mode="lazy"/>
         <field name="name" column="NAME"/>
-        <collection name="subfolders" fetch-mode="lazy">
+        <set name="subfolders" fetch-mode="lazy">
             <fetch>
                 SELECT * FROM folders
                 WHERE PARENT_ID=${id}
@@ -26,8 +26,8 @@
                 DELETE FROM folders
                 WHERE FOLDER_ID=${id}
             </clear>
-        </collection>
-        <collection name="pictures" fetch-mode="eager">
+        </set>
+        <set name="pictures" fetch-mode="eager">
             <fetch parent="folder">
                 SELECT * FROM pictures
                 WHERE FOLDER_ID=${id}
@@ -45,7 +45,7 @@
                 DELETE FROM pictures
                 WHERE FOLDER_ID=${id}
             </clear>
-        </collection>
+        </set>
 
         <load>
             SELECT * FROM folders
