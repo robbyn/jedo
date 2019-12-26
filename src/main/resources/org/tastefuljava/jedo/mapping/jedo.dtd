@@ -2,7 +2,7 @@
 <!ELEMENT mapping (class*)>
 <!ATTLIST mapping package CDATA #IMPLIED>
 
-<!ELEMENT class (id?,(field|component|reference|set)*,
+<!ELEMENT class (id?,(field|component|reference|set|list)*,
         load?,query*,insert?,update?,delete?,statement*)>
 <!ATTLIST class name CDATA #REQUIRED>
 

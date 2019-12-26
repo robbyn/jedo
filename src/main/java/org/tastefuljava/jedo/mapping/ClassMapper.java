@@ -131,7 +131,7 @@ public class ClassMapper {
             throw new JedoException(
                     "No updater for " + clazz.getName());
         }
-        pm.execute(update, obj, null);
+        pm.update(this, update, obj, null);
     }
 
     public void beforeUpdate(Storage pm, Object self) {

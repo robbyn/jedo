@@ -208,13 +208,13 @@ public class MappingFileReader {
                 case "add-at": {
                     boolean keys = "true".equals(attrs.getValue(
                                     "get-generated-keys"));
-                    stmtBuilder = listBuilder.newAddStatement(keys,
+                    stmtBuilder = listBuilder.newAddAtStatement(keys,
                             attrs.getValue("parent"), attrs.getValue("element"),
                             attrs.getValue("index"));
                     break;
                 }
                 case "remove-at":
-                    stmtBuilder = collectionBuilder.newRemove(
+                    stmtBuilder = listBuilder.newRemoveAt(
                             attrs.getValue("parent"),
                             attrs.getValue("index"));
                     break;

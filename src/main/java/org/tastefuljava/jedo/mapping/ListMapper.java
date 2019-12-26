@@ -1,7 +1,6 @@
 package org.tastefuljava.jedo.mapping;
 
 import java.lang.reflect.Field;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import org.tastefuljava.jedo.JedoException;
@@ -124,7 +123,7 @@ public class ListMapper extends CollectionMapper {
 
         @Override
         public void fixForwards(Map<Class<?>, ClassMapper.Builder> map) {
-            if (addAt != null & addAt.hasGeneratedKeys()) {
+            if (addAt != null && addAt.hasGeneratedKeys()) {
                 ClassMapper.Builder cm = map.get(elmClass);
                 if (cm == null) {
                     throw new JedoException(

@@ -78,4 +78,13 @@ public abstract class JedoTestBase {
             return folder;
         }
     }
+
+    protected Tag registerTag(String name) {
+        Tag tag = session.queryOne(Tag.class, "byName", name);
+        if (tag == null) {
+            tag = new Tag(name);
+            session.insert(tag);
+        }
+        return tag;
+    }
 }

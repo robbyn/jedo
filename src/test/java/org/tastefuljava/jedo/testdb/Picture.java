@@ -1,7 +1,9 @@
 package org.tastefuljava.jedo.testdb;
 
 import java.awt.Dimension;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 public class Picture {
     private int id;
@@ -11,6 +13,7 @@ public class Picture {
     private int width;
     private int height;
     private GpsData gpsData;
+    private List<Tag> tags = new ArrayList<>();
 
     public int getId() {
         return id;
@@ -75,5 +78,21 @@ public class Picture {
 
     public void setGpsData(GpsData gpsData) {
         this.gpsData = gpsData;
+    }
+
+    public int tagCount() {
+        return tags.size();
+    }
+
+    public Tag getTag(int index) {
+        return tags.get(index);
+    }
+
+    public void addTag(Tag tag) {
+        tags.add(tag);
+    }
+
+    public void removeTag(int index) {
+        tags.remove(index);
     }
 }

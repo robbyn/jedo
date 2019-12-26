@@ -197,7 +197,7 @@ public abstract class CollectionMapper extends FieldMapper {
  
         @Override
         public void fixForwards(Map<Class<?>, ClassMapper.Builder> map) {
-            if (add != null & add.hasGeneratedKeys()) {
+            if (add != null && add.hasGeneratedKeys()) {
                 ClassMapper.Builder cm = map.get(elmClass);
                 if (cm == null) {
                     throw new JedoException(

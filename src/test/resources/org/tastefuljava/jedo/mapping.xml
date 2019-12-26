@@ -80,6 +80,22 @@
             <field name="longitude" column="LONGITUDE"/>
             <field name="altitude" column="ALTITUDE"/>
         </component>
+        <list name="tags" fetch-mode="lazy">
+            <fetch>
+                SELECT tags.* FROM picture_tags JOIN tags
+                ON (TAG_ID=ID)
+                WHERE PICTURE_ID=${id}
+                ORDER BY PICTURE_ID,INDEX
+            </fetch>
+            <add-at parent="picture" element="tag" index="index">
+                INSERT INTO picture_tags(PICTURE_ID,INDEX,TAG_ID)
+                VALUES(${picture.id},${index},${tag.id})
+            </add-at>
+            <clear parent="picture">
+                DELETE FROM picture_tags
+                WHERE PICTURE_ID=${id}
+            </clear>
+        </list>
 
         <load>
             SELECT * FROM pictures
@@ -108,5 +124,23 @@
         <delete>
             DELETE FROM pictures WHERE ID=${id}
         </delete>
+    </class>
+
+    <class name="Tag">
+        <id>
+            <field name="id" column="ID"/>
+        </id>
+        <field name="name" column="NAME"/>
+        <load>
+            SELECT * FROM tags
+            WHERE ID=${id}
+        </load>
+        <query name="byName" parameters="name">
+            SELECT * FROM tags
+            WHERE NAME=${name}
+        </query>
+        <insert get-generated-keys="true">
+            INSERT INTO tags(NAME) VALUES(${name})
+        </insert>
     </class>
 </mapping>
