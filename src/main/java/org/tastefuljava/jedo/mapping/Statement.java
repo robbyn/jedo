@@ -31,6 +31,7 @@ public class Statement {
     public PreparedStatement prepare(Connection cnt, Object self,
             Object[] parms) {
         try {
+            LOG.fine(()->"Statement.prepare " + sql);
             boolean ok = false;
             PreparedStatement stmt = generatedKeys == null
                     ? cnt.prepareStatement(sql)
