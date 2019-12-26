@@ -1,6 +1,5 @@
 package org.tastefuljava.jedo.rel;
 
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 import org.tastefuljava.jedo.mapping.SetMapper;
