@@ -46,11 +46,7 @@ public class Session implements AutoCloseable {
     }
 
     public <T> T loadA(Class<T> clazz, Object[] parms) {
-        ClassMapper cm = mapper.getClassMapper(clazz);
-        if (cm == null) {
-            throw new JedoException(
-                    "Class is not mapped " + clazz.getName());
-        }
+        ClassMapper cm = classMapper(clazz);
         return clazz.cast(pm.loadFromId(cm, parms));
     }
 
@@ -59,11 +55,7 @@ public class Session implements AutoCloseable {
     }
 
     public <T> T queryOneA(Class<T> clazz, String name, Object[] parms) {
-        ClassMapper cm = mapper.getClassMapper(clazz);
-        if (cm == null) {
-            throw new JedoException(
-                    "Class is not mapped " + clazz.getName());
-        }
+        ClassMapper cm = classMapper(clazz);
         return clazz.cast(cm.queryOne(pm, name, parms));
     }
 
@@ -72,11 +64,7 @@ public class Session implements AutoCloseable {
     }
 
     public <T> List<T> queryA(Class<T> clazz, String name, Object[] parms) {
-        ClassMapper cm = mapper.getClassMapper(clazz);
-        if (cm == null) {
-            throw new JedoException(
-                    "Class is not mapped " + clazz.getName());
-        }
+        ClassMapper cm = classMapper(clazz);
         @SuppressWarnings("unchecked")
         List<T> result = (List<T>) cm.query(pm, name, null, parms);
         return result;
@@ -87,11 +75,7 @@ public class Session implements AutoCloseable {
     }
 
     public void invokeA(Class<?> clazz, String name, Object[] parms) {
-        ClassMapper cm = mapper.getClassMapper(clazz);
-        if (cm == null) {
-            throw new JedoException(
-                    "Class is not mapped " + clazz.getName());
-        }
+        ClassMapper cm = classMapper(clazz);
         cm.invoke(pm, name, parms);
     }
 
@@ -100,11 +84,7 @@ public class Session implements AutoCloseable {
     }
 
     public void applyA(Object obj, String name, Object[] parms) {
-        ClassMapper cm = mapper.getClassMapper(obj.getClass());
-        if (cm == null) {
-            throw new JedoException(
-                    "Class is not mapped " + obj.getClass().getName());
-        }
+        ClassMapper cm = classMapper(obj.getClass());
         Object[] p = new Object[parms.length+1];
         p[0] = obj;
         for (int i = 0; i < parms.length; ++i) {
@@ -114,32 +94,31 @@ public class Session implements AutoCloseable {
     }
 
     public void insert(Object obj) {
-        Class<?> clazz = obj.getClass();
-        ClassMapper cm = mapper.getClassMapper(clazz);
-        if (cm == null) {
-            throw new JedoException(
-                    "Class is not mapped " + clazz.getName());
-        }
+        ClassMapper cm = classMapper(obj.getClass());
         cm.insert(pm, obj);
     }
 
     public void update(Object obj) {
-        Class<?> clazz = obj.getClass();
-        ClassMapper cm = mapper.getClassMapper(clazz);
-        if (cm == null) {
-            throw new JedoException(
-                    "Class is not mapped " + clazz.getName());
-        }
+        ClassMapper cm = classMapper(obj.getClass());
         cm.update(pm, obj);
     }
 
     public void delete(Object obj) {
-        Class<?> clazz = obj.getClass();
+        ClassMapper cm = classMapper(obj.getClass());
+        cm.delete(pm, obj);
+    }
+
+    public void markDirty(Object obj) {
+        ClassMapper cm = classMapper(obj.getClass());
+        pm.markDirty(cm, obj);
+    }
+
+    private ClassMapper classMapper(Class<?> clazz) throws JedoException {
         ClassMapper cm = mapper.getClassMapper(clazz);
         if (cm == null) {
             throw new JedoException(
                     "Class is not mapped " + clazz.getName());
         }
-        cm.delete(pm, obj);
+        return cm;
     }
 }

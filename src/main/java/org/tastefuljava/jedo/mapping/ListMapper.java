@@ -47,27 +47,8 @@ public class ListMapper extends CollectionMapper {
     @Override
     void beforeDelete(Storage pm, Object self) {
         LazyList<?> list = (LazyList<?>)this.getValue(self);
+        pm.dispose(list);
         list.clear();
-    }
-
-    @Override
-    void beforeUpdate(Storage pm, Object self) {
-        LazyList<?> list = (LazyList<?>)this.getValue(self);
-        if (list.isDirty()) {
-           clear(pm, self);
-        }
-    }
-
-    @Override
-    void afterUpdate(Storage pm, Object self) {
-        LazyList<Object> list = (LazyList<Object>)this.getValue(self);
-        if (list.isDirty()) {
-            Object[] array = list.toArray();
-            list.setEmpty();
-            for (Object obj: array) {
-                list.add(obj);
-            }
-        }
     }
 
     @Override

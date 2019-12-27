@@ -37,7 +37,6 @@ public class ListTest extends JedoTestBase {
         for (String name: tagNames) {
             pic.addTag(registerTag(name));
         }
-        session.update(pic);
         session.commit();
         folder = getFolder("root");
         pic = session.queryOne(Picture.class, "byName", folder, "thePic");
@@ -54,7 +53,6 @@ public class ListTest extends JedoTestBase {
         for (int i = 0; i < tagNameList.size(); ++i) {
             assertEquals(tagNameList.get(i), pic.getTag(i).getName());
         }
-        session.update(pic);
         session.commit();
         folder = getFolder("root");
         pic = session.queryOne(Picture.class, "byName", folder, "thePic");

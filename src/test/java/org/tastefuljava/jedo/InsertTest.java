@@ -3,6 +3,7 @@ package org.tastefuljava.jedo;
 import java.io.IOException;
 import java.sql.SQLException;
 import org.junit.After;
+import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
 import org.tastefuljava.jedo.testdb.Folder;
@@ -34,5 +35,9 @@ public class InsertTest extends JedoTestBase {
         folder.getSubfolders().add(sub2);
         session.insert(folder);
         session.commit();
+        folder = getFolder("newFolder");
+        assertEquals(2, folder.getSubfolders().size());
+        assertTrue(folder.getSubfolders().contains(getFolder("newFolder/newSub1")));
+        assertTrue(folder.getSubfolders().contains(getFolder("newFolder/newSub2")));
     }
 }

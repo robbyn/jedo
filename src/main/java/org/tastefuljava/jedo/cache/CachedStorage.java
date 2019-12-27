@@ -5,11 +5,14 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collection;
+import java.util.LinkedHashSet;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.tastefuljava.jedo.JedoException;
 import org.tastefuljava.jedo.Session;
 import org.tastefuljava.jedo.mapping.ClassMapper;
+import org.tastefuljava.jedo.mapping.Flushable;
 import org.tastefuljava.jedo.mapping.Statement;
 import org.tastefuljava.jedo.mapping.Storage;
 
@@ -18,6 +21,7 @@ public class CachedStorage implements Storage {
     private final Connection cnt;
     private final Cache<ObjectId,Object> cache = new Cache<>();
     private boolean closeConnection = true;
+    private final Set<Flushable> dirtyObjects = new LinkedHashSet<>();
 
     public CachedStorage(Connection cnt) {
         this.cnt = cnt;
@@ -25,6 +29,7 @@ public class CachedStorage implements Storage {
 
     public void commit() {
         try {
+            flush();
             cache.clear();
             cnt.commit();
         } catch (SQLException ex) {
@@ -36,6 +41,7 @@ public class CachedStorage implements Storage {
     @Override
     public void close() {
         try {
+            dirtyObjects.clear();
             cache.clear();
             if (!cnt.isClosed()) {
                 try {
@@ -61,28 +67,10 @@ public class CachedStorage implements Storage {
     }
 
     @Override
-    public Object loadFromResultSet(ClassMapper cm, ResultSet rs) {
-        ObjectId oid = makeObjectId(
-                cm.getMappedClass(), cm.getIdValuesFromResultSet(rs));
-        Object obj;
-        if (oid != null) {
-            obj = cache.get(oid);
-            if (obj != null) {
-                return obj;
-            }
-        }
-        obj = cm.newInstance();
-        if (oid != null) {
-            cache.put(oid, obj);
-        }
-        cm.setFieldsFromResultSet(this, obj, rs);
-        return obj;
-    }
-
-    @Override
     public void query(ClassMapper cm, Statement stmt, Object self, Object[] parms,
             Collection<Object> result) {
-         try (PreparedStatement pstmt = prepareStatement(stmt, self, parms);
+        flush();
+        try (PreparedStatement pstmt = prepareStatement(stmt, self, parms);
                 ResultSet rs = pstmt.executeQuery()) {
             while (rs.next()) {
                 result.add(loadFromResultSet(cm, rs));
@@ -95,6 +83,7 @@ public class CachedStorage implements Storage {
 
     @Override
     public Object queryOne(ClassMapper cm, Statement stmt, Object[] parms) {
+        flush();
         Object result = null;
         try (PreparedStatement pstmt = prepareStatement(stmt, null, parms);
                 ResultSet rs = pstmt.executeQuery()) {
@@ -114,6 +103,7 @@ public class CachedStorage implements Storage {
     @Override
     public void delete(ClassMapper cm, Statement stmt, Object self) {
         cm.beforeDelete(this, self);
+        dispose(new TypedRef(cm, self));
         try (PreparedStatement pstmt = prepareStatement(stmt, self, null)) {
             pstmt.executeUpdate();
             cache.remove(getObjectId(cm, self));
@@ -131,6 +121,7 @@ public class CachedStorage implements Storage {
     @Override
     public void update(ClassMapper cm, Statement stmt, Object self,
             Object[] parms) {
+        dispose(new TypedRef(cm, self));
         cm.beforeUpdate(this, self);
         try (PreparedStatement pstmt = prepareStatement(stmt, self, parms)) {
             pstmt.executeUpdate();
@@ -155,10 +146,6 @@ public class CachedStorage implements Storage {
         cm.afterInsert(this, self);
     }
 
-    private ObjectId getObjectId(ClassMapper cm, Object obj) {
-        return new ObjectId(cm.getMappedClass(), cm.getIdValues(obj));
-    }
-
     @Override
     public Object loadFromId(ClassMapper cm, Object[] values) {
         ObjectId oid = makeObjectId(cm.getMappedClass(), values);
@@ -170,6 +157,53 @@ public class CachedStorage implements Storage {
             }
         }
         return cm.load(this, values);
+    }
+
+    @Override
+    public void markDirty(Flushable obj) {
+        dirtyObjects.add(obj);
+    }
+
+    @Override
+    public void dispose(Flushable obj) {
+        dirtyObjects.remove(obj);
+    }
+
+    public void markDirty(ClassMapper cm, Object obj) {
+        markDirty(new TypedRef(cm, obj));
+    }
+
+    public void dispose(ClassMapper cm, Object obj) {
+        dispose(new TypedRef(cm, obj));
+    }
+
+    private Object loadFromResultSet(ClassMapper cm, ResultSet rs) {
+        ObjectId oid = makeObjectId(
+                cm.getMappedClass(), cm.getIdValuesFromResultSet(rs));
+        Object obj;
+        if (oid != null) {
+            obj = cache.get(oid);
+            if (obj != null) {
+                return obj;
+            }
+        }
+        obj = cm.newInstance();
+        if (oid != null) {
+            cache.put(oid, obj);
+        }
+        cm.setFieldsFromResultSet(this, obj, rs);
+        return obj;
+    }
+
+    private void flush() {
+        for (Flushable f: dirtyObjects) {
+            f.flush(this);
+        }
+        dirtyObjects.clear();
+    }
+
+    private static ObjectId getObjectId(ClassMapper cm, Object obj) {
+        return makeObjectId(cm.getMappedClass(), cm.getIdValues(obj));
     }
 
     private static ObjectId makeObjectId(Class<?> clazz, Object[] values) {

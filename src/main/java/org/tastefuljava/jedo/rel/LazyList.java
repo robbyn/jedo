@@ -4,10 +4,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.ListIterator;
+import org.tastefuljava.jedo.JedoException;
+import org.tastefuljava.jedo.mapping.Flushable;
 import org.tastefuljava.jedo.mapping.ListMapper;
 import org.tastefuljava.jedo.mapping.Storage;
 
-public class LazyList<T> extends LazyCollection<T> implements List<T> {
+public class LazyList<T> extends LazyCollection<T> implements List<T>, Flushable {
     private boolean dirty;
     private final ListMapper mapper;
 
@@ -62,7 +64,7 @@ public class LazyList<T> extends LazyCollection<T> implements List<T> {
         if (!dirty && (mapper instanceof ListMapper)) {
             ListMapper lm = (ListMapper)mapper;
             if (!lm.setAt(pm, parent, element, index)) {
-                dirty = true;
+                markDirty();
             }
         }
         return result;
@@ -88,13 +90,16 @@ public class LazyList<T> extends LazyCollection<T> implements List<T> {
     public void add(int index, T element) {
         List<T> list = list();
         list.add(index, element);
-        if (!dirty && index+1 == list.size()) {
+        if (dirty ) {
+            // nothing 
+        } else if (index+1 == list.size()) {
             // try do it immediately
             if (!mapper().addAt(pm, parent, element, index)) {
-                dirty = true;
+                throw new JedoException(
+                        "Could not add element at index " + index);
             }
         } else {
-            dirty = true;
+            markDirty();
         }
     }
 
@@ -102,14 +107,23 @@ public class LazyList<T> extends LazyCollection<T> implements List<T> {
     public T remove(int index) {
         List<T> list = list();
         T result = list.remove(index);
-        if (!dirty && index == list.size()) {
+        if (dirty) {
+        } else if (index == list.size()) {
             // try do it immediately
             if (!mapper().removeAt(pm, parent, index)) {
-                dirty = true;
+                // no removeAt statement: mark dirty so that a clear will be used.
+                markDirty();
             }
+        } else {
+            markDirty();
         }
-        dirty = true;
         return result;
+    }
+
+    @Override
+    public void clear() {
+        super.clear();
+        dirty = false;
     }
 
     @Override
@@ -135,5 +149,28 @@ public class LazyList<T> extends LazyCollection<T> implements List<T> {
     @Override
     public List<T> subList(int fromIndex, int toIndex) {
         return list().subList(fromIndex, toIndex);
+    }
+
+    @Override
+    public void flush(Storage pm) {
+        if (dirty) {
+            // clear and readd all the elements
+            List<T> list = list();
+            mapper.clear(pm, parent);
+            for (int i = 0; i < list.size(); ++i) {
+                if (!mapper().addAt(pm, parent, list.get(i), i)) {
+                    throw new JedoException("Could not add element at index "
+                            + i);
+                }
+            }
+            dirty = false;
+        }
+    }
+
+    private void markDirty() {
+        if (!dirty) {
+            pm.markDirty(this);
+            dirty = true;
+        }
     }
 }
