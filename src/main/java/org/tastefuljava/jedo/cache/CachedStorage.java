@@ -20,7 +20,6 @@ public class CachedStorage implements Storage {
     private static final Logger LOG = Logger.getLogger(Session.class.getName());
     private final Connection cnt;
     private final Cache<ObjectId,Object> cache = new Cache<>();
-    private boolean closeConnection = true;
     private final Set<Flushable> dirtyObjects = new LinkedHashSet<>();
 
     public CachedStorage(Connection cnt) {
@@ -47,23 +46,13 @@ public class CachedStorage implements Storage {
                 try {
                     cnt.rollback();
                 } finally {
-                    if (closeConnection) {
-                        cnt.close();
-                    }
+                    cnt.close();
                 }
             }
         } catch (SQLException ex) {
             LOG.log(Level.SEVERE, null, ex);
             throw new JedoException(ex.getMessage());
         }
-    }
-
-    public boolean getCloseConnection() {
-        return closeConnection;
-    }
-
-    public void setCloseConnection(boolean closeConnection) {
-        this.closeConnection = closeConnection;
     }
 
     @Override

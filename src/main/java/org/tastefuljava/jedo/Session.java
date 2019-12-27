@@ -29,14 +29,6 @@ public class Session implements AutoCloseable {
         }
     }
 
-    public boolean getCloseConnection() {
-        return pm.getCloseConnection();
-    }
-
-    public void setCloseConnection(boolean closeConnection) {
-        pm.setCloseConnection(closeConnection);
-    }
-
     public void commit() {
         pm.commit();
     }

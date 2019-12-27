@@ -48,12 +48,7 @@ public abstract class JedoTestBase {
 
     protected void terminate() throws SQLException, IOException {
         if (session != null) {
-            session.setCloseConnection(false);
             session.close();
-        }
-        if (cnt != null && !cnt.isClosed()) {
-            cnt.createStatement().execute("SHUTDOWN");
-            cnt.close();
         }
     }
 
