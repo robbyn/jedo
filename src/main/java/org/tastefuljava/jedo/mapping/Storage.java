@@ -1,6 +1,5 @@
 package org.tastefuljava.jedo.mapping;
 
-import java.sql.ResultSet;
 import java.util.Collection;
 
 public interface Storage extends AutoCloseable {

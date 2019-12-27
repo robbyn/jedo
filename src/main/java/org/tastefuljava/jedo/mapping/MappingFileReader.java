@@ -139,7 +139,8 @@ public class MappingFileReader {
                 case "set":
                     collectionBuilder = classBuilder.newSet(
                             attrs.getValue("name"),
-                            attrs.getValue("fetch-mode"));
+                            attrs.getValue("fetch-mode"),
+                            attrs.getValue("order"));
                     break;
                 case "list":
                     listBuilder = classBuilder.newList(

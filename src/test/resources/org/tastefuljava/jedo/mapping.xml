@@ -7,7 +7,7 @@
         </id>
         <reference name="parent" column="PARENT_ID" fetch-mode="lazy"/>
         <field name="name" column="NAME"/>
-        <set name="subfolders" fetch-mode="lazy">
+        <set name="subfolders" fetch-mode="lazy" order="name">
             <fetch>
                 SELECT * FROM folders
                 WHERE PARENT_ID=${id}
@@ -27,7 +27,7 @@
                 WHERE FOLDER_ID=${id}
             </clear>
         </set>
-        <set name="pictures" fetch-mode="eager">
+        <set name="pictures" fetch-mode="eager" order="name">
             <fetch parent="folder">
                 SELECT * FROM pictures
                 WHERE FOLDER_ID=${id}

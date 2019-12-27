@@ -1,19 +1,22 @@
 package org.tastefuljava.jedo.testdb;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
+import java.util.Comparator;
 import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import org.tastefuljava.jedo.Ref;
 
 public class Folder {
+    public static Comparator<Folder> BY_NAME
+            = (a,b)->a.name.compareTo(b.name);
+
     private int id;
     private final Ref<Folder> parent = new Ref<>();
     private String name;
     private String title;
     private String description;
-    private final Set<Folder> subfolders = new HashSet<>();
-    private final Set<Picture> pictures = new HashSet<>();
+    private final SortedSet<Folder> subfolders = new TreeSet<>(BY_NAME);
+    private final SortedSet<Picture> pictures = new TreeSet<>(Picture.BY_NAME);
 
     public int getId() {
         return id;

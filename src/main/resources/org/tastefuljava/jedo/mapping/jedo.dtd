@@ -28,6 +28,7 @@
 <!ATTLIST set
     name CDATA #REQUIRED
     fetch-mode (eager|lazy) #IMPLIED
+    order CDATA #IMPLIED
 >
 
 <!ELEMENT list (fetch|clear|add|remove|set-at|add-at|remove-at)*>

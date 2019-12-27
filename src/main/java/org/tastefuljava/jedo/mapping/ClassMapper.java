@@ -251,15 +251,24 @@ public class ClassMapper {
             fields.add(ref);
         }
 
-        public SetMapper.Builder newSet(String name,
-                String fetchMode) {
+        public SetMapper.Builder newSet(String name, String fetchMode,
+                String order) {
             Field field = Reflection.getInstanceField(clazz, name);
             if (field == null) {
                 throw new JedoException("Field " + name
                         + " not found in class " + clazz.getName());
             }
+            Field[] orderFields;
+            if (order == null) {
+                orderFields = null;
+            } else {
+                Class<?> targetClass = Reflection.getReferencedType(field);
+                String[] orderNames = order.split("\\s*[\\s,;]\\s*");
+                orderFields = Reflection.fieldList(targetClass, orderNames);
+            }
+            FetchMode realFetchMode = fetchMode(fetchMode, FetchMode.LAZY);
             SetMapper.Builder result = new SetMapper.Builder(
-                    this, field, fetchMode(fetchMode, FetchMode.LAZY));
+                    this, field, realFetchMode, orderFields);
             fields.add(result);
             return result;
         }

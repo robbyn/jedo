@@ -17,6 +17,17 @@ public class Reflection {
 
     private static final Class<?>[] EMPTY_CLASS_ARRAY = {};
 
+    public static Field[] fieldList(Class<?> clazz, String... names) {
+        Field[] fields = new Field[names.length];
+        for (int i = 0; i < fields.length; ++i) {
+            fields[i] = Reflection.getInstanceField(clazz, names[i]);
+            if (fields[i] == null) {
+                throw new JedoException("Field " + names[i] + " not found in class " + clazz.getName());
+            }
+        }
+        return fields;
+    }
+
     private Reflection() {
     }
 

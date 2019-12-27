@@ -2,10 +2,14 @@ package org.tastefuljava.jedo.testdb;
 
 import java.awt.Dimension;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 
 public class Picture {
+    public static Comparator<Picture> BY_NAME
+            = (a,b)->a.name.compareTo(b.name);
+
     private int id;
     private Folder folder;
     private String name;
