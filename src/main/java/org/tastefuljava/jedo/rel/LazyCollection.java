@@ -16,7 +16,11 @@ public abstract class LazyCollection<T> implements Collection<T> {
     }
 
     public void setEmpty() {
-        this.col = newCollection();
+        if (col == null) {
+            col = newCollection();
+        } else {
+            col.clear();
+        }
     }
 
     protected abstract CollectionMapper mapper();
@@ -94,11 +98,7 @@ public abstract class LazyCollection<T> implements Collection<T> {
     @Override
     public void clear() {
         mapper().clear(pm, parent);
-        if (col == null) {
-            setEmpty();
-        } else {
-            col.clear();
-        }
+        setEmpty();
     }
 
     public Collection<T> get() {

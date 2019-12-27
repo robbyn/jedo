@@ -123,7 +123,6 @@ public class LazyList<T> extends LazyCollection<T> implements List<T>, Flushable
     @Override
     public void clear() {
         super.clear();
-        dirty = false;
     }
 
     @Override
