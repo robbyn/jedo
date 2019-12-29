@@ -133,25 +133,43 @@ public class Reflection {
         }
     }
 
-    public static Class<?> getReferencedType(Field field) {
+    public static Class<?> getReferencedClass(Field field) {
         Class<?> ftype = field.getType();
         if (ftype != Ref.class && !Collection.class.isAssignableFrom(ftype)) {
             throw new JedoException("Not a reference type");
         }
-        Type type = field.getGenericType();
-        if (!(type instanceof ParameterizedType)) {
-            throw new JedoException("Not a parameterized type");
-        }
-        ParameterizedType ptype = (ParameterizedType)type;
-        Type[] argTypes = ptype.getActualTypeArguments();
-        if (argTypes.length != 1) {
-            throw new JedoException("Wrong number of arguments");
-        }
+        Type[] argTypes = getReferencedTypes(field, 1);
         Type atype = argTypes[0];
         if (!(atype instanceof Class)) {
             throw new JedoException("Element type is not a class");
         }
         Class<?> result = (Class<?>)atype;
         return result;
+    }
+
+    public static Class<?>[] getReferencedClasses(Field field, int count) {
+        Type[] argTypes = getReferencedTypes(field, count);
+        Class<?>[] result = new Class<?>[count];
+        for (int i = 0; i < count; ++i) {
+            Type atype = argTypes[i];
+            if (!(atype instanceof Class)) {
+                throw new JedoException("Element type is not a class");
+            }
+            result[i] = (Class<?>)atype;
+        }
+        return result;
+    }
+
+    private static Type[] getReferencedTypes(Field field, int count) {
+        Type type = field.getGenericType();
+        if (!(type instanceof ParameterizedType)) {
+            throw new JedoException("Not a parameterized type");
+        }
+        ParameterizedType ptype = (ParameterizedType)type;
+        Type[] argTypes = ptype.getActualTypeArguments();
+        if (argTypes.length != count) {
+            throw new JedoException("Wrong number of arguments");
+        }
+        return argTypes;
     }
 }

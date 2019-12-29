@@ -2,7 +2,7 @@
 <!ELEMENT mapping (class*)>
 <!ATTLIST mapping package CDATA #IMPLIED>
 
-<!ELEMENT class (id?,(field|component|reference|set|list)*,
+<!ELEMENT class (id?,(field|component|reference|set|list|map)*,
         load?,query*,insert?,update?,delete?,statement*)>
 <!ATTLIST class name CDATA #REQUIRED>
 
@@ -35,6 +35,18 @@
 <!ATTLIST list
     name CDATA #REQUIRED
     fetch-mode (eager|lazy) #IMPLIED
+>
+
+<!ELEMENT map (key,element?,(fetch)*)>
+<!ATTLIST map
+    name CDATA #REQUIRED
+    fetch-mode (eager|lazy) #IMPLIED
+>
+
+<!ELEMENT key EMPTY>
+<!ATTLIST key
+    type CDATA #IMPLIED
+    column CDATA #REQUIRED
 >
 
 <!ELEMENT element EMPTY>

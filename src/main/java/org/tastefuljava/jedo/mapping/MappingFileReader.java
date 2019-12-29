@@ -64,6 +64,7 @@ public class MappingFileReader {
         private ClassMapper.Builder classBuilder;
         private CollectionMapper.Builder collectionBuilder;
         private ListMapper.Builder listBuilder;
+        private MapMapper.Builder mapBuilder;
         private boolean inId;
         private ComponentMapper.Builder compBuilder;
         private Statement.Builder stmtBuilder;
@@ -148,12 +149,29 @@ public class MappingFileReader {
                             attrs.getValue("fetch-mode"));
                     collectionBuilder = listBuilder;
                     break;
+                case "map":
+                    mapBuilder = classBuilder.newMap(
+                            attrs.getValue("name"),
+                            attrs.getValue("fetch-mode"));
+                    break;
+                case "key": {
+                    String type = attrs.getValue("type");
+                    Class<?> clazz = type == null
+                            ? null : builder.findClass(type);
+                    String column = attrs.getValue("column");
+                    mapBuilder.setKeys(clazz, column);
+                    break;
+                }
                 case "element": {
                     String type = attrs.getValue("type");
                     Class<?> clazz = type == null
                             ? null : builder.findClass(type);
-                    collectionBuilder.setElements(
-                            clazz, attrs.getValue("column"));
+                    String column = attrs.getValue("column");
+                    if (collectionBuilder != null) {
+                        collectionBuilder.setElements(clazz, column);
+                    } else {
+                        mapBuilder.setElements(clazz, column);
+                    }
                     break;
                 }
                 case "component":
@@ -192,12 +210,22 @@ public class MappingFileReader {
                     stmtBuilder = classBuilder.newStatement(null);
                     break;
                 case "fetch":
-                    stmtBuilder = collectionBuilder.newFetchStatement(
-                            attrs.getValue("parent"));
+                    if (collectionBuilder != null) {
+                        stmtBuilder = collectionBuilder.newFetchStatement(
+                                attrs.getValue("parent"));
+                    } else {
+                        stmtBuilder = mapBuilder.newFetchStatement(
+                                attrs.getValue("parent"));
+                    }
                     break;
                 case "clear":
-                    stmtBuilder = collectionBuilder.newClearStatement(
-                            attrs.getValue("parent"));
+                    if (collectionBuilder != null) {
+                        stmtBuilder = collectionBuilder.newClearStatement(
+                                attrs.getValue("parent"));
+                    } else {
+                        stmtBuilder = mapBuilder.newClearStatement(
+                                attrs.getValue("parent"));
+                    }
                     break;
                 case "add":
                     stmtBuilder = collectionBuilder.newAddStatement(
@@ -243,6 +271,9 @@ public class MappingFileReader {
                     listBuilder = null; // no break
                 case "set":
                     collectionBuilder = null;
+                    break;
+                case "map":
+                    mapBuilder = null;
                     break;
                 case "query":
                     queryName = null;

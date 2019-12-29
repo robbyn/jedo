@@ -16,11 +16,11 @@ public class SetMapper extends CollectionMapper {
 
     @Override
     protected LazyCollection<Object> newCollection(Storage pm, Object parent) {
-        if (orderFields != null && orderFields.length > 0
+        if (type.isAssignableFrom(LazySet.class)) {
+            return new LazySet<>(pm, this, parent);
+        } else if (orderFields != null && orderFields.length > 0
                 && type.isAssignableFrom(LazySortedSet.class)) {
             return new LazySortedSet<>(pm, this, parent, orderFields);
-        } else if (type.isAssignableFrom(LazySet.class)) {
-            return new LazySet<>(pm, this, parent);
         } else {
             throw new JedoException("Unsupported set field type "
                     + type.getName());
