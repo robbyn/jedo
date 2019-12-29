@@ -41,8 +41,8 @@ public class ColumnMapper extends ValueMapper {
     public static class Builder extends ValueMapper.Builder<ColumnMapper> {
         private final String column;
 
-        public Builder(Class<?> type, String column) {
-            super(type);
+        public Builder(BuildContext context, Class<?> type, String column) {
+            super(context, type);
             this.column = column;
         }
 

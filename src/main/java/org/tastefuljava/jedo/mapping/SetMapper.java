@@ -30,15 +30,17 @@ public class SetMapper extends CollectionMapper {
     public static class Builder extends CollectionMapper.Builder {
         private final Field[] orderFields;
 
-        public Builder(ClassMapper.Builder parentClass, Field field,
-                FetchMode fetchMode, Field[] orderFields) {
-            super(parentClass, field, fetchMode);
+        public Builder(BuildContext context, ClassMapper.Builder parentClass,
+                Field field, FetchMode fetchMode, Field[] orderFields) {
+            super(context, parentClass, field, fetchMode);
             this.orderFields = orderFields;
         }
 
         @Override
         public CollectionMapper build() {
-            return new SetMapper(this);
+            SetMapper result = new SetMapper(this);
+            postBuild(result);
+            return result;
         }
     }
 }

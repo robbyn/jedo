@@ -82,18 +82,6 @@ public abstract class CollectionMapper extends ValueMapper {
     protected abstract LazyCollection<Object> newCollection(
             Storage pm, Object parent);
 
-    @Override
-    public void fixForwardFields(Map<Class<?>, ClassMapper> map, Field field) {
-        if (elmMapper == null) {
-            Class<?> clazz = Reflection.getReferencedType(field);
-            elmMapper = map.get(clazz);
-            if (elmMapper == null) {
-                throw new JedoException("Unresolved collection element class: "
-                        + field.getType().getName());
-            }
-        }
-    }
-
     public void clear(Storage pm, Object parent) {
         if (clear == null) {
             throw new JedoException("Cannot clear collection");
@@ -126,9 +114,9 @@ public abstract class CollectionMapper extends ValueMapper {
         private Statement.Builder add;
         private Statement.Builder remove;
 
-        public Builder(ClassMapper.Builder parentClass, Field field,
-                FetchMode fetchMode) {
-            super(field.getType());
+        public Builder(BuildContext context, ClassMapper.Builder parentClass,
+                Field field, FetchMode fetchMode) {
+            super(context, field.getType());
             this.parentClass = parentClass;
             elmClass = Reflection.getReferencedType(field);
             this.fetchMode = fetchMode;
@@ -136,7 +124,7 @@ public abstract class CollectionMapper extends ValueMapper {
 
         public void setElements(Class<?> clazz, String column) {
             elements = new ColumnMapper.Builder(
-                    clazz == null ? elmClass : clazz, column);
+                    context, clazz == null ? elmClass : clazz, column);
         }
 
         public Statement.Builder newFetchStatement(String... paramNames) {
@@ -184,6 +172,14 @@ public abstract class CollectionMapper extends ValueMapper {
             return remove == null ? null : remove.build();
         }
  
+        protected void postBuild(CollectionMapper colm) {
+            if (elements == null) {
+                context.addForwardClassRef(elmClass, (cm)->{
+                    colm.elmMapper = cm;
+                });
+            }
+        }
+
         @Override
         public void fixForwards(Map<Class<?>, ClassMapper.Builder> map) {
             if (add != null && add.hasGeneratedKeys()) {

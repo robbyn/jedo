@@ -8,7 +8,6 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.tastefuljava.jedo.JedoException;
-import org.tastefuljava.jedo.util.Reflection;
 
 public class ComponentMapper extends ValueMapper {
     private static final Logger LOG
@@ -74,13 +73,14 @@ public class ComponentMapper extends ValueMapper {
         private final Map<Field,ColumnMapper.Builder> fields
                 = new LinkedHashMap<>();
 
-        public Builder(Class<?> type) {
-            super(type);
+        public Builder(BuildContext context, Class<?> type) {
+            super(context, type);
         }
 
         public void addProp(String name, String column) {
             Field field = getField(name);
-            fields.put(field, new ColumnMapper.Builder(field.getType(), column));
+            fields.put(field, new ColumnMapper.Builder(
+                    context, field.getType(), column));
         }
 
         private FieldMapper<ColumnMapper>[] buildFields() {

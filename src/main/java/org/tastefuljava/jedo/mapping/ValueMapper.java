@@ -24,18 +24,17 @@ public abstract class ValueMapper {
     public abstract Object fromResultSet(Storage pm, Object obj,
             ResultSet rs);
 
-    public void fixForwardFields(Map<Class<?>, ClassMapper> map, Field field) {
-    }
-
     void afterInsert(Storage pm, Object self, FieldMapper fm) {
     }
     void beforeDelete(Storage pm, Object self, FieldMapper fm) {
     }
 
     public static abstract class Builder<T extends ValueMapper> {
+        protected final BuildContext context;
         protected final Class<?> type;
 
-        protected Builder(Class<?> type) {
+        protected Builder(BuildContext context, Class<?> type) {
+            this.context = context;
             this.type = type;
         }
 

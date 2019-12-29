@@ -3,9 +3,7 @@ package org.tastefuljava.jedo.mapping;
 import org.tastefuljava.jedo.util.Reflection;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -165,12 +163,6 @@ public class ClassMapper extends ValueMapper {
         return queries.get(queryName);
     }
 
-    void fixForwards(Map<Class<?>, ClassMapper> map) {
-        for (FieldMapper<ValueMapper> fm: fields) {
-            fm.fixForwards(map);
-        }
-    }
-
     public void setFieldsFromResultSet(Storage pm, Object obj,
             ResultSet rs) {
         for (FieldMapper<ColumnMapper> field: idFields) {
@@ -198,18 +190,20 @@ public class ClassMapper extends ValueMapper {
         private Statement.Builder update;
         private Statement.Builder delete;
 
-        public Builder(Class<?> type) {
-            super(type);
+        public Builder(BuildContext context, Class<?> type) {
+            super(context, type);
         }
 
         public void addIdField(String fieldName, String column) {
             Field field = getField(fieldName);
-            idField.put(field, new ColumnMapper.Builder(field.getType(), column));
+            idField.put(field, new ColumnMapper.Builder(
+                    context, field.getType(), column));
         }
 
         public void addField(String fieldName, String column) {
             Field field = getField(fieldName);
-            fields.put(field, new ColumnMapper.Builder(field.getType(), column));
+            fields.put(field, new ColumnMapper.Builder(
+                    context, field.getType(), column));
         }
 
         public void addReference(String fieldName, String[] columns,
@@ -217,7 +211,7 @@ public class ClassMapper extends ValueMapper {
             Field field = getField(fieldName);
             FetchMode mode = fetchMode(fetchMode, FetchMode.EAGER);
             ReferenceMapper.Builder ref = new ReferenceMapper.Builder(
-                    field.getType(), columns, mode);
+                    context, field, columns, mode);
             fields.put(field, ref);
         }
 
@@ -234,7 +228,7 @@ public class ClassMapper extends ValueMapper {
             }
             FetchMode realFetchMode = fetchMode(fetchMode, FetchMode.LAZY);
             SetMapper.Builder result = new SetMapper.Builder(
-                    this, field, realFetchMode, orderFields);
+                    context, this, field, realFetchMode, orderFields);
             fields.put(field, result);
             return result;
         }
@@ -242,7 +236,7 @@ public class ClassMapper extends ValueMapper {
         public ListMapper.Builder newList(String name, String fetchMode) {
             Field field = getField(name);
             ListMapper.Builder result = new ListMapper.Builder(
-                    this, field, fetchMode(fetchMode, FetchMode.LAZY));
+                    context, this, field, fetchMode(fetchMode, FetchMode.LAZY));
             fields.put(field, result);
             return result;
         }
@@ -250,7 +244,7 @@ public class ClassMapper extends ValueMapper {
         public ComponentMapper.Builder newComponent(String name) {
             Field field = getField(name);
             ComponentMapper.Builder cm
-                    = new ComponentMapper.Builder(field.getType());
+                    = new ComponentMapper.Builder(context, field.getType());
             fields.put(field, cm);
             return cm;
         }

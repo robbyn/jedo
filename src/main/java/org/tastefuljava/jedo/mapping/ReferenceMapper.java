@@ -53,23 +53,16 @@ public class ReferenceMapper extends ValueMapper {
         }
     }
 
-    @Override
-    public void fixForwardFields(Map<Class<?>, ClassMapper> map, Field field) {
-        Class<?> rtype = type == Ref.class
-                ? Reflection.getReferencedType(field) : type;
-        targetClass = map.get(rtype);
-        if (targetClass == null) {
-            throw new JedoException("Unresolved reference target class: "
-                    + rtype.getName());
-        }
-    }
-
     public static class Builder extends ValueMapper.Builder<ReferenceMapper> {
         private final String[] columns;
         private final FetchMode fetchMode;
+        private final Class<?> refClass;
 
-        public Builder(Class<?> type, String[] columns, FetchMode fetchMode) {
-            super(type);
+        public Builder(BuildContext context, Field field, String[] columns,
+                FetchMode fetchMode) {
+            super(context, field.getType());
+            refClass = type == Ref.class
+                    ? Reflection.getReferencedType(field) : type;
             this.columns = columns;
             this.fetchMode = fetchMode;
         }
@@ -80,7 +73,11 @@ public class ReferenceMapper extends ValueMapper {
 
         @Override
         public ReferenceMapper build() {
-            return new ReferenceMapper(this);
+            ReferenceMapper rm = new ReferenceMapper(this);
+            context.addForwardClassRef(refClass, (cm)->{
+                rm.targetClass = cm;
+            });
+            return rm;
         }
     }
 }

@@ -66,9 +66,9 @@ public class ListMapper extends CollectionMapper {
         private Statement.Builder addAt;
         private Statement.Builder removeAt;
 
-        public Builder(ClassMapper.Builder parentClass, Field field,
-                FetchMode fetchMode) {
-            super(parentClass, field, fetchMode);
+        public Builder(BuildContext context, ClassMapper.Builder parentClass,
+                Field field, FetchMode fetchMode) {
+            super(context, parentClass, field, fetchMode);
         }
 
         public Statement.Builder newSetAt(String... paramNames) {
@@ -117,7 +117,9 @@ public class ListMapper extends CollectionMapper {
 
         @Override
         public ListMapper build() {
-            return new ListMapper(this);
+            ListMapper result = new ListMapper(this);
+            postBuild(result);
+            return result;
         }
     }
 }

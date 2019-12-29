@@ -2,7 +2,6 @@ package org.tastefuljava.jedo.mapping;
 
 import java.lang.reflect.Field;
 import java.sql.ResultSet;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.tastefuljava.jedo.JedoException;
@@ -12,7 +11,7 @@ public class FieldMapper<V extends ValueMapper> {
             = Logger.getLogger(FieldMapper.class.getName());
     
     private final Field field;
-    private final ValueMapper vm;
+    private final V vm;
 
     public FieldMapper(Field field, V vm) {
         this.field = field;
@@ -39,10 +38,6 @@ public class FieldMapper<V extends ValueMapper> {
             LOG.log(Level.SEVERE, null, ex);
             throw new JedoException("Could not set field value " + field.getName());
         }
-    }
-
-    public void fixForwards(Map<Class<?>, ClassMapper> map) {
-        vm.fixForwardFields(map, field);
     }
 
     Object fromResultSet(Storage pm, Object obj, ResultSet rs) {
