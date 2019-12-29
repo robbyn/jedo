@@ -96,6 +96,15 @@
                 WHERE PICTURE_ID=${id}
             </clear>
         </list>
+        <map name="tagMap" fetch-mode="lazy">
+            <key column="INDEX"/>
+            <element column="NAME"/>
+            <fetch>
+                SELECT * FROM picture_tags
+                WHERE PICTURE_ID=${id}
+                ORDER BY PICTURE_ID,INDEX
+            </fetch>
+        </map>
 
         <load>
             SELECT * FROM pictures

@@ -4,7 +4,6 @@ import org.tastefuljava.jedo.rel.LazyRef;
 import java.lang.reflect.Field;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.tastefuljava.jedo.JedoException;
@@ -62,7 +61,7 @@ public class ReferenceMapper extends ValueMapper {
                 FetchMode fetchMode) {
             super(context, field.getType());
             refClass = type == Ref.class
-                    ? Reflection.getReferencedType(field) : type;
+                    ? Reflection.getReferencedClass(field) : type;
             this.columns = columns;
             this.fetchMode = fetchMode;
         }

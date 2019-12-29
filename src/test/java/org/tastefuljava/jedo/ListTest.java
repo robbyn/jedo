@@ -58,5 +58,9 @@ public class ListTest extends JedoTestBase {
         pic = session.queryOne(Picture.class, "byName", folder, "thePic");
         assertNotNull(pic);
         assertEquals(tagNameList.size(), pic.tagCount());
+        assertEquals(tagNameList.size(), pic.getTagMap().size());
+        for (int i = 0; i < tagNameList.size(); ++i) {
+            assertEquals(tagNameList.get(i), pic.getTagMap().get(i));
+        }
     }
 }

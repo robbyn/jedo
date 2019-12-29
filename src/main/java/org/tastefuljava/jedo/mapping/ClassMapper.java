@@ -222,7 +222,7 @@ public class ClassMapper extends ValueMapper {
             if (order == null) {
                 orderFields = null;
             } else {
-                Class<?> targetClass = Reflection.getReferencedType(field);
+                Class<?> targetClass = Reflection.getReferencedClass(field);
                 String[] orderNames = order.split("\\s*[\\s,;]\\s*");
                 orderFields = Reflection.fieldList(targetClass, orderNames);
             }
@@ -235,8 +235,18 @@ public class ClassMapper extends ValueMapper {
 
         public ListMapper.Builder newList(String name, String fetchMode) {
             Field field = getField(name);
+            FetchMode mode = fetchMode(fetchMode, FetchMode.LAZY);
             ListMapper.Builder result = new ListMapper.Builder(
-                    context, this, field, fetchMode(fetchMode, FetchMode.LAZY));
+                    context, this, field, mode);
+            fields.put(field, result);
+            return result;
+        }
+
+        public MapMapper.Builder newMap(String name, String fetchMode) {
+            Field field = getField(name);
+            FetchMode mode = fetchMode(fetchMode, FetchMode.LAZY);
+            MapMapper.Builder result = new MapMapper.Builder(
+                    context, this, field, mode);
             fields.put(field, result);
             return result;
         }

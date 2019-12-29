@@ -3,7 +3,6 @@ package org.tastefuljava.jedo.mapping;
 import java.lang.reflect.Field;
 import java.sql.ResultSet;
 import java.util.Collection;
-import java.util.Map;
 import org.tastefuljava.jedo.JedoException;
 import org.tastefuljava.jedo.rel.LazyCollection;
 import org.tastefuljava.jedo.util.Reflection;
@@ -118,7 +117,7 @@ public abstract class CollectionMapper extends ValueMapper {
                 Field field, FetchMode fetchMode) {
             super(context, field.getType());
             this.parentClass = parentClass;
-            elmClass = Reflection.getReferencedType(field);
+            elmClass = Reflection.getReferencedClass(field);
             this.fetchMode = fetchMode;
         }
 

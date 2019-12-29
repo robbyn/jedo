@@ -63,7 +63,7 @@ public abstract class Scope {
             Expression result = new Expression.FieldExpr(self, f);
             if (f.getType() == Ref.class) {
                 result = new Expression.Deref(result,
-                        Reflection.getReferencedType(f));
+                        Reflection.getReferencedClass(f));
             }
             return result;
         }

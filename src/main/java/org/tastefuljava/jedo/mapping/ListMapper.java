@@ -2,7 +2,6 @@ package org.tastefuljava.jedo.mapping;
 
 import java.lang.reflect.Field;
 import java.util.List;
-import java.util.Map;
 import org.tastefuljava.jedo.JedoException;
 import org.tastefuljava.jedo.rel.LazyCollection;
 import org.tastefuljava.jedo.rel.LazyList;

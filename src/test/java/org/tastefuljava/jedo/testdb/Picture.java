@@ -4,7 +4,9 @@ import java.awt.Dimension;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class Picture {
     public static Comparator<Picture> BY_NAME
@@ -18,6 +20,7 @@ public class Picture {
     private int height;
     private GpsData gpsData;
     private List<String> tags = new ArrayList<>();
+    private Map<Integer,String> tagMap = new HashMap<>();
 
     public int getId() {
         return id;
@@ -98,5 +101,9 @@ public class Picture {
 
     public void removeTag(int index) {
         tags.remove(index);
+    }
+
+    public Map<Integer,String> getTagMap() {
+        return tagMap;
     }
 }

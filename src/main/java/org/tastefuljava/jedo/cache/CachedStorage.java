@@ -6,6 +6,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collection;
 import java.util.LinkedHashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -64,6 +65,23 @@ public class CachedStorage implements Storage {
                 ResultSet rs = pstmt.executeQuery()) {
             while (rs.next()) {
                 result.add(cm.fromResultSet(this, self, rs));
+            }
+        } catch (SQLException ex) {
+            LOG.log(Level.SEVERE, null, ex);
+            throw new JedoException(ex.getMessage());
+        }        
+    }
+
+    @Override
+    public void query(ValueMapper km, ValueMapper cm, Statement stmt,
+            Object self, Object[] parms, Map<Object, Object> map) {
+        flush();
+        try (PreparedStatement pstmt = prepareStatement(stmt, self, parms);
+                ResultSet rs = pstmt.executeQuery()) {
+            while (rs.next()) {
+                Object key = km.fromResultSet(this, self, rs);
+                Object value = cm.fromResultSet(this, self, rs);
+                map.put(key, value);
             }
         } catch (SQLException ex) {
             LOG.log(Level.SEVERE, null, ex);
