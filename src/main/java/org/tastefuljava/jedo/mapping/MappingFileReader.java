@@ -236,7 +236,6 @@ public class MappingFileReader {
                     inId = false;
                     break;
                 case "component":
-                    classBuilder.addComponent(compBuilder);
                     compBuilder = null;
                     break;
                 case "list":

@@ -45,19 +45,19 @@ public class ListMapper extends CollectionMapper {
     }
 
     @Override
-    void beforeDelete(Storage pm, Object self) {
-        LazyList<?> list = (LazyList<?>)this.getValue(self);
+    void beforeDelete(Storage pm, Object self, FieldMapper fm) {
+        LazyList<?> list = (LazyList<?>)fm.getValue(self);
         pm.dispose(list);
         list.clear();
     }
 
     @Override
     protected LazyCollection<Object> newCollection(Storage pm, Object parent) {
-        if (field.getType() == List.class) {
+        if (type == List.class) {
             return new LazyList<>(pm, this, parent);
         } else {
             throw new JedoException("Unsupported list field type "
-                    + field.getType().getName());
+                    + type.getName());
         }
     }
 
@@ -109,7 +109,7 @@ public class ListMapper extends CollectionMapper {
                 if (cm == null) {
                     throw new JedoException(
                             "Unresolved collection element class: " 
-                                    + field.getType().getName());
+                                    + type.getName());
                 }
                 addAt.setGeneratedKeys(cm.getIdColumns());
             }

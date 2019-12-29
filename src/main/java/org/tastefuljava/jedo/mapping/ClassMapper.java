@@ -1,6 +1,5 @@
 package org.tastefuljava.jedo.mapping;
 
-import org.tastefuljava.jedo.util.XMLWriter;
 import org.tastefuljava.jedo.util.Reflection;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -8,6 +7,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -19,8 +19,8 @@ public class ClassMapper {
             = Logger.getLogger(ClassMapper.class.getName());
 
     private final Class<?> clazz;
-    private final SimpleFieldMapper[] idFields;
-    private final FieldMapper[] fields;
+    private final FieldMapper<ColumnMapper>[] idFields;
+    private final FieldMapper<ValueMapper>[] fields;
     private final Map<String,Statement> queries;
     private final Map<String,Statement> stmts;
     private final Statement load;
@@ -66,7 +66,7 @@ public class ClassMapper {
     public Object[] getIdValuesFromResultSet(ResultSet rs) {
         Object[] values = new Object[idFields.length];
         for (int i = 0; i < idFields.length; ++i) {
-            values[i] = idFields[i].fromResultSet(rs);
+            values[i] = idFields[i].fromResultSet(null, null, rs);
         }
         return values;
     }
@@ -116,7 +116,7 @@ public class ClassMapper {
     }
 
     public void afterInsert(Storage pm, Object self) {
-        for (FieldMapper prop: fields) {
+        for (FieldMapper<ValueMapper> prop: fields) {
             prop.afterInsert(pm, self);
         }
     }
@@ -135,13 +135,13 @@ public class ClassMapper {
     }
 
     public void beforeUpdate(Storage pm, Object self) {
-        for (FieldMapper prop: fields) {
+        for (FieldMapper<ValueMapper> prop: fields) {
             prop.beforeUpdate(pm, self);
         }
     }
 
     public void afterUpdate(Storage pm, Object self) {
-        for (FieldMapper prop: fields) {
+        for (FieldMapper<ValueMapper> prop: fields) {
             prop.afterUpdate(pm, self);
         }
     }
@@ -155,7 +155,7 @@ public class ClassMapper {
     }
 
     public void beforeDelete(Storage pm, Object self) {
-        for (FieldMapper prop: fields) {
+        for (FieldMapper<ValueMapper> prop: fields) {
             prop.beforeDelete(pm, self);
         }
     }
@@ -164,58 +164,28 @@ public class ClassMapper {
         return queries.get(queryName);
     }
 
-    public void writeTo(XMLWriter out) {
-        out.startTag("class");
-        out.attribute("name", clazz.getName());
-        if (idFields.length > 0) {
-            out.startTag("id");
-            for (SimpleFieldMapper pm: idFields) {
-                pm.writeTo(out);
-            }
-            out.endTag();
-            for (FieldMapper pm: fields) {
-                pm.writeTo(out);
-            }
-            if (load != null) {
-                load.writeTo(out, "load", null);
-            }
-            for (Map.Entry<String,Statement> e: queries.entrySet()) {
-                e.getValue().writeTo(out, "query", e.getKey());
-            }
-            if (insert != null) {
-                insert.writeTo(out, "insert", null);
-            }
-            if (update != null) {
-                update.writeTo(out, "update", null);
-            }
-            if (delete != null) {
-                delete.writeTo(out, "delete", null);
-            }
-        }
-        out.endTag();
-    }
-
     void fixForwards(Map<Class<?>, ClassMapper> map) {
-        for (FieldMapper fm: fields) {
+        for (FieldMapper<ValueMapper> fm: fields) {
             fm.fixForwards(map);
         }
     }
 
     public void setFieldsFromResultSet(Storage pm, Object obj,
             ResultSet rs) {
-        for (SimpleFieldMapper field: idFields) {
-            field.setValue(obj, field.fromResultSet(pm, obj, rs));
+        for (FieldMapper<ColumnMapper> field: idFields) {
+            field.setFromResultSet(pm, obj, rs);
         }
-        for (FieldMapper field: fields) {
-            field.setValue(obj, field.fromResultSet(pm, obj, rs));
+        for (FieldMapper<ValueMapper> field: fields) {
+            field.setFromResultSet(pm, obj, rs);
         }
     }
 
     public static class Builder {
         private final Class<?> clazz;
-        private final List<SimpleFieldMapper.Builder> idField = new ArrayList<>();
-        private final List<FieldMapper.Builder<? extends FieldMapper>> fields
-                = new ArrayList<>();
+        private final Map<Field,ColumnMapper.Builder> idField
+                = new LinkedHashMap<>();
+        private final Map<Field,ValueMapper.Builder> fields
+                = new LinkedHashMap<>();
         private final Map<String,Statement.Builder> queries = new HashMap<>();
         private final Map<String,Statement.Builder> stmts = new HashMap<>();
         private Statement.Builder load;
@@ -228,7 +198,7 @@ public class ClassMapper {
         }
 
         public void fixForwards(Map<Class<?>, ClassMapper.Builder> map) {
-            for (FieldMapper.Builder fm: fields) {
+            for (ValueMapper.Builder fm: fields.values()) {
                 fm.fixForwards(map);
             }
         }
@@ -237,27 +207,28 @@ public class ClassMapper {
             return clazz;
         }
 
-        public void addIdField(String field, String column) {
-            idField.add(newSimpleField(field, column));
+        public void addIdField(String fieldName, String column) {
+            Field field = getField(fieldName);
+            idField.put(field, new ColumnMapper.Builder(field.getType(), column));
         }
 
-        public void addField(String field, String column) {
-            fields.add(newSimpleField(field, column));
+        public void addField(String fieldName, String column) {
+            Field field = getField(fieldName);
+            fields.put(field, new ColumnMapper.Builder(field.getType(), column));
         }
 
-        public void addReference(String field, String[] columns,
+        public void addReference(String fieldName, String[] columns,
                 String fetchMode) {
-            ReferenceMapper.Builder ref = newReference(field, columns, fetchMode);
-            fields.add(ref);
+            Field field = getField(fieldName);
+            FetchMode mode = fetchMode(fetchMode, FetchMode.EAGER);
+            ReferenceMapper.Builder ref = new ReferenceMapper.Builder(
+                    field.getType(), columns, mode);
+            fields.put(field, ref);
         }
 
         public SetMapper.Builder newSet(String name, String fetchMode,
                 String order) {
-            Field field = Reflection.getInstanceField(clazz, name);
-            if (field == null) {
-                throw new JedoException("Field " + name
-                        + " not found in class " + clazz.getName());
-            }
+            Field field = getField(name);
             Field[] orderFields;
             if (order == null) {
                 orderFields = null;
@@ -269,29 +240,24 @@ public class ClassMapper {
             FetchMode realFetchMode = fetchMode(fetchMode, FetchMode.LAZY);
             SetMapper.Builder result = new SetMapper.Builder(
                     this, field, realFetchMode, orderFields);
-            fields.add(result);
+            fields.put(field, result);
             return result;
         }
 
         public ListMapper.Builder newList(String name, String fetchMode) {
-            Field field = Reflection.getInstanceField(clazz, name);
-            if (field == null) {
-                throw new JedoException("Field " + name
-                        + " not found in class " + clazz.getName());
-            }
+            Field field = getField(name);
             ListMapper.Builder result = new ListMapper.Builder(
                     this, field, fetchMode(fetchMode, FetchMode.LAZY));
-            fields.add(result);
+            fields.put(field, result);
             return result;
         }
 
         public ComponentMapper.Builder newComponent(String name) {
-            return new ComponentMapper.Builder(
-                    Reflection.getInstanceField(clazz, name));
-        }
-
-        public void addComponent(ComponentMapper.Builder cm) {
-            fields.add(cm);
+            Field field = getField(name);
+            ComponentMapper.Builder cm
+                    = new ComponentMapper.Builder(field.getType());
+            fields.put(field, cm);
+            return cm;
         }
 
         public Statement.Builder newStatement(String[] paramNames) {
@@ -339,18 +305,29 @@ public class ClassMapper {
             delete = stmt;
         }
 
-        private SimpleFieldMapper[] buildIdFields() {
-            SimpleFieldMapper[] result = new SimpleFieldMapper[idField.size()];
-            for (int i = 0; i < result.length; ++i) {
-                result[i] = idField.get(i).build();
+        private Field getField(String name) throws JedoException {
+            Field field = Reflection.getInstanceField(clazz, name);
+            if (field == null) {
+                throw new JedoException("Field " + name + " not found in class "
+                        + clazz.getName());
+            }
+            return field;
+        }
+
+        private FieldMapper<ColumnMapper>[] buildIdFields() {
+            FieldMapper<ColumnMapper>[] result = new FieldMapper[idField.size()];
+            int i = 0;
+            for (Map.Entry<Field,ColumnMapper.Builder> e: idField.entrySet()) {
+                result[i++] = new FieldMapper<>(e.getKey(), e.getValue().build());
             }
             return result;
         }
 
-        private FieldMapper[] buildFields() {
-            FieldMapper[] result = new FieldMapper[fields.size()];
-            for (int i = 0; i < result.length; ++i) {
-                result[i] = fields.get(i).build();
+        private FieldMapper<ValueMapper>[] buildFields() {
+            FieldMapper<ValueMapper>[] result = new FieldMapper[fields.size()];
+            int i = 0;
+            for (Map.Entry<Field,ValueMapper.Builder> e: fields.entrySet()) {
+                result[i++] = new FieldMapper<>(e.getKey(), e.getValue().build());
             }
             return result;
         }
@@ -391,27 +368,6 @@ public class ClassMapper {
             return new ClassMapper(this);
         }
 
-        private SimpleFieldMapper.Builder newSimpleField(
-                String name, String column) {
-            Field field = Reflection.getInstanceField(clazz, name);
-            if (field == null) {
-                throw new JedoException("Field " + name
-                        + " not found in class " + clazz.getName());
-            }
-            return new SimpleFieldMapper.Builder(field, column);
-        }
-
-        private ReferenceMapper.Builder newReference(String name,
-                String[] columns, String fetchMode) {
-            Field field = Reflection.getInstanceField(clazz, name);
-            if (field == null) {
-                throw new JedoException("Field " + name
-                        + " not found in class " + clazz.getName());
-            }
-            return new ReferenceMapper.Builder(field, columns,
-                    fetchMode(fetchMode, FetchMode.EAGER));
-        }
-
         private FetchMode fetchMode(String fetchMode, FetchMode def) {
             FetchMode fm = null;
             if (fetchMode !=  null) {
@@ -425,16 +381,18 @@ public class ClassMapper {
 
         private String[] getIdFieldNames() {
             String[] result = new String[idField.size()];
-            for (int i = 0; i < idField.size(); ++i) {
-                result[i] = idField.get(i).getFieldName();
+            int i = 0;
+            for (Map.Entry<Field,ColumnMapper.Builder> e: idField.entrySet()) {
+                result[i++] = e.getKey().getName();
             }
             return result;
         }
 
         public String[] getIdColumns() {
             String[] result = new String[idField.size()];
-            for (int i = 0; i < idField.size(); ++i) {
-                result[i] = idField.get(i).getColumn();
+            int i = 0;
+            for (Map.Entry<Field,ColumnMapper.Builder> e: idField.entrySet()) {
+                result[i++] = e.getValue().getColumn();
             }
             return result;
         }

@@ -29,9 +29,6 @@ public class MappingFileReaderTest {
         URL url = getClass().getResource("mapping.xml");
         reader.load(url);
         Mapper mapper = reader.getMapper();
-        try (XMLWriter out = new XMLWriter(new File("mapping-out.xml"))) {
-            mapper.writeTo(out);
-        }
         Assert.assertNotNull(mapper);
     }
 }

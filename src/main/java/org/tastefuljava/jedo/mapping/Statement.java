@@ -53,8 +53,9 @@ public class Statement {
         }
     }
 
-    public void collectKeys(PreparedStatement stmt, SimpleFieldMapper[] props,
-            Object obj) throws JedoException {
+    public void collectKeys(
+            PreparedStatement stmt, FieldMapper<ColumnMapper>[] props, Object obj)
+                throws JedoException {
         if (generatedKeys != null) {
             try (ResultSet rs = stmt.getGeneratedKeys()) {
                 if (!rs.next()) {
@@ -62,8 +63,8 @@ public class Statement {
                             "Could not get generated keys");
                 }
                 int ix = 0;
-                for (SimpleFieldMapper prop : props) {
-                    prop.setValue(obj, prop.fromResultSet(rs, ++ix));
+                for (FieldMapper<ColumnMapper> prop : props) {
+                    prop.setFromResultSet(obj, rs, ++ix);
                 }
             } catch (SQLException ex) {
                 LOG.log(Level.SEVERE, null, ex);

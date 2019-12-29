@@ -1,25 +1,23 @@
 package org.tastefuljava.jedo.mapping;
 
-import org.tastefuljava.jedo.util.XMLWriter;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.sql.ResultSet;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.tastefuljava.jedo.JedoException;
 import org.tastefuljava.jedo.util.Reflection;
 
-public class ComponentMapper extends FieldMapper {
+public class ComponentMapper extends ValueMapper {
     private static final Logger LOG
             = Logger.getLogger(ComponentMapper.class.getName());
 
-    private final SimpleFieldMapper[] props;
+    private final FieldMapper<ColumnMapper>[] props;
 
     private ComponentMapper(Builder builder) {
-        super(builder.field);
+        super(builder);
         this.props = builder.buildProps();
     }
 
@@ -29,7 +27,7 @@ public class ComponentMapper extends FieldMapper {
             boolean allNull = true;
             Object[] values = new Object[props.length];
             for (int i = 0; i < props.length; ++i) {
-                Object value = props[i].fromResultSet(rs);
+                Object value = props[i].fromResultSet(null, null, rs);
                 values[i] = value;
                 if (value != null) {
                     allNull = false;
@@ -38,7 +36,7 @@ public class ComponentMapper extends FieldMapper {
             if (allNull) {
                 return null;
             } else {
-                Object comp = field.getType().getConstructor().newInstance();
+                Object comp = type.getConstructor().newInstance();
                 for (int i = 0; i < props.length; ++i) {
                     props[i].setValue(comp, values[i]);
                 }
@@ -52,45 +50,32 @@ public class ComponentMapper extends FieldMapper {
         }
     }
 
-    @Override
-    public void writeTo(XMLWriter out) {
-        out.startTag("component");
-        out.attribute("name", field.getName());
-        for (SimpleFieldMapper prop: props) {
-            prop.writeTo(out);
-        }
-        out.endTag();
-    }
+    public static class Builder extends ValueMapper.Builder<ComponentMapper> {
+        private final Map<Field,ColumnMapper.Builder> props
+                = new LinkedHashMap<>();
 
-    public static class Builder extends FieldMapper.Builder<ComponentMapper> {
-        private final List<SimpleFieldMapper.Builder> props = new ArrayList<>();
-
-        public Builder(Field field) {
-            super(field);
+        public Builder(Class<?> type) {
+            super(type);
         }
 
         public void addProp(String field, String column) {
-            props.add(newPropertyMapper(field, column));
+            Field f = Reflection.getInstanceField(type, field);
+            if (f == null) {
+                throw new JedoException("Field " + field + " not in class "
+                        + type.getName());
+            }
+            props.put(f, new ColumnMapper.Builder(f.getType(), column));
         }
 
         public ComponentMapper getMapper() {
             return new ComponentMapper(this);
         }
 
-        private SimpleFieldMapper.Builder newPropertyMapper(String name,
-                String column) {
-            Field f = Reflection.getInstanceField(field.getType(), name);
-            if (f == null) {
-                throw new JedoException("Field " + name
-                        + " not in class " + field.getType().getName());
-            }
-            return new SimpleFieldMapper.Builder(f, column);
-        }
-
-        private SimpleFieldMapper[] buildProps() {
-            SimpleFieldMapper[] result = new SimpleFieldMapper[props.size()];
-            for (int i = 0; i < result.length; ++i) {
-                result[i] = props.get(i).build();
+        private FieldMapper<ColumnMapper>[] buildProps() {
+            FieldMapper<ColumnMapper>[] result = new FieldMapper[props.size()];
+            int i = 0;
+            for (Map.Entry<Field,ColumnMapper.Builder> e: props.entrySet()) {
+                result[i++] = new FieldMapper<>(e.getKey(), e.getValue().build());
             }
             return result;
         }

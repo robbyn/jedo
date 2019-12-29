@@ -6,16 +6,17 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.tastefuljava.jedo.JedoException;
-import org.tastefuljava.jedo.util.XMLWriter;
 
-public abstract class FieldMapper {
+public class FieldMapper<V extends ValueMapper> {
     private static final Logger LOG
-            = Logger.getLogger(SimpleFieldMapper.class.getName());
+            = Logger.getLogger(FieldMapper.class.getName());
+    
+    private final Field field;
+    private final ValueMapper vm;
 
-    protected final Field field;
-
-    protected FieldMapper(Field field) {
+    public FieldMapper(Field field, V vm) {
         this.field = field;
+        this.vm = vm;
     }
 
     public String getFieldName() {
@@ -27,8 +28,7 @@ public abstract class FieldMapper {
             return field.get(object);
         } catch (IllegalArgumentException | IllegalAccessException ex) {
             LOG.log(Level.SEVERE, null, ex);
-            throw new JedoException("Could not get field value "
-                    + field.getName());
+            throw new JedoException("Could not get field value " + field.getName());
         }
     }
 
@@ -37,42 +37,37 @@ public abstract class FieldMapper {
             field.set(obj, value);
         } catch (IllegalArgumentException | IllegalAccessException ex) {
             LOG.log(Level.SEVERE, null, ex);
-            throw new JedoException("Could not set field value "
-                    + field.getName());
+            throw new JedoException("Could not set field value " + field.getName());
         }
     }
 
     public void fixForwards(Map<Class<?>, ClassMapper> map) {
+        vm.fixForwardFields(map, field);
     }
 
-    public abstract Object fromResultSet(Storage pm, Object obj,
-            ResultSet rs);
-    public abstract void writeTo(XMLWriter out);
+    Object fromResultSet(Storage pm, Object obj, ResultSet rs) {
+        return vm.fromResultSet(pm, obj, rs);
+    }
 
-    void afterInsert(Storage pm, Object obj) {
+    void setFromResultSet(Storage pm, Object obj, ResultSet rs) {
+        setValue(obj, vm.fromResultSet(pm, obj, rs));
+    }
+
+    void setFromResultSet(Object obj, ResultSet rs, int i) {
+        setValue(obj, vm.fromResultSet(rs, i));
+    }
+
+    void afterInsert(Storage pm, Object self) {
+        vm.afterInsert(pm, self, this);
+    }
+
+    void beforeDelete(Storage pm, Object self) {
+        vm.beforeDelete(pm, self, this);
     }
 
     void beforeUpdate(Storage pm, Object self) {
     }
 
     void afterUpdate(Storage pm, Object self) {
-    }
-
-    void beforeDelete(Storage pm, Object self) {
-    }
-
-    public static abstract class Builder<T extends FieldMapper> {
-        protected final Field field;
-
-        protected Builder(Field field) {
-            this.field = field;
-        }
-
-        public String getFieldName() {
-            return field.getName();
-        }
-
-        public abstract T build();
-        public abstract void fixForwards(Map<Class<?>, ClassMapper.Builder> map);
     }
 }

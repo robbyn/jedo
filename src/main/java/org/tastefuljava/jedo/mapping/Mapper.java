@@ -1,6 +1,5 @@
 package org.tastefuljava.jedo.mapping;
 
-import org.tastefuljava.jedo.util.XMLWriter;
 import java.util.HashMap;
 import java.util.Map;
 import org.tastefuljava.jedo.util.Reflection;
@@ -14,14 +13,6 @@ public class Mapper {
 
     public ClassMapper getClassMapper(Class<?> clazz) {
         return classMappers.get(clazz);
-    }
-
-    public void writeTo(XMLWriter out) {
-        out.startTag("mapping");
-        for (ClassMapper cm: classMappers.values()) {
-            cm.writeTo(out);
-        }
-        out.endTag();
     }
 
     public static class Builder {

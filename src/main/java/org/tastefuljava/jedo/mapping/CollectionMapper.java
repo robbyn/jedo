@@ -7,9 +7,8 @@ import java.util.Map;
 import org.tastefuljava.jedo.JedoException;
 import org.tastefuljava.jedo.rel.LazyCollection;
 import org.tastefuljava.jedo.util.Reflection;
-import org.tastefuljava.jedo.util.XMLWriter;
 
-public abstract class CollectionMapper extends FieldMapper {
+public abstract class CollectionMapper extends ValueMapper {
     private final FetchMode fetchMode;
     protected ClassMapper elmClass;
     private final Statement fetch;
@@ -18,7 +17,7 @@ public abstract class CollectionMapper extends FieldMapper {
     private final Statement remove;
 
     protected CollectionMapper(Builder builder) {
-        super(builder.field);
+        super(builder);
         this.fetchMode = builder.fetchMode;
         this.fetch = builder.buildFetch();
         this.add = builder.buildAdd();
@@ -55,10 +54,10 @@ public abstract class CollectionMapper extends FieldMapper {
     }
 
     @Override
-    void afterInsert(Storage pm, Object obj) {
-        Collection<?> prevCol = (Collection<?>)this.getValue(obj);
+    void afterInsert(Storage pm, Object obj, FieldMapper fm) {
+        Collection<?> prevCol = (Collection<?>)fm.getValue(obj);
         Collection<Object> newCol = createCollection(pm, obj, true);
-        this.setValue(obj, newCol);
+        fm.setValue(obj, newCol);
         if (prevCol != null) {
             newCol.addAll(prevCol);
         }
@@ -87,32 +86,13 @@ public abstract class CollectionMapper extends FieldMapper {
             Storage pm, Object parent);
 
     @Override
-    public void fixForwards(Map<Class<?>, ClassMapper> map) {
+    public void fixForwardFields(Map<Class<?>, ClassMapper> map, Field field) {
         Class<?> clazz = Reflection.getReferencedType(field);
         elmClass = map.get(clazz);
         if (elmClass == null) {
             throw new JedoException("Unresolved collection element class: "
                     + field.getType().getName());
         }
-    }
-
-    @Override
-    public void writeTo(XMLWriter out) {
-        out.startTag("collection");
-        out.attribute("name", field.getName());
-        if (fetch != null) {
-            fetch.writeTo(out, "fetch", null);
-        }
-        if (clear != null) {
-            clear.writeTo(out, "clear", null);
-        }
-        if (add != null) {
-            add.writeTo(out, "add", null);
-        }
-        if (remove != null) {
-            remove.writeTo(out, "remove", null);
-        }
-        out.endTag();
     }
 
     public void clear(Storage pm, Object parent) {
@@ -137,7 +117,7 @@ public abstract class CollectionMapper extends FieldMapper {
     }
 
     public abstract static class Builder
-            extends FieldMapper.Builder<CollectionMapper> {
+            extends ValueMapper.Builder<CollectionMapper> {
         private final FetchMode fetchMode;
         private final ClassMapper.Builder parentClass;
         protected final Class<?> elmClass;
@@ -148,7 +128,7 @@ public abstract class CollectionMapper extends FieldMapper {
 
         public Builder(ClassMapper.Builder parentClass, Field field,
                 FetchMode fetchMode) {
-            super(field);
+            super(field.getType());
             this.parentClass = parentClass;
             elmClass = Reflection.getReferencedType(field);
             this.fetchMode = fetchMode;
@@ -202,7 +182,7 @@ public abstract class CollectionMapper extends FieldMapper {
                 if (cm == null) {
                     throw new JedoException(
                             "Unresolved collection element class: " 
-                                    + field.getType().getName());
+                                    + type.getName());
                 }
                 add.setGeneratedKeys(cm.getIdColumns());
             }

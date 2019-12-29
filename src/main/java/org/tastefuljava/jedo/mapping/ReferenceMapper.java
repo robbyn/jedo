@@ -10,9 +10,8 @@ import java.util.logging.Logger;
 import org.tastefuljava.jedo.JedoException;
 import org.tastefuljava.jedo.Ref;
 import org.tastefuljava.jedo.util.Reflection;
-import org.tastefuljava.jedo.util.XMLWriter;
 
-public class ReferenceMapper extends FieldMapper {
+public class ReferenceMapper extends ValueMapper {
     private static final Logger LOG
             = Logger.getLogger(ReferenceMapper.class.getName());
 
@@ -21,7 +20,7 @@ public class ReferenceMapper extends FieldMapper {
     private final FetchMode fetchMode;
 
     private ReferenceMapper(Builder builder) {
-        super(builder.field);
+        super(builder);
         this.columns = builder.columns;
         this.fetchMode = builder.fetchMode;
     }
@@ -38,7 +37,7 @@ public class ReferenceMapper extends FieldMapper {
                     allNull = false;
                 }
             }
-            if (field.getType() != Ref.class) {
+            if (type != Ref.class) {
                 return allNull
                         ? null : pm.loadFromId(targetClass, values);
             } else if (allNull || fetchMode == FetchMode.EAGER) {
@@ -55,44 +54,22 @@ public class ReferenceMapper extends FieldMapper {
     }
 
     @Override
-    public void fixForwards(Map<Class<?>, ClassMapper> map) {
-        Class<?> type = field.getType();
-        if (type == Ref.class) {
-            type = Reflection.getReferencedType(field);
-        }
-        targetClass = map.get(type);
+    public void fixForwardFields(Map<Class<?>, ClassMapper> map, Field field) {
+        Class<?> rtype = type == Ref.class
+                ? Reflection.getReferencedType(field) : type;
+        targetClass = map.get(rtype);
         if (targetClass == null) {
             throw new JedoException("Unresolved reference target class: "
-                    + field.getType().getName());
+                    + rtype.getName());
         }
     }
 
-    @Override
-    public void writeTo(XMLWriter out) {
-        out.startTag("reference");
-        out.attribute("name", getFieldName());
-        out.attribute("column", columnList());
-        out.endTag();
-    }
-
-    private String columnList() {
-        StringBuilder buf = new StringBuilder();
-        if (columns.length > 0) {
-            buf.append(columns[0]);
-            for (int i = 1; i < columns.length; ++i) {
-                buf.append(',');
-                buf.append(columns[i]);
-            }
-        }
-        return buf.toString();
-    }
-
-    public static class Builder extends FieldMapper.Builder<ReferenceMapper> {
+    public static class Builder extends ValueMapper.Builder<ReferenceMapper> {
         private final String[] columns;
         private final FetchMode fetchMode;
 
-        public Builder(Field field, String[] columns, FetchMode fetchMode) {
-            super(field);
+        public Builder(Class<?> type, String[] columns, FetchMode fetchMode) {
+            super(type);
             this.columns = columns;
             this.fetchMode = fetchMode;
         }

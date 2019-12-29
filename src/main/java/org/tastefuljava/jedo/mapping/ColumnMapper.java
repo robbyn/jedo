@@ -1,25 +1,21 @@
 package org.tastefuljava.jedo.mapping;
 
-import org.tastefuljava.jedo.util.XMLWriter;
-import java.lang.reflect.Field;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Types;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.tastefuljava.jedo.JedoException;
 import org.tastefuljava.jedo.conversion.Converter;
-import org.tastefuljava.jedo.util.Reflection;
 
-public class SimpleFieldMapper extends FieldMapper {
+public class ColumnMapper extends ValueMapper {
     private static final Logger LOG
-            = Logger.getLogger(SimpleFieldMapper.class.getName());
+            = Logger.getLogger(ColumnMapper.class.getName());
 
     private final String column;
 
-    private SimpleFieldMapper(Builder builder) {
-        super(builder.field);
+    private ColumnMapper(Builder builder) {
+        super(builder);
         this.column = builder.column;
     }
 
@@ -33,38 +29,31 @@ public class SimpleFieldMapper extends FieldMapper {
             return convert(rs.getObject(column));
         } catch (SQLException ex) {
             LOG.log(Level.SEVERE, null, ex);
-            throw new JedoException("Could not get property value "
-                    + field.getName());
+            throw new JedoException(
+                    "Could not get column " + column + " from ResultSet");
         }
     }
 
+    @Override
     public Object fromResultSet(ResultSet rs, int ix) {
         try {
             return convert(rs.getObject(ix));
         } catch (SQLException ex) {
             LOG.log(Level.SEVERE, null, ex);
-            throw new JedoException("Could not get property value "
-                    + field.getName());
+            throw new JedoException(
+                    "Could not get column " + ix +  " from ResultSet");
         }
     }
 
     public final Object convert(Object value) {
-        return Converter.convert(value, field.getType());
+        return Converter.convert(value, type);
     }
 
-    @Override
-    public void writeTo(XMLWriter out) {
-        out.startTag("property");
-        out.attribute("name", field.getName());
-        out.attribute("column", column);
-        out.endTag();
-    }
-
-    public static class Builder extends FieldMapper.Builder<SimpleFieldMapper> {
+    public static class Builder extends ValueMapper.Builder<ColumnMapper> {
         private final String column;
 
-        public Builder(Field field, String column) {
-            super(field);
+        public Builder(Class<?> type, String column) {
+            super(type);
             this.column = column;
         }
 
@@ -77,8 +66,8 @@ public class SimpleFieldMapper extends FieldMapper {
         }
 
         @Override
-        public SimpleFieldMapper build() {
-            return new SimpleFieldMapper(this);
+        public ColumnMapper build() {
+            return new ColumnMapper(this);
         }
     }
 }
