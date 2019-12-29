@@ -107,10 +107,11 @@ public class MappingFileReader {
                 case "mapping":
                     builder.setPackagePath(attrs.getValue("package"));
                     break;
-                case "class":
+                case "class": {
                     String className = attrs.getValue("name");
-                    classBuilder = builder.newClass(className);
+                    classBuilder = builder.newClass(builder.findClass(className));
                     break;
+                }
                 case "id":
                     inId = true;
                     break;
@@ -147,6 +148,14 @@ public class MappingFileReader {
                             attrs.getValue("fetch-mode"));
                     collectionBuilder = listBuilder;
                     break;
+                case "element": {
+                    String type = attrs.getValue("type");
+                    Class<?> clazz = type == null
+                            ? null : builder.findClass(type);
+                    collectionBuilder.setElements(
+                            clazz, attrs.getValue("column"));
+                    break;
+                }
                 case "component":
                     compBuilder = classBuilder.newComponent(
                             attrs.getValue("name"));

@@ -18,6 +18,7 @@ public abstract class CollectionMapper extends ValueMapper {
 
     protected CollectionMapper(Builder builder) {
         super(builder);
+        this.elmMapper = builder.buildElmMapper();
         this.fetchMode = builder.fetchMode;
         this.fetch = builder.buildFetch();
         this.add = builder.buildAdd();
@@ -83,11 +84,13 @@ public abstract class CollectionMapper extends ValueMapper {
 
     @Override
     public void fixForwardFields(Map<Class<?>, ClassMapper> map, Field field) {
-        Class<?> clazz = Reflection.getReferencedType(field);
-        elmMapper = map.get(clazz);
         if (elmMapper == null) {
-            throw new JedoException("Unresolved collection element class: "
-                    + field.getType().getName());
+            Class<?> clazz = Reflection.getReferencedType(field);
+            elmMapper = map.get(clazz);
+            if (elmMapper == null) {
+                throw new JedoException("Unresolved collection element class: "
+                        + field.getType().getName());
+            }
         }
     }
 
@@ -117,6 +120,7 @@ public abstract class CollectionMapper extends ValueMapper {
         private final FetchMode fetchMode;
         private final ClassMapper.Builder parentClass;
         protected final Class<?> elmClass;
+        private ValueMapper.Builder elements;
         private Statement.Builder fetch;
         private Statement.Builder clear;
         private Statement.Builder add;
@@ -128,6 +132,11 @@ public abstract class CollectionMapper extends ValueMapper {
             this.parentClass = parentClass;
             elmClass = Reflection.getReferencedType(field);
             this.fetchMode = fetchMode;
+        }
+
+        public void setElements(Class<?> clazz, String column) {
+            elements = new ColumnMapper.Builder(
+                    clazz == null ? elmClass : clazz, column);
         }
 
         public Statement.Builder newFetchStatement(String... paramNames) {
@@ -153,6 +162,10 @@ public abstract class CollectionMapper extends ValueMapper {
 
         public Statement.Builder newRemove(String... paramNames) {
             return remove = new Statement.Builder(elmClass, paramNames);
+        }
+
+        private ValueMapper buildElmMapper() {
+            return elements == null ? null : elements.build();
         }
 
         private Statement buildFetch() {

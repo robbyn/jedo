@@ -9,6 +9,8 @@ import java.net.URL;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.h2.tools.RunScript;
 import org.tastefuljava.jedo.Session;
 import org.tastefuljava.jedo.mapping.Mapper;
@@ -28,14 +30,20 @@ public abstract class JedoTestBase {
     }
 
     protected void initialize()
-            throws IOException, ClassNotFoundException, SQLException {
-        MappingFileReader reader = new MappingFileReader();
-        URL url = getClass().getResource("mapping.xml");
-        reader.load(url);
-        mapper = reader.getMapper();
-        Files.deleteIfExists(TESTDB_DIR);
-        open();
-        runScript("initdb.sql");
+            throws IOException, SQLException, ClassNotFoundException {
+        try {
+            MappingFileReader reader = new MappingFileReader();
+            URL url = getClass().getResource("mapping.xml");
+            reader.load(url);
+            mapper = reader.getMapper();
+            Files.deleteIfExists(TESTDB_DIR);
+            open();
+            runScript("initdb.sql");
+        } catch (IOException | SQLException
+                | ClassNotFoundException | RuntimeException ex) {
+            Logger.getLogger(JedoTestBase.class.getName()).log(Level.SEVERE, null, ex);
+            throw ex;
+        }
     }
 
     protected void open()
@@ -72,14 +80,5 @@ public abstract class JedoTestBase {
             }
             return folder;
         }
-    }
-
-    protected Tag registerTag(String name) {
-        Tag tag = session.queryOne(Tag.class, "byName", name);
-        if (tag == null) {
-            tag = new Tag(name);
-            session.insert(tag);
-        }
-        return tag;
     }
 }

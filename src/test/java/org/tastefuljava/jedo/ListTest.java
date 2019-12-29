@@ -35,7 +35,7 @@ public class ListTest extends JedoTestBase {
         pic.setFolder(folder);
         session.insert(pic);
         for (String name: tagNames) {
-            pic.addTag(registerTag(name));
+            pic.addTag(name);
         }
         session.commit();
         folder = getFolder("root");
@@ -43,7 +43,7 @@ public class ListTest extends JedoTestBase {
         assertNotNull(pic);
         assertEquals(tagNameList.size(), pic.tagCount());
         for (int i = 0; i < tagNameList.size(); ++i) {
-            assertEquals(tagNameList.get(i), pic.getTag(i).getName());
+            assertEquals(tagNameList.get(i), pic.getTag(i));
         }
         tagNameList.remove(1);
         tagNameList.remove(1);
@@ -51,7 +51,7 @@ public class ListTest extends JedoTestBase {
         pic.removeTag(1);
         assertEquals(tagNameList.size(), pic.tagCount());
         for (int i = 0; i < tagNameList.size(); ++i) {
-            assertEquals(tagNameList.get(i), pic.getTag(i).getName());
+            assertEquals(tagNameList.get(i), pic.getTag(i));
         }
         session.commit();
         folder = getFolder("root");

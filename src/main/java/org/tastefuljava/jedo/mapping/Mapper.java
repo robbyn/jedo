@@ -36,12 +36,11 @@ public class Mapper {
             packagePath = path.toArray(new String[path.size()]);
         }
 
-        public ClassMapper.Builder newClass(String className) {
-            Class<?> clazz = Reflection.loadClass(className, packagePath);
-            return newClass(clazz);
+        public Class<?> findClass(String className) {
+            return Reflection.loadClass(className, packagePath);
         }
 
-        private ClassMapper.Builder newClass(Class<?> clazz) {
+        public ClassMapper.Builder newClass(Class<?> clazz) {
             ClassMapper.Builder builder = classMappers.get(clazz);
             if (builder == null) {
                 builder = new ClassMapper.Builder(clazz);

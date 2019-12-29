@@ -17,7 +17,7 @@ public class Picture {
     private int width;
     private int height;
     private GpsData gpsData;
-    private List<Tag> tags = new ArrayList<>();
+    private List<String> tags = new ArrayList<>();
 
     public int getId() {
         return id;
@@ -88,11 +88,11 @@ public class Picture {
         return tags.size();
     }
 
-    public Tag getTag(int index) {
+    public String getTag(int index) {
         return tags.get(index);
     }
 
-    public void addTag(Tag tag) {
+    public void addTag(String tag) {
         tags.add(tag);
     }
 

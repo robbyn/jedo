@@ -24,17 +24,23 @@
     fetch-mode (eager|lazy) #IMPLIED
 >
 
-<!ELEMENT set (fetch|clear|add|remove)*>
+<!ELEMENT set (element?,(fetch|clear|add|remove)*)>
 <!ATTLIST set
     name CDATA #REQUIRED
     fetch-mode (eager|lazy) #IMPLIED
     order CDATA #IMPLIED
 >
 
-<!ELEMENT list (fetch|clear|add|remove|set-at|add-at|remove-at)*>
+<!ELEMENT list (element?,(fetch|clear|add|remove|set-at|add-at|remove-at)*)>
 <!ATTLIST list
     name CDATA #REQUIRED
     fetch-mode (eager|lazy) #IMPLIED
+>
+
+<!ELEMENT element EMPTY>
+<!ATTLIST element
+    type CDATA #IMPLIED
+    column CDATA #REQUIRED
 >
 
 <!ELEMENT load (#PCDATA)>
