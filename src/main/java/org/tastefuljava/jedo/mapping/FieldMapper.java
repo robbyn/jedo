@@ -18,10 +18,6 @@ public class FieldMapper<V extends ValueMapper> {
         this.vm = vm;
     }
 
-    public String getFieldName() {
-        return field.getName();
-    }
-
     public Object getValue(Object object) {
         try {
             return field.get(object);

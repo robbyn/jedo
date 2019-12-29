@@ -17,9 +17,10 @@ public class Mapper {
         return classMappers.get(clazz);
     }
 
-    public static class Builder extends BuildContext {
+    public static class Builder {
         private final Map<Class<?>,ClassMapper.Builder> classMappers
                 = new HashMap<>();
+        private final BuildContext context = new BuildContext();
         private String[] packagePath = {"java.lang"};
 
         public Builder() {
@@ -43,7 +44,7 @@ public class Mapper {
         public ClassMapper.Builder newClass(Class<?> clazz) {
             ClassMapper.Builder builder = classMappers.get(clazz);
             if (builder == null) {
-                builder = new ClassMapper.Builder(this, clazz);
+                builder = new ClassMapper.Builder(context, clazz);
                 classMappers.put(builder.getType(), builder);
             }
             return builder;
@@ -52,14 +53,13 @@ public class Mapper {
         public Mapper build() {
             Map<Class<?>,ClassMapper> map = new HashMap<>();
             for (ClassMapper.Builder cmb: classMappers.values()) {
-                cmb.fixForwards(classMappers);
                 ClassMapper mapper = cmb.build();
                 map.put(cmb.getType(), mapper);
             }
             for (ClassMapper cm: map.values()) {
-                fixall(cm);
+                context.fixall(cm);
             }
-            checkUnresolved();
+            context.checkUnresolved();
             return new Mapper(map);
         }
     }

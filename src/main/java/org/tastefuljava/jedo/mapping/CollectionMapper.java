@@ -137,15 +137,8 @@ public abstract class CollectionMapper extends ValueMapper {
                     parentClass.getType(), paramNames);
         }
 
-        public Statement.Builder newAddStatement(boolean collectKeys,
-                String... paramNames) {
-            add = new Statement.Builder(elmClass, paramNames);
-            if (collectKeys) {
-                // temporarily set the gererate keys to an empty array. It will
-                // be updated with the actual column names in fixForwards.
-                add.setGeneratedKeys(new String[0]);
-            }
-            return add;
+        public Statement.Builder newAddStatement(String... paramNames) {
+            return add = new Statement.Builder(elmClass, paramNames);
         }
 
         public Statement.Builder newRemove(String... paramNames) {
@@ -161,7 +154,7 @@ public abstract class CollectionMapper extends ValueMapper {
         }
 
         private Statement buildAdd() {
-            return add == null ? null : add.build();
+            return add == null || add.hasGeneratedKeys() ? null : add.build();
         }
 
         private Statement buildClear() {
@@ -177,19 +170,6 @@ public abstract class CollectionMapper extends ValueMapper {
                 context.addForwardClassRef(elmClass, (cm)->{
                     colm.elmMapper = cm;
                 });
-            }
-        }
-
-        @Override
-        public void fixForwards(Map<Class<?>, ClassMapper.Builder> map) {
-            if (add != null && add.hasGeneratedKeys()) {
-                ClassMapper.Builder cm = map.get(elmClass);
-                if (cm == null) {
-                    throw new JedoException(
-                            "Unresolved collection element class: " 
-                                    + type.getName());
-                }
-                add.setGeneratedKeys(cm.getIdColumns());
             }
         }
     }

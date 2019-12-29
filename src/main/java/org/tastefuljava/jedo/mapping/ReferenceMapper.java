@@ -68,10 +68,6 @@ public class ReferenceMapper extends ValueMapper {
         }
 
         @Override
-        public void fixForwards(Map<Class<?>, ClassMapper.Builder> map) {
-        }
-
-        @Override
         public ReferenceMapper build() {
             ReferenceMapper rm = new ReferenceMapper(this);
             context.addForwardClassRef(refClass, (cm)->{

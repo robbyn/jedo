@@ -75,15 +75,8 @@ public class ListMapper extends CollectionMapper {
             return setAt = new Statement.Builder(elmClass, paramNames);
         }
 
-        public Statement.Builder newAddAtStatement(boolean collectKeys,
-                String... paramNames) {
-            addAt = new Statement.Builder(elmClass, paramNames);
-            if (collectKeys) {
-                // temporarily set the gererate keys to an empty array. It will
-                // be updated with the actual column names in fixForwards.
-                addAt.setGeneratedKeys(new String[0]);
-            }
-            return addAt;
+        public Statement.Builder newAddAtStatement(String... paramNames) {
+            return addAt = new Statement.Builder(elmClass, paramNames);
         }
 
         public Statement.Builder newRemoveAt(String... paramNames) {
@@ -100,19 +93,6 @@ public class ListMapper extends CollectionMapper {
 
         private Statement buildRemoveAt() {
             return removeAt == null ? null : removeAt.build();
-        }
-
-        @Override
-        public void fixForwards(Map<Class<?>, ClassMapper.Builder> map) {
-            if (addAt != null && addAt.hasGeneratedKeys()) {
-                ClassMapper.Builder cm = map.get(elmClass);
-                if (cm == null) {
-                    throw new JedoException(
-                            "Unresolved collection element class: " 
-                                    + type.getName());
-                }
-                addAt.setGeneratedKeys(cm.getIdColumns());
-            }
         }
 
         @Override

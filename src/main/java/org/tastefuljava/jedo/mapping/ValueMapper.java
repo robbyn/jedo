@@ -43,7 +43,6 @@ public abstract class ValueMapper {
         }
 
         public abstract T build();
-        public abstract void fixForwards(Map<Class<?>, ClassMapper.Builder> map);
 
         // helper classes
         protected Field getField(String name) throws JedoException {

@@ -179,7 +179,7 @@ public class ClassMapper extends ValueMapper {
     }
 
     public static class Builder extends ValueMapper.Builder<ClassMapper> {
-        private final Map<Field,ColumnMapper.Builder> idField
+        private final Map<Field,ColumnMapper.Builder> idFields
                 = new LinkedHashMap<>();
         private final Map<Field,ValueMapper.Builder> fields
                 = new LinkedHashMap<>();
@@ -196,7 +196,7 @@ public class ClassMapper extends ValueMapper {
 
         public void addIdField(String fieldName, String column) {
             Field field = getField(fieldName);
-            idField.put(field, new ColumnMapper.Builder(
+            idFields.put(field, new ColumnMapper.Builder(
                     context, field.getType(), column));
         }
 
@@ -295,9 +295,9 @@ public class ClassMapper extends ValueMapper {
         }
 
         private FieldMapper<ColumnMapper>[] buildIdFields() {
-            FieldMapper<ColumnMapper>[] result = new FieldMapper[idField.size()];
+            FieldMapper<ColumnMapper>[] result = new FieldMapper[idFields.size()];
             int i = 0;
-            for (Map.Entry<Field,ColumnMapper.Builder> e: idField.entrySet()) {
+            for (Map.Entry<Field,ColumnMapper.Builder> e: idFields.entrySet()) {
                 result[i++] = new FieldMapper<>(e.getKey(), e.getValue().build());
             }
             return result;
@@ -360,28 +360,21 @@ public class ClassMapper extends ValueMapper {
         }
 
         private String[] getIdFieldNames() {
-            String[] result = new String[idField.size()];
+            String[] result = new String[idFields.size()];
             int i = 0;
-            for (Map.Entry<Field,ColumnMapper.Builder> e: idField.entrySet()) {
+            for (Map.Entry<Field,ColumnMapper.Builder> e: idFields.entrySet()) {
                 result[i++] = e.getKey().getName();
             }
             return result;
         }
 
         public String[] getIdColumns() {
-            String[] result = new String[idField.size()];
+            String[] result = new String[idFields.size()];
             int i = 0;
-            for (Map.Entry<Field,ColumnMapper.Builder> e: idField.entrySet()) {
+            for (Map.Entry<Field,ColumnMapper.Builder> e: idFields.entrySet()) {
                 result[i++] = e.getValue().getColumn();
             }
             return result;
-        }
-
-        @Override
-        public void fixForwards(Map<Class<?>, Builder> map) {
-            for (ValueMapper.Builder fm: fields.values()) {
-                fm.fixForwards(map);
-            }
         }
     }
 }

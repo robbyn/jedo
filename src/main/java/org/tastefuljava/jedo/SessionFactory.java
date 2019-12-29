@@ -13,7 +13,7 @@ public class SessionFactory {
     private final DataSource ds;
     private final Mapper mapper;
 
-    public SessionFactory(DataSource ds, Mapper mapper) {
+    public SessionFactory(Mapper mapper, DataSource ds) {
         this.ds = ds;
         this.mapper = mapper;
     }

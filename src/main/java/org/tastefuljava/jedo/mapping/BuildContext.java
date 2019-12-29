@@ -7,7 +7,7 @@ import java.util.Map;
 import java.util.function.Consumer;
 import org.tastefuljava.jedo.JedoException;
 
-public abstract class BuildContext {
+public class BuildContext {
     private final Map<Class<?>, List<Consumer<ClassMapper>>> forwards
             = new IdentityHashMap<>();
 

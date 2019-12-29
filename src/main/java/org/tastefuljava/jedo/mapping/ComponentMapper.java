@@ -93,10 +93,6 @@ public class ComponentMapper extends ValueMapper {
         }
 
         @Override
-        public void fixForwards(Map<Class<?>, ClassMapper.Builder> map) {
-        }
-
-        @Override
         public ComponentMapper build() {
             return new ComponentMapper(this);
         }
