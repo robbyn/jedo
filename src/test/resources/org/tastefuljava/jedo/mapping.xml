@@ -81,7 +81,7 @@
             <field name="altitude" column="ALTITUDE"/>
         </component>
         <list name="tags" fetch-mode="lazy">
-            <element type="String" column="NAME"/>
+            <element column="NAME"/>
             <fetch>
                 SELECT * FROM picture_tags
                 WHERE PICTURE_ID=${id}
