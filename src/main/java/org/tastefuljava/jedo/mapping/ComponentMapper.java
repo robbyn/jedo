@@ -18,7 +18,7 @@ public class ComponentMapper extends ValueMapper {
 
     private ComponentMapper(Builder builder) {
         super(builder);
-        this.fields = builder.buildProps();
+        this.fields = builder.buildFields();
     }
 
     @Override
@@ -71,30 +71,22 @@ public class ComponentMapper extends ValueMapper {
     }
 
     public static class Builder extends ValueMapper.Builder<ComponentMapper> {
-        private final Map<Field,ColumnMapper.Builder> props
+        private final Map<Field,ColumnMapper.Builder> fields
                 = new LinkedHashMap<>();
 
         public Builder(Class<?> type) {
             super(type);
         }
 
-        public void addProp(String field, String column) {
-            Field f = Reflection.getInstanceField(type, field);
-            if (f == null) {
-                throw new JedoException("Field " + field + " not in class "
-                        + type.getName());
-            }
-            props.put(f, new ColumnMapper.Builder(f.getType(), column));
+        public void addProp(String name, String column) {
+            Field field = getField(name);
+            fields.put(field, new ColumnMapper.Builder(field.getType(), column));
         }
 
-        public ComponentMapper getMapper() {
-            return new ComponentMapper(this);
-        }
-
-        private FieldMapper<ColumnMapper>[] buildProps() {
-            FieldMapper<ColumnMapper>[] result = new FieldMapper[props.size()];
+        private FieldMapper<ColumnMapper>[] buildFields() {
+            FieldMapper<ColumnMapper>[] result = new FieldMapper[fields.size()];
             int i = 0;
-            for (Map.Entry<Field,ColumnMapper.Builder> e: props.entrySet()) {
+            for (Map.Entry<Field,ColumnMapper.Builder> e: fields.entrySet()) {
                 result[i++] = new FieldMapper<>(e.getKey(), e.getValue().build());
             }
             return result;

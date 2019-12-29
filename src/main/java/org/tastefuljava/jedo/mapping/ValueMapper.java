@@ -5,6 +5,7 @@ import java.sql.ResultSet;
 import java.util.Map;
 import java.util.logging.Logger;
 import org.tastefuljava.jedo.JedoException;
+import org.tastefuljava.jedo.util.Reflection;
 
 public abstract class ValueMapper {
     private static final Logger LOG
@@ -46,5 +47,15 @@ public abstract class ValueMapper {
 
         public abstract T build();
         public abstract void fixForwards(Map<Class<?>, ClassMapper.Builder> map);
+
+        // helper classes
+        protected Field getField(String name) throws JedoException {
+            Field field = Reflection.getInstanceField(type, name);
+            if (field == null) {
+                throw new JedoException("Field " + name + " not found in class "
+                        + type.getName());
+            }
+            return field;
+        }
     }
 }
