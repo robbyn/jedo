@@ -23,10 +23,10 @@ public class MappingFileReader {
 
     private static final String[] EMPTY_STRING_ARRAY = {};
 
-    private Mapper.Builder builder;
+    private final Mapper.Builder builder = new Mapper.Builder();
 
     public Mapper getMapper() {
-        return builder.getMapper();
+        return builder.build();
     }
 
     public void load(File file) throws IOException {
@@ -105,7 +105,7 @@ public class MappingFileReader {
                 Attributes attrs) throws SAXException {
             switch (qName) {
                 case "mapping":
-                    builder = new Mapper.Builder(attrs.getValue("package"));
+                    builder.setPackagePath(attrs.getValue("package"));
                     break;
                 case "class":
                     String className = attrs.getValue("name");

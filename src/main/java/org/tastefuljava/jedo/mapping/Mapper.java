@@ -20,9 +20,12 @@ public class Mapper {
     public static class Builder {
         private final Map<Class<?>,ClassMapper.Builder> classMappers
                 = new HashMap<>();
-        private final String[] packagePath;
+        private String[] packagePath = {"java.lang"};
 
-        public Builder(String packageNames) {
+        public Builder() {
+        }
+
+        public void setPackagePath(String packageNames) {
             List<String> path = new ArrayList<>();
             if (packageNames != null) {
                 for (String name: packageNames.split("\\s*[,;:\\s]\\s*")) {
@@ -47,7 +50,7 @@ public class Mapper {
             return builder;
         }
 
-        public Mapper getMapper() {
+        public Mapper build() {
             Map<Class<?>,ClassMapper> map = new HashMap<>();
             for (ClassMapper.Builder cmb: classMappers.values()) {
                 cmb.fixForwards(classMappers);
