@@ -23,9 +23,7 @@ public abstract class ValueMapper {
 
     public abstract Object fromResultSet(Storage pm, Object obj,
             ResultSet rs);
-    public Object fromResultSet(ResultSet rs, int ix) {
-        throw new JedoException("Cannot get value from ResultSet");
-    }
+
     public void fixForwardFields(Map<Class<?>, ClassMapper> map, Field field) {
     }
 

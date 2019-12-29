@@ -104,13 +104,17 @@ public class CachedStorage implements Storage {
 
     @Override
     public void execute(Statement stmt, Object self, Object[] parms) {
-        stmt.executeUpdate(cnt, self, parms);
+        try (final PreparedStatement pstmt = stmt.prepare(cnt, self, parms)) {
+            pstmt.executeUpdate();
+        } catch (SQLException ex) {
+            LOG.log(Level.SEVERE, null, ex);
+            throw new JedoException(ex.getMessage());
+        }
     }
 
     @Override
     public void update(ClassMapper cm, Statement stmt, Object self,
             Object[] parms) {
-        dispose(new TypedRef(cm, self));
         cm.beforeUpdate(this, self);
         try (PreparedStatement pstmt = prepareStatement(stmt, self, parms)) {
             pstmt.executeUpdate();
@@ -126,7 +130,17 @@ public class CachedStorage implements Storage {
             Object[] parms) {
         try (PreparedStatement pstmt = prepareStatement(stmt, self, parms)) {
             pstmt.executeUpdate();
-            cm.collectKeys(stmt, pstmt, self);
+            if (stmt.hasGeneratedKeys()) {
+                try (final ResultSet rs = pstmt.getGeneratedKeys()) {
+                    if (!rs.next()) {
+                        throw new JedoException("Could not get generated keys");
+                    }
+                    cm.collectKeys(this, self, rs);
+                } catch (SQLException ex) {
+                    LOG.log(Level.SEVERE, null, ex);
+                    throw new JedoException(ex.getMessage());
+                }
+            }
             cache.put(getObjectId(cm, self), self);
         } catch (SQLException ex) {
             LOG.log(Level.SEVERE, null, ex);

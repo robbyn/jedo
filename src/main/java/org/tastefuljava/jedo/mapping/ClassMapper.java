@@ -5,6 +5,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -120,9 +121,10 @@ public class ClassMapper extends ValueMapper {
         }
     }
 
-    public void collectKeys(Statement statement, PreparedStatement stmt,
-            Object obj) {
-        statement.collectKeys(stmt, idFields, obj);
+    public void collectKeys(Storage pm, Object obj, ResultSet rs) {
+        for (FieldMapper<ColumnMapper> prop : idFields) {
+            prop.setFromResultSet(pm, obj, rs);
+        }
     }
 
     public void update(Storage pm, Object obj) {

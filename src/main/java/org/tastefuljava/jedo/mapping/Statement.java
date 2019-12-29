@@ -2,7 +2,6 @@ package org.tastefuljava.jedo.mapping;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -28,6 +27,10 @@ public class Statement {
         this.generatedKeys = builder.generatedKeys;
     }
 
+    public boolean hasGeneratedKeys() {
+        return generatedKeys != null;
+    }
+
     public PreparedStatement prepare(Connection cnt, Object self,
             Object[] parms) {
         try {
@@ -51,35 +54,6 @@ public class Statement {
             LOG.log(Level.SEVERE, null, ex);
             throw new JedoException(ex.getMessage());
         }
-    }
-
-    public void collectKeys(
-            PreparedStatement stmt, FieldMapper<ColumnMapper>[] props, Object obj)
-                throws JedoException {
-        if (generatedKeys != null) {
-            try (ResultSet rs = stmt.getGeneratedKeys()) {
-                if (!rs.next()) {
-                    throw new JedoException(
-                            "Could not get generated keys");
-                }
-                int ix = 0;
-                for (FieldMapper<ColumnMapper> prop : props) {
-                    prop.setFromResultSet(obj, rs, ++ix);
-                }
-            } catch (SQLException ex) {
-                LOG.log(Level.SEVERE, null, ex);
-                throw new JedoException(ex.getMessage());
-            }
-        }
-    }
-
-    public void executeUpdate(Connection cnt, Object self, Object[] parms) {
-        try (PreparedStatement pstmt = prepare(cnt, self, parms)) {
-            pstmt.executeUpdate();
-        } catch (SQLException ex) {
-            LOG.log(Level.SEVERE, null, ex);
-            throw new JedoException(ex.getMessage());
-        }        
     }
 
     public void writeTo(XMLWriter out, String type, String name) {

@@ -53,10 +53,6 @@ public class FieldMapper<V extends ValueMapper> {
         setValue(obj, vm.fromResultSet(pm, obj, rs));
     }
 
-    void setFromResultSet(Object obj, ResultSet rs, int i) {
-        setValue(obj, vm.fromResultSet(rs, i));
-    }
-
     void afterInsert(Storage pm, Object self) {
         vm.afterInsert(pm, self, this);
     }

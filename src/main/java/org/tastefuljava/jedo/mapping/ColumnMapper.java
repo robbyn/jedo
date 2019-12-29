@@ -34,17 +34,6 @@ public class ColumnMapper extends ValueMapper {
         }
     }
 
-    @Override
-    public Object fromResultSet(ResultSet rs, int ix) {
-        try {
-            return convert(rs.getObject(ix));
-        } catch (SQLException ex) {
-            LOG.log(Level.SEVERE, null, ex);
-            throw new JedoException(
-                    "Could not get column " + ix +  " from ResultSet");
-        }
-    }
-
     public final Object convert(Object value) {
         return Converter.convert(value, type);
     }
