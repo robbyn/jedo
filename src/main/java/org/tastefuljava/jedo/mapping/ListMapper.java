@@ -23,7 +23,7 @@ public class ListMapper extends CollectionMapper {
         if (setAt == null) {
             return false;
         }
-        pm.insert(elmClass, setAt, o, new Object[]{parent, o, index});
+        pm.execute(setAt, o, new Object[]{parent, o, index});
         return true;
     }
 

@@ -15,6 +15,7 @@ import org.tastefuljava.jedo.mapping.ClassMapper;
 import org.tastefuljava.jedo.mapping.Flushable;
 import org.tastefuljava.jedo.mapping.Statement;
 import org.tastefuljava.jedo.mapping.Storage;
+import org.tastefuljava.jedo.mapping.ValueMapper;
 
 public class CachedStorage implements Storage {
     private static final Logger LOG = Logger.getLogger(Session.class.getName());
@@ -56,13 +57,13 @@ public class CachedStorage implements Storage {
     }
 
     @Override
-    public void query(ClassMapper cm, Statement stmt, Object self, Object[] parms,
+    public void query(ValueMapper cm, Statement stmt, Object self, Object[] parms,
             Collection<Object> result) {
         flush();
         try (PreparedStatement pstmt = prepareStatement(stmt, self, parms);
                 ResultSet rs = pstmt.executeQuery()) {
             while (rs.next()) {
-                result.add(loadFromResultSet(cm, rs));
+                result.add(cm.fromResultSet(this, self, rs));
             }
         } catch (SQLException ex) {
             LOG.log(Level.SEVERE, null, ex);
@@ -71,13 +72,13 @@ public class CachedStorage implements Storage {
     }
 
     @Override
-    public Object queryOne(ClassMapper cm, Statement stmt, Object[] parms) {
+    public Object queryOne(ValueMapper cm, Statement stmt, Object[] parms) {
         flush();
         Object result = null;
         try (PreparedStatement pstmt = prepareStatement(stmt, null, parms);
                 ResultSet rs = pstmt.executeQuery()) {
             if (rs.next()) {
-                result = loadFromResultSet(cm, rs);
+                result = cm.fromResultSet(this, null, rs);
                 if (rs.next()) {
                     throw new JedoException("Only one result allowed");
                 }

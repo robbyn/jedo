@@ -10,7 +10,7 @@ import org.tastefuljava.jedo.util.Reflection;
 
 public abstract class CollectionMapper extends ValueMapper {
     private final FetchMode fetchMode;
-    protected ClassMapper elmClass;
+    protected ValueMapper elmMapper;
     private final Statement fetch;
     private final Statement clear;
     private final Statement add;
@@ -34,11 +34,7 @@ public abstract class CollectionMapper extends ValueMapper {
             Collection<?> result) {
         @SuppressWarnings("unchecked")
         Collection<Object> col = (Collection<Object>)result;
-        pm.query(elmClass, fetch, parent, new Object[]{parent}, col);
-    }
-
-    public ClassMapper getElementClass() {
-        return elmClass;
+        pm.query(elmMapper, fetch, parent, new Object[]{parent}, col);
     }
 
     public Statement getClear() {
@@ -88,8 +84,8 @@ public abstract class CollectionMapper extends ValueMapper {
     @Override
     public void fixForwardFields(Map<Class<?>, ClassMapper> map, Field field) {
         Class<?> clazz = Reflection.getReferencedType(field);
-        elmClass = map.get(clazz);
-        if (elmClass == null) {
+        elmMapper = map.get(clazz);
+        if (elmMapper == null) {
             throw new JedoException("Unresolved collection element class: "
                     + field.getType().getName());
         }
@@ -106,7 +102,7 @@ public abstract class CollectionMapper extends ValueMapper {
         if (add == null) {
             throw new JedoException("Cannot add to collection");
         }
-        pm.insert(elmClass, add, o, new Object[]{parent,o});
+        pm.execute(add, o, new Object[]{parent,o});
     }
 
     public void remove(Storage pm, Object parent, Object o) {
