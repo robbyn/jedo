@@ -136,6 +136,25 @@ public class CachedStorage implements Storage {
     }
 
     @Override
+    public Object loadFromResultSet(ClassMapper cm, ResultSet rs) {
+        ObjectId oid = makeObjectId(
+                cm.getMappedClass(), cm.getIdValuesFromResultSet(rs));
+        Object obj;
+        if (oid != null) {
+            obj = cache.get(oid);
+            if (obj != null) {
+                return obj;
+            }
+        }
+        obj = cm.newInstance();
+        if (oid != null) {
+            cache.put(oid, obj);
+        }
+        cm.setFieldsFromResultSet(this, obj, rs);
+        return obj;
+    }
+
+    @Override
     public Object loadFromId(ClassMapper cm, Object[] values) {
         ObjectId oid = makeObjectId(cm.getMappedClass(), values);
         Object obj;
@@ -164,24 +183,6 @@ public class CachedStorage implements Storage {
 
     public void dispose(ClassMapper cm, Object obj) {
         dispose(new TypedRef(cm, obj));
-    }
-
-    private Object loadFromResultSet(ClassMapper cm, ResultSet rs) {
-        ObjectId oid = makeObjectId(
-                cm.getMappedClass(), cm.getIdValuesFromResultSet(rs));
-        Object obj;
-        if (oid != null) {
-            obj = cache.get(oid);
-            if (obj != null) {
-                return obj;
-            }
-        }
-        obj = cm.newInstance();
-        if (oid != null) {
-            cache.put(oid, obj);
-        }
-        cm.setFieldsFromResultSet(this, obj, rs);
-        return obj;
     }
 
     private void flush() {

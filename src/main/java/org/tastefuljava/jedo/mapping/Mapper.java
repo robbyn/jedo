@@ -32,7 +32,7 @@ public class Mapper {
             ClassMapper.Builder builder = classMappers.get(clazz);
             if (builder == null) {
                 builder = new ClassMapper.Builder(clazz);
-                classMappers.put(builder.getMappedClass(), builder);
+                classMappers.put(builder.getType(), builder);
             }
             return builder;
         }
@@ -42,7 +42,7 @@ public class Mapper {
             for (ClassMapper.Builder cmb: classMappers.values()) {
                 cmb.fixForwards(classMappers);
                 ClassMapper mapper = cmb.build();
-                map.put(cmb.getMappedClass(), mapper);
+                map.put(cmb.getType(), mapper);
             }
             for (ClassMapper cm: map.values()) {
                 cm.fixForwards(map);

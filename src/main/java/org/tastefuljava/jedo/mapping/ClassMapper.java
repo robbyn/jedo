@@ -14,11 +14,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.tastefuljava.jedo.JedoException;
 
-public class ClassMapper {
+public class ClassMapper extends ValueMapper {
     private static final Logger LOG
             = Logger.getLogger(ClassMapper.class.getName());
 
-    private final Class<?> clazz;
     private final FieldMapper<ColumnMapper>[] idFields;
     private final FieldMapper<ValueMapper>[] fields;
     private final Map<String,Statement> queries;
@@ -29,7 +28,7 @@ public class ClassMapper {
     private final Statement delete;
 
     private ClassMapper(Builder builder) {
-        this.clazz = builder.clazz;
+        super(builder);
         this.idFields = builder.buildIdFields();
         this.fields = builder.buildFields();
         this.queries = builder.buildQueries();
@@ -41,12 +40,12 @@ public class ClassMapper {
     }
 
     public Class<?> getMappedClass() {
-        return clazz;
+        return type;
     }
 
     public Object newInstance() {
         try {
-            return clazz.getConstructor().newInstance();
+            return type.getConstructor().newInstance();
         } catch (InstantiationException | IllegalAccessException
                 | NoSuchMethodException | SecurityException
                 | InvocationTargetException ex) {
@@ -73,7 +72,7 @@ public class ClassMapper {
 
     public Object load(Storage pm, Object[] parms) {
         if (load == null) {
-            throw new JedoException("No loader for class " + clazz.getName());
+            throw new JedoException("No loader for class " + type.getName());
         }
         return pm.queryOne(this, load, parms);
     }
@@ -103,14 +102,14 @@ public class ClassMapper {
         Statement stmt = stmts.get(name);
         if (stmt == null) {
             throw new JedoException(
-                    "No statement " + name + " for " + clazz.getName());
+                    "No statement " + name + " for " + type.getName());
         }
         pm.execute(stmt, null, parms);
     }
 
     public void insert(Storage pm, Object obj) {
         if (insert == null) {
-            throw new JedoException("No inserter for " + clazz.getName());
+            throw new JedoException("No inserter for " + type.getName());
         }
         pm.insert(this, insert, obj, null);
     }
@@ -129,7 +128,7 @@ public class ClassMapper {
     public void update(Storage pm, Object obj) {
         if (update == null) {
             throw new JedoException(
-                    "No updater for " + clazz.getName());
+                    "No updater for " + type.getName());
         }
         pm.update(this, update, obj, null);
     }
@@ -149,7 +148,7 @@ public class ClassMapper {
     public void delete(Storage pm, Object obj) {
         if (delete == null) {
             throw new JedoException(
-                    "No deleter for " + clazz.getName());
+                    "No deleter for " + type.getName());
         }
         pm.delete(this, delete, obj);
     }
@@ -180,8 +179,12 @@ public class ClassMapper {
         }
     }
 
-    public static class Builder {
-        private final Class<?> clazz;
+    @Override
+    public Object fromResultSet(Storage pm, Object obj, ResultSet rs) {
+        return pm.loadFromResultSet(this, rs);
+    }
+
+    public static class Builder extends ValueMapper.Builder<ClassMapper> {
         private final Map<Field,ColumnMapper.Builder> idField
                 = new LinkedHashMap<>();
         private final Map<Field,ValueMapper.Builder> fields
@@ -193,18 +196,8 @@ public class ClassMapper {
         private Statement.Builder update;
         private Statement.Builder delete;
 
-        public Builder(Class<?> clazz) {
-            this.clazz = clazz;
-        }
-
-        public void fixForwards(Map<Class<?>, ClassMapper.Builder> map) {
-            for (ValueMapper.Builder fm: fields.values()) {
-                fm.fixForwards(map);
-            }
-        }
-
-        public Class<?> getMappedClass() {
-            return clazz;
+        public Builder(Class<?> type) {
+            super(type);
         }
 
         public void addIdField(String fieldName, String column) {
@@ -270,7 +263,7 @@ public class ClassMapper {
 
         public Statement.Builder newStatement(String[] paramNames,
                 boolean generatedKeys) {
-            Statement.Builder stmt = new Statement.Builder(clazz, paramNames);
+            Statement.Builder stmt = new Statement.Builder(type, paramNames);
             if (generatedKeys) {
                 stmt.setGeneratedKeys(getIdColumns());
             }
@@ -306,10 +299,10 @@ public class ClassMapper {
         }
 
         private Field getField(String name) throws JedoException {
-            Field field = Reflection.getInstanceField(clazz, name);
+            Field field = Reflection.getInstanceField(type, name);
             if (field == null) {
                 throw new JedoException("Field " + name + " not found in class "
-                        + clazz.getName());
+                        + type.getName());
             }
             return field;
         }
@@ -395,6 +388,13 @@ public class ClassMapper {
                 result[i++] = e.getValue().getColumn();
             }
             return result;
+        }
+
+        @Override
+        public void fixForwards(Map<Class<?>, Builder> map) {
+            for (ValueMapper.Builder fm: fields.values()) {
+                fm.fixForwards(map);
+            }
         }
     }
 }

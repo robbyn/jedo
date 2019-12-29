@@ -16,6 +16,10 @@ public abstract class ValueMapper {
         this.type = builder.type;
     }
 
+    public Class<?> getType() {
+        return type;
+    }
+
     public abstract Object fromResultSet(Storage pm, Object obj,
             ResultSet rs);
     public Object fromResultSet(ResultSet rs, int ix) {
@@ -34,6 +38,10 @@ public abstract class ValueMapper {
 
         protected Builder(Class<?> type) {
             this.type = type;
+        }
+
+        public Class<?> getType() {
+            return type;
         }
 
         public abstract T build();

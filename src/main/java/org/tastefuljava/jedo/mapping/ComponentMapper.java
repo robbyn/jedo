@@ -14,20 +14,20 @@ public class ComponentMapper extends ValueMapper {
     private static final Logger LOG
             = Logger.getLogger(ComponentMapper.class.getName());
 
-    private final FieldMapper<ColumnMapper>[] props;
+    private final FieldMapper<ColumnMapper>[] fields;
 
     private ComponentMapper(Builder builder) {
         super(builder);
-        this.props = builder.buildProps();
+        this.fields = builder.buildProps();
     }
 
     @Override
     public Object fromResultSet(Storage pm, Object obj, ResultSet rs) {
         try {
             boolean allNull = true;
-            Object[] values = new Object[props.length];
-            for (int i = 0; i < props.length; ++i) {
-                Object value = props[i].fromResultSet(null, null, rs);
+            Object[] values = new Object[fields.length];
+            for (int i = 0; i < fields.length; ++i) {
+                Object value = fields[i].fromResultSet(null, null, rs);
                 values[i] = value;
                 if (value != null) {
                     allNull = false;
@@ -37,8 +37,8 @@ public class ComponentMapper extends ValueMapper {
                 return null;
             } else {
                 Object comp = type.getConstructor().newInstance();
-                for (int i = 0; i < props.length; ++i) {
-                    props[i].setValue(comp, values[i]);
+                for (int i = 0; i < fields.length; ++i) {
+                    fields[i].setValue(comp, values[i]);
                 }
                 return comp;
             }
@@ -47,6 +47,26 @@ public class ComponentMapper extends ValueMapper {
                 | InvocationTargetException ex) {
             LOG.log(Level.SEVERE, null, ex);
             throw new JedoException(ex.getMessage());
+        }
+    }
+
+    @Override
+    void afterInsert(Storage pm, Object self, FieldMapper fm) {
+        Object comp = fm.getValue(self);
+        if (comp != null) {
+            for (FieldMapper<ColumnMapper> field: fields) {
+                field.afterInsert(pm, comp);
+            }
+        }
+    }
+
+    @Override
+    void beforeDelete(Storage pm, Object self, FieldMapper fm) {
+        Object comp = fm.getValue(self);
+        if (comp != null) {
+            for (FieldMapper<ColumnMapper> field: fields) {
+                field.beforeDelete(pm, comp);
+            }
         }
     }
 

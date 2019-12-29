@@ -1,5 +1,6 @@
 package org.tastefuljava.jedo.mapping;
 
+import java.sql.ResultSet;
 import java.util.Collection;
 
 public interface Storage extends AutoCloseable {
@@ -12,6 +13,7 @@ public interface Storage extends AutoCloseable {
     public void update(ClassMapper cm, Statement stmt, Object self,
             Object[] parms);
     public void delete(ClassMapper cm, Statement stmt, Object self);
+    public Object loadFromResultSet(ClassMapper cm, ResultSet rs);
     public Object loadFromId(ClassMapper cm, Object[] values);
     public void markDirty(Flushable obj);
     public void dispose(Flushable obj);

@@ -136,12 +136,12 @@ public abstract class CollectionMapper extends ValueMapper {
 
         public Statement.Builder newFetchStatement(String... paramNames) {
             return fetch = new Statement.Builder(
-                    parentClass.getMappedClass(), paramNames);
+                    parentClass.getType(), paramNames);
         }
 
         public Statement.Builder newClearStatement(String... paramNames) {
             return clear = new Statement.Builder(
-                    parentClass.getMappedClass(), paramNames);
+                    parentClass.getType(), paramNames);
         }
 
         public Statement.Builder newAddStatement(boolean collectKeys,
