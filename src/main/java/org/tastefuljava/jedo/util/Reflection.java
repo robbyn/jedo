@@ -22,7 +22,8 @@ public class Reflection {
         for (int i = 0; i < fields.length; ++i) {
             fields[i] = Reflection.getInstanceField(clazz, names[i]);
             if (fields[i] == null) {
-                throw new JedoException("Field " + names[i] + " not found in class " + clazz.getName());
+                throw new JedoException("Field " + names[i]
+                        + " not found in class " + clazz.getName());
             }
         }
         return fields;
@@ -31,17 +32,43 @@ public class Reflection {
     private Reflection() {
     }
 
-    public static Class<? extends Object> loadClass(String packageName,
-            String className) {
+    public static Class<? extends Object> loadClass(String className,
+            String... packagePath) {
+        ClassLoader cl = Thread.currentThread().getContextClassLoader();
+        Class result = findClass(cl, className, packagePath);
+        if (cl == null) {
+            throw new JedoException("Class not found: " + className);
+        }
+        return result;
+    }
+
+    private static Class<? extends Object> findClass(ClassLoader cl,
+            String className, String... packagePath) {
         try {
-            String fullName = packageName == null
-                    ? className : packageName + "." + className;
-            ClassLoader cl = Thread.currentThread().getContextClassLoader();
-            return cl.loadClass(fullName);
+            Class<?> clazz = findClass(cl, className);
+            if (clazz != null) {
+                return clazz;
+            }
+            for (String packageName: packagePath) {
+                clazz = findClass(cl, packageName + '.' + className);
+                if (clazz != null) {
+                    return clazz;
+                }
+            }
+            return null;
         } catch (ClassNotFoundException ex) {
             LOG.log(Level.SEVERE, null, ex);
             throw new JedoException(ex.getMessage());
         }
+    }
+
+    private static Class<? extends Object> findClass(ClassLoader cl,
+            String fullName) throws ClassNotFoundException {
+        String resName = fullName.replace('.', '/') + ".class";
+        if (cl.getResource(resName) == null) {
+            return null;
+        }
+        return cl.loadClass(fullName);
     }
 
     public static Field getInstanceField(Class<?> clazz, String name) {

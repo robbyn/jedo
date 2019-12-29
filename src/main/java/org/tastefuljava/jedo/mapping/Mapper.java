@@ -1,6 +1,8 @@
 package org.tastefuljava.jedo.mapping;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import org.tastefuljava.jedo.util.Reflection;
 
@@ -18,13 +20,21 @@ public class Mapper {
     public static class Builder {
         private final Map<Class<?>,ClassMapper.Builder> classMappers
                 = new HashMap<>();
+        private final String[] packagePath;
 
-        public Builder() {
+        public Builder(String packageNames) {
+            List<String> path = new ArrayList<>();
+            if (packageNames != null) {
+                for (String name: packageNames.split("\\s*[,;:\\s]\\s*")) {
+                    path.add(name);
+                }
+            }
+            path.add("java.lang");
+            packagePath = path.toArray(new String[path.size()]);
         }
 
-        public ClassMapper.Builder newClass(String packageName,
-                String className) {
-            Class<?> clazz = Reflection.loadClass(packageName, className);
+        public ClassMapper.Builder newClass(String className) {
+            Class<?> clazz = Reflection.loadClass(className, packagePath);
             return newClass(clazz);
         }
 

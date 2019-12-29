@@ -23,7 +23,7 @@ public class MappingFileReader {
 
     private static final String[] EMPTY_STRING_ARRAY = {};
 
-    private final Mapper.Builder builder = new Mapper.Builder();
+    private Mapper.Builder builder;
 
     public Mapper getMapper() {
         return builder.getMapper();
@@ -61,7 +61,6 @@ public class MappingFileReader {
         private static final String DTD_PUBLIC_ID
                 = "-//tastefuljava.org//Jedo Mapping File 1.0//EN";
 
-        private String packageName;
         private ClassMapper.Builder classBuilder;
         private CollectionMapper.Builder collectionBuilder;
         private ListMapper.Builder listBuilder;
@@ -106,11 +105,11 @@ public class MappingFileReader {
                 Attributes attrs) throws SAXException {
             switch (qName) {
                 case "mapping":
-                    packageName = attrs.getValue("package");
+                    builder = new Mapper.Builder(attrs.getValue("package"));
                     break;
                 case "class":
                     String className = attrs.getValue("name");
-                    classBuilder = builder.newClass(packageName, className);
+                    classBuilder = builder.newClass(className);
                     break;
                 case "id":
                     inId = true;
@@ -227,7 +226,6 @@ public class MappingFileReader {
                 throws SAXException {
             switch (qName) {
                 case "mapping":
-                    packageName = null;
                     break;
                 case "class":
                     classBuilder = null;
