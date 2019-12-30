@@ -1,4 +1,4 @@
 jedo
 ====
 
-A very simple Object-Relational Mapper
+A lightweight Object-Relational Mapper
