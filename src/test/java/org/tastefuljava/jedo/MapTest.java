@@ -4,9 +4,7 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Set;
 import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.tastefuljava.jedo.testdb.Folder;
@@ -38,6 +36,10 @@ public class MapTest extends JedoTestBase {
         pic = session.queryOne(Picture.class, "byName", folder, "thePic");
         assertNotNull(pic);
         Set<String> languages = pic.getDescriptionLanguages();
+        assertTrue(languages.contains("fr"));
+        assertTrue(languages.contains("en"));
+        assertEquals("Ma magnifique image", pic.getDescription("fr"));
+        assertEquals("My beautiful picture", pic.getDescription("en"));
         assertEquals(2, languages.size());
     }
 }

@@ -105,6 +105,10 @@ public class Picture {
         tags.remove(index);
     }
 
+    public String getDescription(String language) {
+        return descriptions.get(language);
+    }
+
     public void setDescription(String language, String text) {
         if (text == null) {
             descriptions.remove(language);
