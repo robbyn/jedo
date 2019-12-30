@@ -5,12 +5,12 @@ import java.util.Iterator;
 import org.tastefuljava.jedo.mapping.CollectionMapper;
 import org.tastefuljava.jedo.mapping.Storage;
 
-public abstract class LazyCollection<T> implements Collection<T> {
+public abstract class JedoCollection<T> implements Collection<T> {
     protected final Storage pm;
     protected final Object parent;
     private Collection<T> col;
 
-    protected LazyCollection(Storage pm, Object parent) {
+    protected JedoCollection(Storage pm, Object parent) {
         this.pm = pm;
         this.parent = parent;
     }

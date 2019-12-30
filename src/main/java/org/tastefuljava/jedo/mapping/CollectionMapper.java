@@ -4,7 +4,7 @@ import java.lang.reflect.Field;
 import java.sql.ResultSet;
 import java.util.Collection;
 import org.tastefuljava.jedo.JedoException;
-import org.tastefuljava.jedo.rel.LazyCollection;
+import org.tastefuljava.jedo.rel.JedoCollection;
 import org.tastefuljava.jedo.util.Reflection;
 
 public abstract class CollectionMapper extends ValueMapper {
@@ -59,9 +59,9 @@ public abstract class CollectionMapper extends ValueMapper {
         }
     }
 
-    private LazyCollection<Object> createCollection(Storage pm,
+    private JedoCollection<Object> createCollection(Storage pm,
             Object parent, boolean empty) {
-        LazyCollection<Object> col = newCollection(pm, parent);
+        JedoCollection<Object> col = newCollection(pm, parent);
         if (empty) {
             col.setEmpty();
         } else {
@@ -78,7 +78,7 @@ public abstract class CollectionMapper extends ValueMapper {
         return col;
     }
 
-    protected abstract LazyCollection<Object> newCollection(
+    protected abstract JedoCollection<Object> newCollection(
             Storage pm, Object parent);
 
     public void clear(Storage pm, Object parent) {

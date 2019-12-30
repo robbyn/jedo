@@ -3,8 +3,8 @@ package org.tastefuljava.jedo.mapping;
 import java.lang.reflect.Field;
 import java.util.List;
 import org.tastefuljava.jedo.JedoException;
-import org.tastefuljava.jedo.rel.LazyCollection;
-import org.tastefuljava.jedo.rel.LazyList;
+import org.tastefuljava.jedo.rel.JedoCollection;
+import org.tastefuljava.jedo.rel.JedoList;
 
 public class ListMapper extends CollectionMapper {
     private final Statement setAt;
@@ -45,15 +45,15 @@ public class ListMapper extends CollectionMapper {
 
     @Override
     void beforeDelete(Storage pm, Object self, FieldMapper fm) {
-        LazyList<?> list = (LazyList<?>)fm.getValue(self);
+        JedoList<?> list = (JedoList<?>)fm.getValue(self);
         pm.dispose(list);
         list.clear();
     }
 
     @Override
-    protected LazyCollection<Object> newCollection(Storage pm, Object parent) {
+    protected JedoCollection<Object> newCollection(Storage pm, Object parent) {
         if (type == List.class) {
-            return new LazyList<>(pm, this, parent);
+            return new JedoList<>(pm, this, parent);
         } else {
             throw new JedoException("Unsupported list field type "
                     + type.getName());

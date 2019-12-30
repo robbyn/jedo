@@ -9,13 +9,13 @@ import java.util.logging.Logger;
 import org.tastefuljava.jedo.mapping.SetMapper;
 import org.tastefuljava.jedo.mapping.Storage;
 
-public class LazySortedSet<T> extends LazySet<T> implements SortedSet<T> {
+public class JedoSortedSet<T> extends JedoSet<T> implements SortedSet<T> {
     private static final Logger LOG
-            = Logger.getLogger(LazySortedSet.class.getName());
+            = Logger.getLogger(JedoSortedSet.class.getName());
 
     private final Comparator<? super T> comp;
 
-    public LazySortedSet(Storage pm, SetMapper mapper, Object parent,
+    public JedoSortedSet(Storage pm, SetMapper mapper, Object parent,
             Field[] fields) {
         super(pm, mapper, parent);
         comp = (a,b) -> compareFields(a, b, fields);

@@ -2,9 +2,9 @@ package org.tastefuljava.jedo.mapping;
 
 import java.lang.reflect.Field;
 import org.tastefuljava.jedo.JedoException;
-import org.tastefuljava.jedo.rel.LazyCollection;
-import org.tastefuljava.jedo.rel.LazySet;
-import org.tastefuljava.jedo.rel.LazySortedSet;
+import org.tastefuljava.jedo.rel.JedoCollection;
+import org.tastefuljava.jedo.rel.JedoSet;
+import org.tastefuljava.jedo.rel.JedoSortedSet;
 
 public class SetMapper extends CollectionMapper {
     private final Field[] orderFields;
@@ -15,12 +15,12 @@ public class SetMapper extends CollectionMapper {
     }
 
     @Override
-    protected LazyCollection<Object> newCollection(Storage pm, Object parent) {
-        if (type.isAssignableFrom(LazySet.class)) {
-            return new LazySet<>(pm, this, parent);
+    protected JedoCollection<Object> newCollection(Storage pm, Object parent) {
+        if (type.isAssignableFrom(JedoSet.class)) {
+            return new JedoSet<>(pm, this, parent);
         } else if (orderFields != null && orderFields.length > 0
-                && type.isAssignableFrom(LazySortedSet.class)) {
-            return new LazySortedSet<>(pm, this, parent, orderFields);
+                && type.isAssignableFrom(JedoSortedSet.class)) {
+            return new JedoSortedSet<>(pm, this, parent, orderFields);
         } else {
             throw new JedoException("Unsupported set field type "
                     + type.getName());

@@ -1,6 +1,6 @@
 package org.tastefuljava.jedo.mapping;
 
-import org.tastefuljava.jedo.rel.LazyRef;
+import org.tastefuljava.jedo.rel.JedoRef;
 import java.lang.reflect.Field;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -44,7 +44,7 @@ public class ReferenceMapper extends ValueMapper {
                         ? null : pm.loadFromId(targetClass, values);
                 return new Ref<>(result);
             } else {
-                return new LazyRef<>(pm, targetClass, values);
+                return new JedoRef<>(pm, targetClass, values);
             }
         } catch (SQLException ex) {
             LOG.log(Level.SEVERE, null, ex);

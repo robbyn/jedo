@@ -5,10 +5,10 @@ import java.util.Set;
 import org.tastefuljava.jedo.mapping.SetMapper;
 import org.tastefuljava.jedo.mapping.Storage;
 
-public class LazySet<T> extends LazyCollection<T> implements Set<T> {
+public class JedoSet<T> extends JedoCollection<T> implements Set<T> {
     private final SetMapper mapper;
 
-    public LazySet(Storage pm, SetMapper mapper, Object parent) {
+    public JedoSet(Storage pm, SetMapper mapper, Object parent) {
         super(pm, parent);
         this.mapper = mapper;
     }

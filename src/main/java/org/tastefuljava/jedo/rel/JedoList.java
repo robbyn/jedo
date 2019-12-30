@@ -9,11 +9,11 @@ import org.tastefuljava.jedo.mapping.Flushable;
 import org.tastefuljava.jedo.mapping.ListMapper;
 import org.tastefuljava.jedo.mapping.Storage;
 
-public class LazyList<T> extends LazyCollection<T> implements List<T>, Flushable {
+public class JedoList<T> extends JedoCollection<T> implements List<T>, Flushable {
     private boolean dirty;
     private final ListMapper mapper;
 
-    public LazyList(Storage pm, ListMapper mapper, Object parent) {
+    public JedoList(Storage pm, ListMapper mapper, Object parent) {
         super(pm, parent);
         this.mapper = mapper;
     }

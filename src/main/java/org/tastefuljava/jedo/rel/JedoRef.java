@@ -4,13 +4,13 @@ import org.tastefuljava.jedo.Ref;
 import org.tastefuljava.jedo.mapping.ClassMapper;
 import org.tastefuljava.jedo.mapping.Storage;
 
-public class LazyRef<T> extends Ref<T> {
+public class JedoRef<T> extends Ref<T> {
     private final Storage pm;
     private final ClassMapper cm;
     private final Object[] values;
     private boolean isSet;
 
-    public LazyRef(Storage pm, ClassMapper cm,
+    public JedoRef(Storage pm, ClassMapper cm,
             Object[] values) {
         this.pm = pm;
         this.cm = cm;

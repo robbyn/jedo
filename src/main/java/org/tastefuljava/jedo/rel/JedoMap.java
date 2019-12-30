@@ -8,13 +8,13 @@ import java.util.Set;
 import org.tastefuljava.jedo.mapping.MapMapper;
 import org.tastefuljava.jedo.mapping.Storage;
 
-public class LazyMap<K,V> extends AbstractMap<K,V> {
+public class JedoMap<K,V> extends AbstractMap<K,V> {
     protected final Storage pm;
     protected final Object parent;
     private final MapMapper mapper;
     private Map<K,V> map;
 
-    public LazyMap(Storage pm, MapMapper mapper, Object parent) {
+    public JedoMap(Storage pm, MapMapper mapper, Object parent) {
         this.pm = pm;
         this.parent = parent;
         this.mapper = mapper;

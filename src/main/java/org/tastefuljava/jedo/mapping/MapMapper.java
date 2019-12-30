@@ -4,7 +4,7 @@ import java.lang.reflect.Field;
 import java.sql.ResultSet;
 import java.util.Map;
 import org.tastefuljava.jedo.JedoException;
-import org.tastefuljava.jedo.rel.LazyMap;
+import org.tastefuljava.jedo.rel.JedoMap;
 import org.tastefuljava.jedo.util.Reflection;
 
 public class MapMapper extends ValueMapper {
@@ -41,9 +41,9 @@ public class MapMapper extends ValueMapper {
         pm.execute(clear, parent, new Object[]{parent});
     }
 
-    private LazyMap<Object,Object> createMap(Storage pm,
+    private JedoMap<Object,Object> createMap(Storage pm,
             Object parent, boolean empty) {
-        LazyMap<Object,Object> map = newMap(pm, parent);
+        JedoMap<Object,Object> map = newMap(pm, parent);
         if (empty) {
             map.setEmpty();
         } else {
@@ -60,9 +60,9 @@ public class MapMapper extends ValueMapper {
         return map;
     }
 
-    protected LazyMap<Object,Object> newMap(Storage pm, Object parent) {
-        if (type.isAssignableFrom(LazyMap.class)) {
-            return new LazyMap<>(pm, this, parent);
+    protected JedoMap<Object,Object> newMap(Storage pm, Object parent) {
+        if (type.isAssignableFrom(JedoMap.class)) {
+            return new JedoMap<>(pm, this, parent);
         } else {
             throw new JedoException("Unsupported set field type "
                     + type.getName());
