@@ -11,7 +11,6 @@ import org.tastefuljava.jedo.JedoException;
 import org.tastefuljava.jedo.expression.Expression;
 import org.tastefuljava.jedo.expression.Parameter;
 import org.tastefuljava.jedo.expression.Scope;
-import org.tastefuljava.jedo.util.XMLWriter;
 
 public class Statement {
     private static final Logger LOG
@@ -54,16 +53,6 @@ public class Statement {
             LOG.log(Level.SEVERE, null, ex);
             throw new JedoException(ex.getMessage());
         }
-    }
-
-    public void writeTo(XMLWriter out, String type, String name) {
-        out.startTag(type);
-        out.attribute("name", name);
-        for (Parameter param: params) {
-            param.writeTo(out);
-        }
-        out.data(sql);
-        out.endTag();
     }
 
     public static class Builder {

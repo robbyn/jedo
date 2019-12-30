@@ -8,7 +8,6 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.tastefuljava.jedo.JedoException;
-import org.tastefuljava.jedo.util.XMLWriter;
 import org.tastefuljava.jedo.util.Reflection;
 
 public class Parameter {
@@ -86,11 +85,5 @@ public class Parameter {
             }
         }
         return buf.toString();
-    }
-
-    public void writeTo(XMLWriter out) {
-        out.startTag("parameter");
-        out.attribute("value", toString());
-        out.endTag();
     }
 }

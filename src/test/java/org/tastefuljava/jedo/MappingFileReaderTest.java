@@ -8,7 +8,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.tastefuljava.jedo.mapping.Mapper;
 import org.tastefuljava.jedo.mapping.MappingFileReader;
-import org.tastefuljava.jedo.util.XMLWriter;
 
 public class MappingFileReaderTest {
 
