@@ -35,6 +35,15 @@ CREATE TABLE picture_tags (
 
 CREATE INDEX picture_tags_name ON picture_tags(NAME);
 
+CREATE TABLE picture_descriptions (
+    PICTURE_ID INT NOT NULL,
+    LANGUAGE VARCHAR(4) NOT NULL,
+    DESCRIPTION TEXT NOT NULL,
+
+    PRIMARY KEY (PICTURE_ID,LANGUAGE),
+    FOREIGN KEY (PICTURE_ID) REFERENCES pictures(ID)
+);
+
 -- Initial data
 
 INSERT INTO folders(PARENT_ID,NAME)

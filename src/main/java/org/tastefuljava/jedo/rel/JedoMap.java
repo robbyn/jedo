@@ -84,6 +84,26 @@ public class JedoMap<K,V> extends AbstractMap<K,V> {
         setEmpty();
     }
 
+    @Override
+    public V put(K key, V value) {
+        V prev = get().put(key, value);
+        if (prev != null) {
+            // the key already exists: it needs to be removed
+            mapper.removeKey(pm, parent, key);
+        }
+        mapper.put(pm, parent, key, value);
+        return prev;
+    }
+
+    @Override
+    public V remove(Object key) {
+        V prev = get().remove(key);
+        if (prev != null) {
+            mapper.removeKey(pm, parent, key);
+        }
+        return prev;
+    }
+
     public Map<K,V> newMap() {
         return new HashMap<>();
     }

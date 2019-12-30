@@ -68,7 +68,6 @@ public class MappingFileReader {
         private boolean inId;
         private ComponentMapper.Builder compBuilder;
         private Statement.Builder stmtBuilder;
-        private String queryName;
 
         @Override
         public InputSource resolveEntity(String publicId, String systemId)
@@ -201,13 +200,14 @@ public class MappingFileReader {
                     stmtBuilder = classBuilder.newLoadStatement();
                     break;
                 case "insert":
-                    stmtBuilder = classBuilder.newStatement(
-                            "true".equals(attrs.getValue(
-                                    "get-generated-keys")));
+                    stmtBuilder = classBuilder.newInsertStatement(
+                            "true".equals(attrs.getValue("get-generated-keys")));
                     break;
                 case "update":
+                    stmtBuilder = classBuilder.newUpdateStatement();
+                    break;
                 case "delete":
-                    stmtBuilder = classBuilder.newStatement(null);
+                    stmtBuilder = classBuilder.newDeleteStatement();
                     break;
                 case "fetch":
                     if (collectionBuilder != null) {
@@ -249,6 +249,15 @@ public class MappingFileReader {
                             attrs.getValue("parent"),
                             attrs.getValue("index"));
                     break;
+                case "put":
+                    stmtBuilder = mapBuilder.newPutStatement(
+                            attrs.getValue("parent"), attrs.getValue("key"),
+                            attrs.getValue("element"));
+                    break;
+                case "remove-key":
+                    stmtBuilder = mapBuilder.newRemoveKeyStatement(
+                            attrs.getValue("parent"), attrs.getValue("key"));
+                    break;
             }
         }
 
@@ -276,39 +285,17 @@ public class MappingFileReader {
                     mapBuilder = null;
                     break;
                 case "query":
-                    queryName = null;
-                    stmtBuilder = null;
-                    break;
                 case "statement":
-                    queryName = null;
-                    stmtBuilder = null;
-                    break;
                 case "load":
-                    classBuilder.setLoad(stmtBuilder);
-                    stmtBuilder = null;
-                    break;
                 case "insert":
-                    classBuilder.setInsert(stmtBuilder);
-                    stmtBuilder = null;
-                    break;
                 case "update":
-                    classBuilder.setUpdate(stmtBuilder);
-                    stmtBuilder = null;
-                    break;
                 case "delete":
-                    classBuilder.setDelete(stmtBuilder);
-                    stmtBuilder = null;
-                    break;
                 case "fetch":
-                    stmtBuilder = null;
-                    break;
                 case "clear":
-                    stmtBuilder = null;
-                    break;
                 case "add":
-                    stmtBuilder = null;
-                    break;
                 case "remove":
+                case "put":
+                case "remove-key":
                     stmtBuilder = null;
                     break;
             }

@@ -37,7 +37,7 @@
     fetch-mode (eager|lazy) #IMPLIED
 >
 
-<!ELEMENT map (key,element?,(fetch)*)>
+<!ELEMENT map (key,element?,(fetch|clear|put|remove-key)*)>
 <!ATTLIST map
     name CDATA #REQUIRED
     fetch-mode (eager|lazy) #IMPLIED
@@ -90,7 +90,6 @@
 <!ATTLIST add
     parent CDATA "parent"
     element CDATA "element"
-    get-generated-keys (true|false) #IMPLIED
 >
 <!ELEMENT remove (#PCDATA)>
 <!ATTLIST remove
@@ -105,17 +104,30 @@
     parent CDATA "parent"
     element CDATA "element"
     index CDATA "index"
-    get-generated-keys (true|false) #IMPLIED
 >
 <!ELEMENT add-at (#PCDATA)>
 <!ATTLIST add-at
     parent CDATA "parent"
     element CDATA "element"
     index CDATA "index"
-    get-generated-keys (true|false) #IMPLIED
 >
 <!ELEMENT remove-at (#PCDATA)>
 <!ATTLIST remove-at
     parent CDATA "parent"
     index CDATA "index"
+>
+
+<!-- Map queries -->
+
+<!ELEMENT put (#PCDATA)>
+<!ATTLIST put
+    parent CDATA "parent"
+    element CDATA "element"
+    key CDATA "key"
+>
+
+<!ELEMENT remove-key (#PCDATA)>
+<!ATTLIST remove-key
+    parent CDATA "parent"
+    key CDATA "key"
 >

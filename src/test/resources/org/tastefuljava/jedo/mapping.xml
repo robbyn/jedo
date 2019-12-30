@@ -96,14 +96,25 @@
                 WHERE PICTURE_ID=${id}
             </clear>
         </list>
-        <map name="tagMap" fetch-mode="lazy">
-            <key column="INDEX"/>
-            <element column="NAME"/>
+        <map name="descriptions" fetch-mode="lazy">
+            <key column="LANGUAGE"/>
+            <element column="DESCRIPTION"/>
             <fetch>
-                SELECT * FROM picture_tags
+                SELECT * FROM picture_descriptions
                 WHERE PICTURE_ID=${id}
-                ORDER BY PICTURE_ID,INDEX
             </fetch>
+            <put parent="picture" key="language" element="description">
+                INSERT INTO picture_descriptions(PICTURE_ID,LANGUAGE,DESCRIPTION)
+                VALUES(${picture.id},${language},${description})
+            </put>
+            <remove-key parent="picture" key="language">
+                DELETE FROM picture_tags
+                WHERE PICTURE_ID=${id} AND LANGUAGE=${language}
+            </remove-key>
+            <clear parent="picture_descriptions">
+                DELETE FROM picture_tags
+                WHERE PICTURE_ID=${id}
+            </clear>
         </map>
 
         <load>

@@ -4,7 +4,6 @@ import java.lang.reflect.Field;
 import java.sql.ResultSet;
 import java.util.Map;
 import java.util.SortedMap;
-import java.util.SortedSet;
 import org.tastefuljava.jedo.JedoException;
 import org.tastefuljava.jedo.rel.JedoMap;
 import org.tastefuljava.jedo.rel.JedoSortedMap;
@@ -16,6 +15,8 @@ public class MapMapper extends ValueMapper {
     private ValueMapper elmMapper;
     private final Statement fetch;
     private final Statement clear;
+    private final Statement put;
+    private final Statement removeKey;
 
     public MapMapper(Builder builder) {
         super(builder);
@@ -24,6 +25,8 @@ public class MapMapper extends ValueMapper {
         this.elmMapper = builder.buildElmMapper();
         this.fetch = builder.buildFetch();
         this.clear = builder.buildClear();
+        this.put = builder.buildPut();
+        this.removeKey = builder.buildRemoveKey();
     }
 
     @Override
@@ -41,9 +44,24 @@ public class MapMapper extends ValueMapper {
 
     public void clear(Storage pm, Object parent) {
         if (clear == null) {
-            throw new JedoException("Cannot clear collection");
+            throw new JedoException("Cannot clear map: no statement defined.");
         }
         pm.execute(clear, parent, new Object[]{parent});
+    }
+
+    public void put(Storage pm, Object parent, Object key, Object value) {
+        if (put == null) {
+            throw new JedoException("Cannot put to map: no statement defined.");
+        }
+        pm.execute(put, parent, new Object[]{parent, key, value});
+    }
+
+    public void removeKey(Storage pm, Object parent, Object key) {
+        if (removeKey == null) {
+            throw new JedoException(
+                    "Cannot remove from map: no statement defined.");
+        }
+        pm.execute(removeKey, parent, new Object[]{parent, key});
     }
 
     private JedoMap<Object,Object> createMap(Storage pm,
@@ -99,6 +117,8 @@ public class MapMapper extends ValueMapper {
         private ValueMapper.Builder elements;
         private Statement.Builder fetch;
         private Statement.Builder clear;
+        private Statement.Builder put;
+        private Statement.Builder removeKey;
 
         public Builder(BuildContext context, ClassMapper.Builder parentClass,
                 Field field, FetchMode fetchMode) {
@@ -130,6 +150,16 @@ public class MapMapper extends ValueMapper {
                     parentClass.getType(), paramNames);
         }
  
+        public Statement.Builder newPutStatement(String... paramNames) {
+            return put = new Statement.Builder(
+                    parentClass.getType(), paramNames);
+        }
+
+        public Statement.Builder newRemoveKeyStatement(String... paramNames) {
+            return removeKey = new Statement.Builder(
+                    parentClass.getType(), paramNames);
+        }
+
         private Statement buildFetch() {
             return fetch == null ? null : fetch.build();
         }
@@ -138,17 +168,12 @@ public class MapMapper extends ValueMapper {
             return clear == null ? null : clear.build();
         }
 
-        private void postBuild(MapMapper mm) {
-            if (keys == null) {
-                context.addForwardClassRef(keyClass, (cm)->{
-                    mm.keyMapper = cm;
-                });
-            }
-            if (elements == null) {
-                context.addForwardClassRef(elmClass, (cm)->{
-                    mm.elmMapper = cm;
-                });
-            }
+        private Statement buildPut() {
+            return put == null ? null : put.build();
+        }
+
+        private Statement buildRemoveKey() {
+            return removeKey == null ? null : removeKey.build();
         }
 
         private ValueMapper buildKeyMapper() {
@@ -164,6 +189,19 @@ public class MapMapper extends ValueMapper {
             MapMapper result = new MapMapper(this);
             postBuild(result);
             return result;
+        }
+
+        private void postBuild(MapMapper mm) {
+            if (keys == null) {
+                context.addForwardClassRef(keyClass, (cm)->{
+                    mm.keyMapper = cm;
+                });
+            }
+            if (elements == null) {
+                context.addForwardClassRef(elmClass, (cm)->{
+                    mm.elmMapper = cm;
+                });
+            }
         }
     }
 }

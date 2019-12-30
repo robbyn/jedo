@@ -281,6 +281,18 @@ public class ClassMapper extends ValueMapper {
             return load = newStatement(getIdFieldNames());
         }
 
+        public Statement.Builder newInsertStatement(boolean generatedKeys) {
+            return insert = newStatement(null, generatedKeys);
+        }
+
+        public Statement.Builder newUpdateStatement() {
+            return update = newStatement(null);
+        }
+
+        public Statement.Builder newDeleteStatement() {
+            return delete = newStatement(null);
+        }
+
         public void addQuery(String name, Statement.Builder stmt) {
             queries.put(name, stmt);
         }
@@ -289,20 +301,8 @@ public class ClassMapper extends ValueMapper {
             stmts.put(name, stmt);
         }
 
-        public void setLoad(Statement.Builder stmt) {
-            load = stmt;
-        }
-
         public void setInsert(Statement.Builder stmt) {
             insert = stmt;
-        }
-
-        public void setUpdate(Statement.Builder stmt) {
-            update = stmt;
-        }
-
-        public void setDelete(Statement.Builder stmt) {
-            delete = stmt;
         }
 
         private FieldMapper<ColumnMapper>[] buildIdFields() {
