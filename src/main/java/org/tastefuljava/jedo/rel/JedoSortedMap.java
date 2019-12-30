@@ -3,6 +3,7 @@ package org.tastefuljava.jedo.rel;
 import java.util.Comparator;
 import java.util.Map;
 import java.util.SortedMap;
+import java.util.TreeMap;
 import java.util.logging.Logger;
 import org.tastefuljava.jedo.mapping.MapMapper;
 import org.tastefuljava.jedo.mapping.Storage;
@@ -52,5 +53,10 @@ public class JedoSortedMap<K,V> extends JedoMap<K,V> implements SortedMap<K,V> {
     @Override
     public K lastKey() {
         return get().lastKey();
+    }
+
+    @Override
+    public SortedMap<K, V> newMap() {
+        return new TreeMap<>(comp);
     }
 }

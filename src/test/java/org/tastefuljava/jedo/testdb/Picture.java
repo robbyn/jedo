@@ -8,6 +8,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 public class Picture {
     public static Comparator<Picture> BY_NAME
@@ -22,7 +24,8 @@ public class Picture {
     private int height;
     private GpsData gpsData;
     private final List<String> tags = new ArrayList<>();
-    private final Map<String,String> descriptions = new HashMap<>();
+    private final SortedMap<String,String> descriptions
+            = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 
     public int getId() {
         return id;

@@ -4,9 +4,11 @@ import java.lang.reflect.Field;
 import java.sql.ResultSet;
 import java.util.Map;
 import java.util.SortedMap;
+import java.util.SortedSet;
 import org.tastefuljava.jedo.JedoException;
 import org.tastefuljava.jedo.rel.JedoMap;
 import org.tastefuljava.jedo.rel.JedoSortedMap;
+import org.tastefuljava.jedo.rel.JedoSortedSet;
 import org.tastefuljava.jedo.util.Reflection;
 
 public class MapMapper extends ValueMapper {
@@ -92,8 +94,16 @@ public class MapMapper extends ValueMapper {
             } else {
                 return new JedoMap<>(pm, this, parent);
             }
+        } else if (type.isAssignableFrom(JedoSortedMap.class)) {
+            if (model != null && model instanceof SortedMap) {
+                return new JedoSortedMap<>(pm, this, parent,
+                        ((SortedMap)model).comparator());
+            } else {
+                throw new JedoException("Could not create Set of type "
+                        + type.getName());
+            }
         } else {
-            throw new JedoException("Unsupported set field type "
+            throw new JedoException("Unsupported map field type "
                     + type.getName());
         }
     }
