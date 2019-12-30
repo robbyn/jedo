@@ -22,8 +22,7 @@ public class Picture {
     private int height;
     private GpsData gpsData;
     private final List<String> tags = new ArrayList<>();
-    private final SortedMap<String,String> descriptions
-            = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+    private final SortedMap<String,String> descriptions = new TreeMap<>();
 
     public int getId() {
         return id;
