@@ -1,6 +1,7 @@
 package org.tastefuljava.jedo.mapping;
 
 import java.lang.reflect.Field;
+import java.util.Collection;
 import java.util.List;
 import org.tastefuljava.jedo.JedoException;
 import org.tastefuljava.jedo.rel.JedoCollection;
@@ -51,7 +52,8 @@ public class ListMapper extends CollectionMapper {
     }
 
     @Override
-    protected JedoCollection<Object> newCollection(Storage pm, Object parent) {
+    protected JedoCollection<Object> newCollection(Storage pm, Object parent,
+            Collection<?> model) {
         if (type == List.class) {
             return new JedoList<>(pm, this, parent);
         } else {

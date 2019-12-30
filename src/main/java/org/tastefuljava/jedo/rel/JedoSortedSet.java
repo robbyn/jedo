@@ -17,8 +17,13 @@ public class JedoSortedSet<T> extends JedoSet<T> implements SortedSet<T> {
 
     public JedoSortedSet(Storage pm, SetMapper mapper, Object parent,
             Field[] fields) {
+        this(pm, mapper, parent, (a,b) -> compareFields(a, b, fields));
+    }
+
+    public JedoSortedSet(Storage pm, SetMapper mapper, Object parent,
+            Comparator<? super T> comp) {
         super(pm, mapper, parent);
-        comp = (a,b) -> compareFields(a, b, fields);
+        this.comp = comp;
     }
 
     @Override

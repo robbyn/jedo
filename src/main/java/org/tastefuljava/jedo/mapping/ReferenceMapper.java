@@ -25,7 +25,8 @@ public class ReferenceMapper extends ValueMapper {
     }
 
     @Override
-    public Object fromResultSet(Storage pm, Object obj, ResultSet rs) {
+    public Object fromResultSet(Storage pm, Object obj, ResultSet rs,
+            ValueAccessor fm) {
         try {
             boolean allNull = true;
             Object[] values = new Object[columns.length];

@@ -27,7 +27,7 @@
                 WHERE FOLDER_ID=${id}
             </clear>
         </set>
-        <set name="pictures" fetch-mode="eager" order="name">
+        <set name="pictures" fetch-mode="lazy" order="name">
             <fetch parent="folder">
                 SELECT * FROM pictures
                 WHERE FOLDER_ID=${id}
@@ -80,7 +80,7 @@
             <field name="longitude" column="LONGITUDE"/>
             <field name="altitude" column="ALTITUDE"/>
         </component>
-        <list name="tags" fetch-mode="lazy">
+        <list name="tags" fetch-mode="eager">
             <element column="NAME"/>
             <fetch>
                 SELECT * FROM picture_tags

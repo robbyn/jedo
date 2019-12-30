@@ -3,8 +3,11 @@ package org.tastefuljava.jedo.mapping;
 import java.lang.reflect.Field;
 import java.sql.ResultSet;
 import java.util.Map;
+import java.util.SortedMap;
+import java.util.SortedSet;
 import org.tastefuljava.jedo.JedoException;
 import org.tastefuljava.jedo.rel.JedoMap;
+import org.tastefuljava.jedo.rel.JedoSortedMap;
 import org.tastefuljava.jedo.util.Reflection;
 
 public class MapMapper extends ValueMapper {
@@ -24,8 +27,10 @@ public class MapMapper extends ValueMapper {
     }
 
     @Override
-    public Object fromResultSet(Storage pm, Object obj, ResultSet rs) {
-        return createMap(pm, obj, false);
+    public Object fromResultSet(Storage pm, Object obj, ResultSet rs,
+            ValueAccessor fm) {
+        Map<?,?> model = (Map<?,?>)fm.getValue(obj);
+        return createMap(pm, obj, model, false);
     }
 
     public void fetch(Storage pm, Object parent, Map<?,?> result) {
@@ -42,8 +47,8 @@ public class MapMapper extends ValueMapper {
     }
 
     private JedoMap<Object,Object> createMap(Storage pm,
-            Object parent, boolean empty) {
-        JedoMap<Object,Object> map = newMap(pm, parent);
+            Object parent, Map<?,?> model, boolean empty) {
+        JedoMap<Object,Object> map = newMap(pm, parent, model);
         if (empty) {
             map.setEmpty();
         } else {
@@ -60,9 +65,15 @@ public class MapMapper extends ValueMapper {
         return map;
     }
 
-    protected JedoMap<Object,Object> newMap(Storage pm, Object parent) {
+    protected JedoMap<Object,Object> newMap(Storage pm, Object parent,
+            Map<?,?> model) {
         if (type.isAssignableFrom(JedoMap.class)) {
-            return new JedoMap<>(pm, this, parent);
+            if (model != null && model instanceof SortedMap) {
+                return new JedoSortedMap<>(pm, this, parent,
+                        ((SortedMap)model).comparator());
+            } else {
+                return new JedoMap<>(pm, this, parent);
+            }
         } else {
             throw new JedoException("Unsupported set field type "
                     + type.getName());
@@ -72,7 +83,7 @@ public class MapMapper extends ValueMapper {
     @Override
     void afterInsert(Storage pm, Object obj, ValueAccessor fm) {
         Map<?,?> prevMap = (Map<?,?>)fm.getValue(obj);
-        Map<Object,Object> newMap = createMap(pm, obj, true);
+        Map<Object,Object> newMap = createMap(pm, obj, prevMap, true);
         fm.setValue(obj, newMap);
         if (prevMap != null) {
             newMap.putAll(prevMap);

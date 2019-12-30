@@ -19,7 +19,8 @@ public class ColumnMapper extends ValueMapper {
     }
 
     @Override
-    public Object fromResultSet(Storage pm, Object obj, ResultSet rs) {
+    public Object fromResultSet(Storage pm, Object obj, ResultSet rs,
+            ValueAccessor fm) {
         return fromResultSet(rs);
     }
 

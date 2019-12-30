@@ -64,7 +64,7 @@ public class CachedStorage implements Storage {
         try (PreparedStatement pstmt = prepareStatement(stmt, self, parms);
                 ResultSet rs = pstmt.executeQuery()) {
             while (rs.next()) {
-                result.add(cm.fromResultSet(this, self, rs));
+                result.add(cm.fromResultSet(this, self, rs, null));
             }
         } catch (SQLException ex) {
             LOG.log(Level.SEVERE, null, ex);
@@ -79,8 +79,8 @@ public class CachedStorage implements Storage {
         try (PreparedStatement pstmt = prepareStatement(stmt, self, parms);
                 ResultSet rs = pstmt.executeQuery()) {
             while (rs.next()) {
-                Object key = km.fromResultSet(this, self, rs);
-                Object value = cm.fromResultSet(this, self, rs);
+                Object key = km.fromResultSet(this, self, rs, null);
+                Object value = cm.fromResultSet(this, self, rs, null);
                 map.put(key, value);
             }
         } catch (SQLException ex) {
@@ -96,7 +96,7 @@ public class CachedStorage implements Storage {
         try (PreparedStatement pstmt = prepareStatement(stmt, null, parms);
                 ResultSet rs = pstmt.executeQuery()) {
             if (rs.next()) {
-                result = cm.fromResultSet(this, null, rs);
+                result = cm.fromResultSet(this, null, rs, null);
                 if (rs.next()) {
                     throw new JedoException("Only one result allowed");
                 }

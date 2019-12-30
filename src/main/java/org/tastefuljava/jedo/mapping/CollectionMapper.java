@@ -26,13 +26,13 @@ public abstract class CollectionMapper extends ValueMapper {
     }
 
     @Override
-    public Object fromResultSet(Storage pm, Object obj, ResultSet rs) {
-        return createCollection(pm, obj, false);
+    public Object fromResultSet(Storage pm, Object obj, ResultSet rs,
+            ValueAccessor fm) {
+        Collection<?> model = (Collection<?>)fm.getValue(obj);
+        return createCollection(pm, obj, model, false);
     }
 
-    public void fetch(Storage pm, Object parent,
-            Collection<?> result) {
-        @SuppressWarnings("unchecked")
+    public void fetch(Storage pm, Object parent, Collection<?> result) {
         Collection<Object> col = (Collection<Object>)result;
         pm.query(elmMapper, fetch, parent, new Object[]{parent}, col);
     }
@@ -52,7 +52,7 @@ public abstract class CollectionMapper extends ValueMapper {
     @Override
     void afterInsert(Storage pm, Object obj, ValueAccessor fm) {
         Collection<?> prevCol = (Collection<?>)fm.getValue(obj);
-        Collection<Object> newCol = createCollection(pm, obj, true);
+        Collection<Object> newCol = createCollection(pm, obj, prevCol, true);
         fm.setValue(obj, newCol);
         if (prevCol != null) {
             newCol.addAll(prevCol);
@@ -60,8 +60,8 @@ public abstract class CollectionMapper extends ValueMapper {
     }
 
     private JedoCollection<Object> createCollection(Storage pm,
-            Object parent, boolean empty) {
-        JedoCollection<Object> col = newCollection(pm, parent);
+            Object parent, Collection<?> model, boolean empty) {
+        JedoCollection<Object> col = newCollection(pm, parent, model);
         if (empty) {
             col.setEmpty();
         } else {
@@ -79,7 +79,7 @@ public abstract class CollectionMapper extends ValueMapper {
     }
 
     protected abstract JedoCollection<Object> newCollection(
-            Storage pm, Object parent);
+            Storage pm, Object parent, Collection<?> model);
 
     public void clear(Storage pm, Object parent) {
         if (clear == null) {

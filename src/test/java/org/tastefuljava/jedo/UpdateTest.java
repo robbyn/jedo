@@ -4,6 +4,8 @@ import org.tastefuljava.jedo.testdb.JedoTestBase;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Date;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -168,31 +170,35 @@ public class UpdateTest extends JedoTestBase {
 
     @Test
     public void testComponent()
-            throws SQLException, ClassNotFoundException, IOException {
-        Folder folder = getFolder("root/sub1");
-        Picture pic = new Picture();
-        pic.setFolder(folder);
-        pic.setName("mybeautifulpic.jpg");
-        pic.setSize(1024, 768);
-        GpsData gps = new GpsData();
-        gps.setLatitude(46);
-        gps.setLongitude(7);
-        pic.setGpsData(gps);
-        session.insert(pic);
-        assertTrue("Picture ID is zero", pic.getId() != 0);
-        int picId = pic.getId();
-        assertSame("Reread failed",
-                pic, session.load(Picture.class, pic.getId()));
-        session.commit(); // should clear the cache
-        terminate();
-        open();
-        Picture pic2 = session.load(Picture.class, picId);
-        GpsData gps2 = pic2.getGpsData();
-        assertNotNull("Component not present", gps2);
-        assertNull("Unexpected value here", gps2.getAltitude());
-        assertEquals("Different values",
-                gps.getLatitude(), gps2.getLatitude(), 0.0000001);
-        assertEquals("Different values",
-                gps.getLongitude(), gps2.getLongitude(), 0.0000001);
+            throws SQLException, ClassNotFoundException {
+        try {
+            Folder folder = getFolder("root/sub1");
+            Picture pic = new Picture();
+            pic.setFolder(folder);
+            pic.setName("mybeautifulpic.jpg");
+            pic.setSize(1024, 768);
+            GpsData gps = new GpsData();
+            gps.setLatitude(46);
+            gps.setLongitude(7);
+            pic.setGpsData(gps);
+            session.insert(pic);
+            assertTrue("Picture ID is zero", pic.getId() != 0);
+            int picId = pic.getId();
+            assertSame("Reread failed",
+                    pic, session.load(Picture.class, pic.getId()));
+            session.commit(); // should clear the cache
+            terminate();
+            open();
+            Picture pic2 = session.load(Picture.class, picId);
+            GpsData gps2 = pic2.getGpsData();
+            assertNotNull("Component not present", gps2);
+            assertNull("Unexpected value here", gps2.getAltitude());
+            assertEquals("Different values",
+                    gps.getLatitude(), gps2.getLatitude(), 0.0000001);
+            assertEquals("Different values",
+                    gps.getLongitude(), gps2.getLongitude(), 0.0000001);
+        } catch (Throwable ex) {
+            Logger.getLogger(UpdateTest.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 }

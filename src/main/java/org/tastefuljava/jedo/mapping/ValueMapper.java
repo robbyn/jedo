@@ -22,7 +22,7 @@ public abstract class ValueMapper {
     }
 
     public abstract Object fromResultSet(Storage pm, Object obj,
-            ResultSet rs);
+            ResultSet rs, ValueAccessor fm);
 
     void afterInsert(Storage pm, Object self, ValueAccessor fm) {
     }

@@ -39,11 +39,11 @@ public class FieldMapper<V extends ValueMapper> implements ValueAccessor {
     }
 
     Object fromResultSet(Storage pm, Object obj, ResultSet rs) {
-        return vm.fromResultSet(pm, obj, rs);
+        return vm.fromResultSet(pm, obj, rs, this);
     }
 
-    void setFromResultSet(Storage pm, Object obj, ResultSet rs) {
-        setValue(obj, vm.fromResultSet(pm, obj, rs));
+    void setFromResultSet(Storage pm, Object self, ResultSet rs) {
+        setValue(self, vm.fromResultSet(pm, self, rs, this));
     }
 
     void afterInsert(Storage pm, Object self) {

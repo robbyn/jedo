@@ -10,8 +10,9 @@ import java.util.Map;
 
 public class Picture {
     public static Comparator<Picture> BY_NAME
-            = (a,b)->a.name.compareTo(b.name);
-
+            = (a,b)->{
+                return a.name.compareTo(b.name);
+            };
     private int id;
     private Folder folder;
     private String name;

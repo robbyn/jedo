@@ -21,7 +21,8 @@ public class ComponentMapper extends ValueMapper {
     }
 
     @Override
-    public Object fromResultSet(Storage pm, Object obj, ResultSet rs) {
+    public Object fromResultSet(Storage pm, Object obj, ResultSet rs,
+            ValueAccessor fm) {
         try {
             boolean allNull = true;
             Object[] values = new Object[fields.length];
