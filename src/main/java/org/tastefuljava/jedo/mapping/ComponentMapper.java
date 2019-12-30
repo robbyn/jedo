@@ -50,7 +50,7 @@ public class ComponentMapper extends ValueMapper {
     }
 
     @Override
-    void afterInsert(Storage pm, Object self, FieldMapper fm) {
+    void afterInsert(Storage pm, Object self, ValueAccessor fm) {
         Object comp = fm.getValue(self);
         if (comp != null) {
             for (FieldMapper<ColumnMapper> field: fields) {
@@ -60,7 +60,7 @@ public class ComponentMapper extends ValueMapper {
     }
 
     @Override
-    void beforeDelete(Storage pm, Object self, FieldMapper fm) {
+    void beforeDelete(Storage pm, Object self, ValueAccessor fm) {
         Object comp = fm.getValue(self);
         if (comp != null) {
             for (FieldMapper<ColumnMapper> field: fields) {

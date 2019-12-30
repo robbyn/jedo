@@ -50,7 +50,7 @@ public abstract class CollectionMapper extends ValueMapper {
     }
 
     @Override
-    void afterInsert(Storage pm, Object obj, FieldMapper fm) {
+    void afterInsert(Storage pm, Object obj, ValueAccessor fm) {
         Collection<?> prevCol = (Collection<?>)fm.getValue(obj);
         Collection<Object> newCol = createCollection(pm, obj, true);
         fm.setValue(obj, newCol);

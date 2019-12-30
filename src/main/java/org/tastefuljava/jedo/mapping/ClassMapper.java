@@ -354,6 +354,7 @@ public class ClassMapper extends ValueMapper {
             return delete == null ? null : delete.build();
         }
 
+        @Override
         public ClassMapper build() {
             return new ClassMapper(this);
         }

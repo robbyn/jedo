@@ -6,7 +6,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.tastefuljava.jedo.JedoException;
 
-public class FieldMapper<V extends ValueMapper> {
+public class FieldMapper<V extends ValueMapper> implements ValueAccessor {
     private static final Logger LOG
             = Logger.getLogger(FieldMapper.class.getName());
     
@@ -18,6 +18,7 @@ public class FieldMapper<V extends ValueMapper> {
         this.vm = vm;
     }
 
+    @Override
     public Object getValue(Object object) {
         try {
             return field.get(object);
@@ -27,6 +28,7 @@ public class FieldMapper<V extends ValueMapper> {
         }
     }
 
+    @Override
     public void setValue(Object obj, Object value) {
         try {
             field.set(obj, value);

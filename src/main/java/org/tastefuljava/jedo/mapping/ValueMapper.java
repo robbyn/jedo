@@ -24,9 +24,9 @@ public abstract class ValueMapper {
     public abstract Object fromResultSet(Storage pm, Object obj,
             ResultSet rs);
 
-    void afterInsert(Storage pm, Object self, FieldMapper fm) {
+    void afterInsert(Storage pm, Object self, ValueAccessor fm) {
     }
-    void beforeDelete(Storage pm, Object self, FieldMapper fm) {
+    void beforeDelete(Storage pm, Object self, ValueAccessor fm) {
     }
 
     public static abstract class Builder<T extends ValueMapper> {

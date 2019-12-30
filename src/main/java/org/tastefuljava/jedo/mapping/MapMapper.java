@@ -70,7 +70,7 @@ public class MapMapper extends ValueMapper {
     }
 
     @Override
-    void afterInsert(Storage pm, Object obj, FieldMapper fm) {
+    void afterInsert(Storage pm, Object obj, ValueAccessor fm) {
         Map<?,?> prevMap = (Map<?,?>)fm.getValue(obj);
         Map<Object,Object> newMap = createMap(pm, obj, true);
         fm.setValue(obj, newMap);
