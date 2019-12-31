@@ -68,12 +68,15 @@ public class ReferenceMapper extends ValueMapper {
         }
 
         @Override
-        public ReferenceMapper build() {
-            ReferenceMapper rm = new ReferenceMapper(this);
+        protected ReferenceMapper create() {
+            return new ReferenceMapper(this);
+        }
+
+        @Override
+        protected void initialize(ReferenceMapper rm) {
             context.addForwardClassRef(refClass, (cm)->{
                 rm.targetClass = cm;
             });
-            return rm;
         }
     }
 }

@@ -195,13 +195,12 @@ public class MapMapper extends ValueMapper {
         }
 
         @Override
-        public MapMapper build() {
-            MapMapper result = new MapMapper(this);
-            postBuild(result);
-            return result;
+        protected MapMapper create() {
+            return new MapMapper(this);
         }
 
-        private void postBuild(MapMapper mm) {
+        @Override
+        protected void initialize(MapMapper mm) {
             if (keys == null) {
                 context.addForwardClassRef(keyClass, (cm)->{
                     mm.keyMapper = cm;

@@ -2,7 +2,6 @@ package org.tastefuljava.jedo.mapping;
 
 import java.lang.reflect.Field;
 import java.sql.ResultSet;
-import java.util.Map;
 import java.util.logging.Logger;
 import org.tastefuljava.jedo.JedoException;
 import org.tastefuljava.jedo.util.Reflection;
@@ -32,6 +31,7 @@ public abstract class ValueMapper {
     public static abstract class Builder<T extends ValueMapper> {
         protected final BuildContext context;
         protected final Class<?> type;
+        private T creation;
 
         protected Builder(BuildContext context, Class<?> type) {
             this.context = context;
@@ -42,7 +42,17 @@ public abstract class ValueMapper {
             return type;
         }
 
-        public abstract T build();
+        public final T build() {
+            if (creation == null) {
+                creation = create();
+                initialize(creation);
+            }
+            return creation;
+        }
+
+        protected abstract T create();
+        protected void initialize(T vm) {
+        }
 
         // helper classes
         protected Field getField(String name) throws JedoException {

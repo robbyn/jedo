@@ -164,7 +164,8 @@ public abstract class CollectionMapper extends ValueMapper {
             return remove == null ? null : remove.build();
         }
  
-        protected void postBuild(CollectionMapper colm) {
+        @Override
+        protected void initialize(CollectionMapper colm) {
             if (elements == null) {
                 context.addForwardClassRef(elmClass, (cm)->{
                     colm.elmMapper = cm;

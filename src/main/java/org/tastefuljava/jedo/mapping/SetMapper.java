@@ -52,10 +52,8 @@ public class SetMapper extends CollectionMapper {
         }
 
         @Override
-        public CollectionMapper build() {
-            SetMapper result = new SetMapper(this);
-            postBuild(result);
-            return result;
+        protected CollectionMapper create() {
+            return new SetMapper(this);
         }
     }
 }

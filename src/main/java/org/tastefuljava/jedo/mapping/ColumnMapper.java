@@ -51,7 +51,7 @@ public class ColumnMapper extends ValueMapper {
         }
 
         @Override
-        public ColumnMapper build() {
+        protected ColumnMapper create() {
             return new ColumnMapper(this);
         }
     }

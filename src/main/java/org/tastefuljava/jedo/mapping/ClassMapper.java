@@ -356,7 +356,7 @@ public class ClassMapper extends ValueMapper {
         }
 
         @Override
-        public ClassMapper build() {
+        protected ClassMapper create() {
             return new ClassMapper(this);
         }
 

@@ -97,10 +97,8 @@ public class ListMapper extends CollectionMapper {
         }
 
         @Override
-        public ListMapper build() {
-            ListMapper result = new ListMapper(this);
-            postBuild(result);
-            return result;
+        protected ListMapper create() {
+            return new ListMapper(this);
         }
     }
 }

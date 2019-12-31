@@ -94,7 +94,7 @@ public class ComponentMapper extends ValueMapper {
         }
 
         @Override
-        public ComponentMapper build() {
+        protected ComponentMapper create() {
             return new ComponentMapper(this);
         }
     }
