@@ -54,7 +54,7 @@ public abstract class ValueMapper {
         protected void initialize(T vm) {
         }
 
-        // helper classes
+        // helper method
         protected Field getField(String name) throws JedoException {
             Field field = Reflection.getInstanceField(type, name);
             if (field == null) {
