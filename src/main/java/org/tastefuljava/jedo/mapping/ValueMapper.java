@@ -31,7 +31,6 @@ public abstract class ValueMapper {
     public static abstract class Builder<T extends ValueMapper> {
         protected final BuildContext context;
         protected final Class<?> type;
-        private T creation;
 
         protected Builder(BuildContext context, Class<?> type) {
             this.context = context;
@@ -43,10 +42,8 @@ public abstract class ValueMapper {
         }
 
         public final T build() {
-            if (creation == null) {
-                creation = create();
-                initialize(creation);
-            }
+            T creation = create();
+            initialize(creation);
             return creation;
         }
 
