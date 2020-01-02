@@ -4,11 +4,9 @@ import java.lang.reflect.Field;
 import java.sql.ResultSet;
 import java.util.Map;
 import java.util.SortedMap;
-import java.util.SortedSet;
 import org.tastefuljava.jedo.JedoException;
 import org.tastefuljava.jedo.rel.JedoMap;
 import org.tastefuljava.jedo.rel.JedoSortedMap;
-import org.tastefuljava.jedo.rel.JedoSortedSet;
 import org.tastefuljava.jedo.util.Reflection;
 
 public class MapMapper extends ValueMapper {

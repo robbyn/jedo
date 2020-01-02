@@ -4,6 +4,10 @@ import java.sql.Clob;
 import java.sql.SQLException;
 import java.sql.Time;
 import java.sql.Timestamp;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -164,6 +168,33 @@ public abstract class Converter<S,T> {
             @Override
             public Date convert(java.sql.Date value) {
                 return value == null ? null : new Date(value.getTime());
+            }
+        });
+        register(Date.class, Instant.class, new Converter<Date,Instant>() {
+            @Override
+            public Instant convert(Date value) {
+                return value == null ? null : value.toInstant();
+            }
+        });
+        register(Instant.class, LocalDateTime.class,
+                new Converter<Instant,LocalDateTime>() {
+            @Override
+            public LocalDateTime convert(Instant value) {
+                return value == null ? null : LocalDateTime.from(value);
+            }
+        });
+        register(Instant.class, LocalDate.class,
+                new Converter<Instant,LocalDate>() {
+            @Override
+            public LocalDate convert(Instant value) {
+                return value == null ? null : LocalDate.from(value);
+            }
+        });
+        register(Instant.class, LocalTime.class,
+                new Converter<Instant,LocalTime>() {
+            @Override
+            public LocalTime convert(Instant value) {
+                return value == null ? null : LocalTime.from(value);
             }
         });
         register(Date.class, Timestamp.class, new Converter<Date,Timestamp>() {
