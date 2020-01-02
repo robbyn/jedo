@@ -1,6 +1,7 @@
 package org.tastefuljava.jedo.testdb;
 
 import java.awt.Dimension;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Date;
@@ -17,7 +18,7 @@ public class Picture {
     private int id;
     private Folder folder;
     private String name;
-    private Date timestamp = new Date();
+    private LocalDateTime timestamp = LocalDateTime.now();
     private int width;
     private int height;
     private GpsData gpsData;
@@ -44,11 +45,11 @@ public class Picture {
         this.name = name;
     }
 
-    public Date getTimestamp() {
+    public LocalDateTime getTimestamp() {
         return timestamp;
     }
 
-    public void setTimestamp(Date timestamp) {
+    public void setTimestamp(LocalDateTime timestamp) {
         this.timestamp = timestamp;
     }
 

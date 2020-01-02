@@ -5,7 +5,7 @@ import java.sql.SQLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.tastefuljava.jedo.JedoException;
-import org.tastefuljava.jedo.conversion.Converter;
+import org.tastefuljava.jedo.conversion.Conversion;
 
 public class ColumnMapper extends ValueMapper {
     private static final Logger LOG
@@ -35,7 +35,7 @@ public class ColumnMapper extends ValueMapper {
     }
 
     public final Object convert(Object value) {
-        return Converter.convert(value, type);
+        return Conversion.convert(value, type);
     }
 
     public static class Builder extends ValueMapper.Builder<ColumnMapper> {

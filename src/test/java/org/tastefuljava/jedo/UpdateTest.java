@@ -3,6 +3,7 @@ package org.tastefuljava.jedo;
 import org.tastefuljava.jedo.testdb.JedoTestBase;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -12,6 +13,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import org.tastefuljava.jedo.conversion.Conversion;
 import org.tastefuljava.jedo.testdb.Folder;
 import org.tastefuljava.jedo.testdb.GpsData;
 import org.tastefuljava.jedo.testdb.Picture;
@@ -110,7 +112,7 @@ public class UpdateTest extends JedoTestBase {
         Picture pic2 = session.load(Picture.class, picId);
         assertNotSame("Cache not cleared", pic, pic2);
         pic2.setName("anothername.jpg");
-        Date now = new Date();
+        LocalDateTime now = Conversion.convert(new Date(), LocalDateTime.class);
         pic2.setTimestamp(now);
         session.update(pic2);
         session.commit(); // should clear the cache
