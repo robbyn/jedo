@@ -1,11 +1,8 @@
 package org.tastefuljava.jedo.conf;
 
 import java.sql.Connection;
-import java.sql.SQLException;
-import java.util.logging.Level;
-import org.tastefuljava.jedo.SessionFactory;
 import java.util.logging.Logger;
-import org.tastefuljava.jedo.JedoException;
+import org.tastefuljava.jedo.SessionFactory;
 import org.tastefuljava.jedo.mapping.Mapper;
 
 public abstract class SessionFactoryImpl implements SessionFactory {

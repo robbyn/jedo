@@ -85,7 +85,7 @@ public class SessionFactoryBuilder {
         }
     }
 
-    public SessionFactoryBuilder setProp(String key, String value) {
+    public SessionFactoryBuilder setProperty(String key, String value) {
         props.put(key, value);
         return this;
     }
