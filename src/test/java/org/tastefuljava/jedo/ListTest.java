@@ -33,10 +33,10 @@ public class ListTest extends JedoTestBase {
         Picture pic = new Picture();
         pic.setName("thePic");
         pic.setFolder(folder);
-        session.insert(pic);
         for (String name: tagNames) {
             pic.addTag(name);
         }
+        session.insert(pic);
         session.commit();
         folder = getFolder("root");
         pic = session.queryOne(Picture.class, "byName", folder, "thePic");

@@ -11,7 +11,6 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.tastefuljava.jedo.JedoException;
-import org.tastefuljava.jedo.Session;
 import org.tastefuljava.jedo.mapping.ClassMapper;
 import org.tastefuljava.jedo.mapping.Flushable;
 import org.tastefuljava.jedo.mapping.Statement;
@@ -19,13 +18,18 @@ import org.tastefuljava.jedo.mapping.Storage;
 import org.tastefuljava.jedo.mapping.ValueMapper;
 
 public class CachedStorage implements Storage {
-    private static final Logger LOG = Logger.getLogger(Session.class.getName());
+    private static final Logger LOG
+            = Logger.getLogger(CachedStorage.class.getName());
     private final Connection cnt;
     private final Cache<ObjectId,Object> cache = new Cache<>();
     private final Set<Flushable> dirtyObjects = new LinkedHashSet<>();
 
     public CachedStorage(Connection cnt) {
         this.cnt = cnt;
+    }
+
+    public Connection getConnection() {
+        return cnt;
     }
 
     public void commit() {

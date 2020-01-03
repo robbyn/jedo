@@ -3,10 +3,6 @@ package org.tastefuljava.jedo;
 import org.tastefuljava.jedo.testdb.JedoTestBase;
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -41,8 +37,6 @@ public class ReadTest extends JedoTestBase {
 
     @Test
     public void testInit() {
-        assertNotNull("Mapper is null", mapper);
-        assertNotNull("JDBC connection is null", cnt);
         assertNotNull("Session is null", session);
     }
 

@@ -5,25 +5,30 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.net.URL;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.h2.tools.RunScript;
 import org.tastefuljava.jedo.Session;
+import org.tastefuljava.jedo.SessionFactory;
+import org.tastefuljava.jedo.factory.SessionFactoryBuilder;
+import org.tastefuljava.jedo.factory.SessionImpl;
 import org.tastefuljava.jedo.mapping.Mapper;
-import org.tastefuljava.jedo.mapping.MappingFileReader;
 import org.tastefuljava.jedo.util.Files;
 
 public abstract class JedoTestBase {
     protected static final File TESTDB_DIR
             = new File(System.getProperty("user.home"), "jedo-testdb");
     protected static final File TESTDB = new File(TESTDB_DIR, "test");
+    protected final SessionFactory factory = new SessionFactoryBuilder()
+            .setProp("driver", "org.h2.Driver")
+            .setProp("url", "jdbc:h2:" + TESTDB)
+            .setProp("user", "sa")
+            .setProp("password", "")
+            .loadMapping(getClass().getResource("mapping.xml"))
+            .build();
 
-    protected Mapper mapper;
-    protected Connection cnt;
     protected Session session;
 
     protected JedoTestBase() {
@@ -32,10 +37,6 @@ public abstract class JedoTestBase {
     protected void initialize()
             throws IOException, SQLException, ClassNotFoundException {
         try {
-            MappingFileReader reader = new MappingFileReader();
-            URL url = getClass().getResource("mapping.xml");
-            reader.load(url);
-            mapper = reader.getMapper();
             Files.deleteIfExists(TESTDB_DIR);
             open();
             runScript("initdb.sql");
@@ -48,10 +49,7 @@ public abstract class JedoTestBase {
 
     protected void open()
             throws ClassNotFoundException, SQLException, IOException {
-        Class.forName("org.h2.Driver");
-        cnt = DriverManager.getConnection("jdbc:h2:" + TESTDB, "sa", "");
-        cnt.setAutoCommit(false);
-        session = new Session(cnt, mapper);
+        session = factory.openSession();
     }
 
     protected void terminate() throws SQLException, IOException {
@@ -63,6 +61,7 @@ public abstract class JedoTestBase {
     protected void runScript(String name) throws IOException, SQLException {
         try (InputStream stream = getClass().getResourceAsStream(name);
                 Reader in = new InputStreamReader(stream, "UTF-8")) {
+            Connection cnt = ((SessionImpl)session).getConnection();
             RunScript.execute(cnt, in);
         }
     }

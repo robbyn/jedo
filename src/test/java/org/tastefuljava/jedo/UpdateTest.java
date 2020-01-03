@@ -43,13 +43,6 @@ public class UpdateTest extends JedoTestBase {
     }
 
     @Test
-    public void testInit() {
-        assertNotNull("Mapper is null", mapper);
-        assertNotNull("JDBC connection is null", cnt);
-        assertNotNull("Session is null", session);
-    }
-
-    @Test
     public void testRoot() {
         Folder root = session.queryOne(Folder.class, "rootFolder", "root");
         assertNotNull("Root is null", root);
