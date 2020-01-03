@@ -70,7 +70,7 @@ public class Statement {
                 local = new Scope.FieldScope(clazz, Expression.THIS, local);
             }
             if (paramNames != null) {
-                local = new Scope.ParameterScope(paramNames, local);
+                local = new Scope.ParameterScope(local, paramNames);
             }
             this.scope = local;
         }

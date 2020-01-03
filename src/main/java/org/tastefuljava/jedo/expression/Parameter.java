@@ -8,6 +8,7 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.tastefuljava.jedo.JedoException;
+import org.tastefuljava.jedo.conversion.Conversion;
 import org.tastefuljava.jedo.util.Reflection;
 
 public class Parameter {
@@ -17,9 +18,11 @@ public class Parameter {
     private static final String ID = "[A-Za-z_][A-Za-z_0-9]*";
     private static final Pattern PATTERN = Pattern.compile(
             "^((?:#[1-9][0-9]*|" + ID + ")(?:\\." + ID +")*)"
-                + "(?:\\:(" + ID + "(?:\\:([1-9][0-9]*))?))?$");
+                + "(?:\\:(" + ID + "(?:\\." + ID +")*)?(?:\\:(" + ID + "))?)?"
+                + "(?:\\:([1-9][0-9]*))?$");
 
     private final Expression expr;
+    private final Class<?> javaType;
     private final Integer type;
     private final Integer length;
 
@@ -29,28 +32,28 @@ public class Parameter {
             throw new JedoException("Bad parameter syntax: " + s);
         }
         final Expression expr = Expression.parse(scope, matcher.group(1));
-        final String stype = matcher.group(2);
-        if (stype == null) {
-            return new Parameter(expr);
+        Class<?> javaType = null;
+        final String jtype = matcher.group(2);
+        if (jtype != null) {
+            javaType = Reflection.loadClass(jtype, "java.lang");
         }
-        int type = Reflection.getConstant(Types.class, stype, int.class);
-        final String slength = matcher.group(3);
-        if (slength == null) {
-            return new Parameter(expr, type);
+        Integer type = null;
+        final String stype = matcher.group(3);
+        if (stype != null) {
+            type = Reflection.getConstant(Types.class, stype, int.class);
         }
-        return new Parameter(expr, type, Integer.parseInt(slength));
+        Integer length = null;
+        final String slength = matcher.group(4);
+        if (slength != null) {
+            length = Integer.parseInt(slength);
+        }
+        return new Parameter(expr, javaType, type, length);
     }
 
-    private Parameter(Expression expr) {
-        this(expr, null);
-    }
-
-    private Parameter(Expression expr, Integer type) {
-        this(expr, type, null);
-    }
-
-    private Parameter(Expression expr, Integer type, Integer length) {
+    private Parameter(Expression expr, Class<?> javaType, Integer type,
+            Integer length) {
         this.expr = expr;
+        this.javaType = javaType;
         this.type = type;
         this.length = length;
     }
@@ -59,6 +62,9 @@ public class Parameter {
             Object[] parms) {
         try {
             Object value = expr.evaluate(self, parms);
+            if (value != null && javaType != null) {
+                value = Conversion.convert(value, javaType);
+            }
             if (type == null) {
                 stmt.setObject(ix, value);
             } else if (length == null) {
@@ -76,13 +82,19 @@ public class Parameter {
     public String toString() {
         StringBuilder buf = new StringBuilder();
         buf.append(expr);
+        if (javaType != null) {
+            buf.append(':');
+            buf.append(javaType.getName());
+        } else if (type != null) {
+            buf.append(':');
+        }
         if (type != null) {
             buf.append(':');
             buf.append(type);
-            if (length != null) {
-                buf.append(':');
-                buf.append(length);
-            }
+        }
+        if (length != null) {
+            buf.append(':');
+            buf.append(length);
         }
         return buf.toString();
     }

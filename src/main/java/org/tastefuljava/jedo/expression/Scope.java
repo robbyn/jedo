@@ -25,7 +25,7 @@ public abstract class Scope {
     public static class ParameterScope extends Scope {
         private final Map<String,Expression> map = new HashMap<>();
 
-        public ParameterScope(String[] names, Scope link) {
+        public ParameterScope(Scope link, String... names) {
             super(link);
             for (int i = 0; i < names.length; ++i) {
                 Expression expr = new Expression.ParameterExpr(i);
