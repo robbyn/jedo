@@ -58,13 +58,18 @@ public class Parameter {
         this.length = length;
     }
 
+    public Object evaluate(Object self, Object... parms) {
+        Object value = expr.evaluate(self, parms);
+        if (value != null && javaType != null) {
+            value = Conversion.convert(value, javaType);
+        }
+        return value;
+    }
+
     public void set(PreparedStatement stmt, int ix, Object self,
             Object[] parms) {
         try {
-            Object value = expr.evaluate(self, parms);
-            if (value != null && javaType != null) {
-                value = Conversion.convert(value, javaType);
-            }
+            Object value = evaluate(self, parms);
             if (type == null) {
                 stmt.setObject(ix, value);
             } else if (length == null) {
