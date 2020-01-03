@@ -1,4 +1,4 @@
-package org.tastefuljava.jedo.factory;
+package org.tastefuljava.jedo.conf;
 
 import java.sql.Connection;
 import java.sql.SQLException;

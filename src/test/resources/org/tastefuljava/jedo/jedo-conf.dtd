@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!ELEMENT configuration (property*,data-source,mapping+)>
+
+<!ELEMENT data-source (property*)>
+
+<!ELEMENT property EMPTY>
+<!ATTLIST property
+    name CDATA #REQUIRED
+    value CDATA #IMPLIED
+>
+
+<!ELEMENT mapping EMPTY>
+<!-- one of the attributes is required -->
+<!ATTLIST mapping
+    resource CDATA #IMPLIED
+    file CDATA #IMPLIED
+    url CDATA #IMPLIED
+>

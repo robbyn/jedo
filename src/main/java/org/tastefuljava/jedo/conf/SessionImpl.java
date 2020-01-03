@@ -1,4 +1,4 @@
-package org.tastefuljava.jedo.factory;
+package org.tastefuljava.jedo.conf;
 
 import org.tastefuljava.jedo.Session;
 import java.sql.Connection;

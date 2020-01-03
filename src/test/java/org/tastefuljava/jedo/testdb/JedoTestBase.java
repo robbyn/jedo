@@ -12,22 +12,17 @@ import java.util.logging.Logger;
 import org.h2.tools.RunScript;
 import org.tastefuljava.jedo.Session;
 import org.tastefuljava.jedo.SessionFactory;
-import org.tastefuljava.jedo.factory.SessionFactoryBuilder;
-import org.tastefuljava.jedo.factory.SessionImpl;
-import org.tastefuljava.jedo.mapping.Mapper;
+import org.tastefuljava.jedo.conf.SessionFactoryBuilder;
+import org.tastefuljava.jedo.conf.SessionImpl;
 import org.tastefuljava.jedo.util.Files;
 
 public abstract class JedoTestBase {
     protected static final File TESTDB_DIR
             = new File(System.getProperty("user.home"), "jedo-testdb");
     protected static final File TESTDB = new File(TESTDB_DIR, "test");
-    protected final SessionFactory factory = new SessionFactoryBuilder()
-            .setProp("driver", "org.h2.Driver")
-            .setProp("url", "jdbc:h2:" + TESTDB)
-            .setProp("user", "sa")
-            .setProp("password", "")
-            .loadMapping(getClass().getResource("mapping.xml"))
-            .build();
+    protected static final SessionFactory factory
+            = SessionFactoryBuilder.loadFrom(
+                "org/tastefuljava/jedo/jedo-conf.xml").build();
 
     protected Session session;
 

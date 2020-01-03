@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuration
+        PUBLIC '-//tastefuljava.org//Jedo Configuration File 1.0//EN' 'jedo-conf.dtd'>
+<configuration>
+    <data-source>
+        <property name="driver" value="org.h2.Driver"/>
+        <property name="url" value="jdbc:h2:${user.home}/jedo-testdb/test"/>
+        <property name="user" value="sa"/>
+        <property name="password" value=""/>
+    </data-source>
+    <mapping resource="org/tastefuljava/jedo/mapping.xml"/>
+</configuration>
