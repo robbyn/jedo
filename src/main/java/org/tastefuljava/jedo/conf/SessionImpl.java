@@ -52,6 +52,13 @@ public class SessionImpl implements AutoCloseable, Session {
     }
 
     @Override
+    public <T> T reload(T obj) {
+        Class<? extends T> clazz = (Class<? extends T>) obj.getClass();
+        ClassMapper cm = classMapper(clazz);
+        return clazz.cast(pm.loadFromId(cm, cm.getIdValues(obj)));
+    }
+
+    @Override
     public <T> T queryOne(Class<T> clazz, String name, Object... parms) {
         return queryOneA(clazz, name, parms);
     }

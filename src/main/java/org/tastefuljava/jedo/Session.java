@@ -9,6 +9,7 @@ public interface Session extends AutoCloseable {
 
     <T> T load(Class<T> clazz, Object... parms);
     <T> T loadA(Class<T> clazz, Object[] parms);
+    <T> T reload(T obj);
     void insert(Object obj);
     void update(Object obj);
     void delete(Object obj);
