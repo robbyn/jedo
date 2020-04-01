@@ -2,7 +2,7 @@
 <!ELEMENT mapping (class*)>
 <!ATTLIST mapping package CDATA #IMPLIED>
 
-<!ELEMENT class ((inherits|id)?,(field|component|reference|set|list|map)*,
+<!ELEMENT class ((inherits|id)?,discriminator?,(field|component|reference|set|list|map)*,
         load?,query*,insert?,update?,delete?,statement*)>
 <!ATTLIST class name CDATA #REQUIRED>
 
@@ -60,9 +60,9 @@
     column CDATA #REQUIRED
 >
 
-<!ELEMENT load (#PCDATA | discriminator)*>
+<!ELEMENT load (#PCDATA)>
 
-<!ELEMENT query (#PCDATA | discriminator)*>
+<!ELEMENT query (#PCDATA)>
 <!ATTLIST query
     name CDATA #REQUIRED
     parameters CDATA #IMPLIED
@@ -83,7 +83,7 @@
 
 <!-- Collection queries -->
 
-<!ELEMENT fetch (#PCDATA | discriminator)*>
+<!ELEMENT fetch (#PCDATA)>
 <!ATTLIST fetch
     parent CDATA "parent"
 >
@@ -137,7 +137,7 @@
     key CDATA "key"
 >
 
-<!ELEMENT discriminator (when*,otherwise)>
+<!ELEMENT discriminator (when*,otherwise?)>
 
 <!ELEMENT when (#PCDATA)>
 <!ATTLIST when
