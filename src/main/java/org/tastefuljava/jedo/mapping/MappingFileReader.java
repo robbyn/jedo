@@ -68,6 +68,9 @@ public class MappingFileReader {
         private boolean inId;
         private ComponentMapper.Builder compBuilder;
         private Statement.Builder stmtBuilder;
+        private Discriminator.Builder discBuilder;
+        private When.Builder whenBuilder;
+        private StringBuilder buf = new StringBuilder();
 
         @Override
         public InputSource resolveEntity(String publicId, String systemId)
@@ -117,6 +120,18 @@ public class MappingFileReader {
                     classBuilder.setSuperClass(builder.findClass(className));
                     break;
                 }
+                case "discriminator":
+                    discBuilder = new Discriminator.Builder();
+                    classBuilder.setDiscriminator(discBuilder);
+                    break;
+                case "when":
+                    whenBuilder = new When.Builder(attrs.getValue("condition"),
+                            attrs.getValue("column"), attrs.getValue("value"));
+                    buf.setLength(0);
+                    break;
+                case "otherwise":
+                    buf.setLength(0);
+                    break;
                 case "id":
                     inId = true;
                     break;
@@ -275,6 +290,17 @@ public class MappingFileReader {
                 case "class":
                     classBuilder = null;
                     break;
+                case "discriminator":
+                    discBuilder = null;
+                    break;
+                case "when":
+                    whenBuilder.setClass(
+                            builder.findClass(buf.toString().trim()));
+                    break;
+                case "otherwise":
+                    discBuilder.setOtherwise(
+                            builder.findClass(buf.toString().trim()));
+                    break;
                 case "id":
                     inId = false;
                     break;
@@ -311,6 +337,8 @@ public class MappingFileReader {
                 throws SAXException {
             if (stmtBuilder != null) {
                 stmtBuilder.addChars(ch, start, length);
+            } else {
+                buf.append(ch, start, length);
             }
         }
     }

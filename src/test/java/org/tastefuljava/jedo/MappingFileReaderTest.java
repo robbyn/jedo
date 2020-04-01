@@ -1,6 +1,5 @@
 package org.tastefuljava.jedo;
 
-import java.io.File;
 import java.net.URL;
 import org.junit.After;
 import org.junit.Assert;

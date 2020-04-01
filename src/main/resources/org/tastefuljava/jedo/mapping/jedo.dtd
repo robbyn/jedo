@@ -137,7 +137,7 @@
     key CDATA "key"
 >
 
-<!ELEMENT discriminator (when*,otherwise?)>
+<!ELEMENT discriminator (when+,otherwise?)>
 
 <!ELEMENT when (#PCDATA)>
 <!ATTLIST when
