@@ -112,6 +112,11 @@ public class MappingFileReader {
                     classBuilder = builder.newClass(builder.findClass(className));
                     break;
                 }
+                case "inherits": {
+                    String className = attrs.getValue("class");
+                    classBuilder.setSuperClass(builder.findClass(className));
+                    break;
+                }
                 case "id":
                     inId = true;
                     break;

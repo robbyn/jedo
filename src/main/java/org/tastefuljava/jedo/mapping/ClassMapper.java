@@ -17,6 +17,7 @@ public class ClassMapper extends ValueMapper {
     private static final Logger LOG
             = Logger.getLogger(ClassMapper.class.getName());
 
+    private ClassMapper superClass;
     private final FieldMapper<ColumnMapper>[] idFields;
     private final FieldMapper<ValueMapper>[] fields;
     private final Map<String,Statement> queries;
@@ -28,6 +29,7 @@ public class ClassMapper extends ValueMapper {
 
     private ClassMapper(Builder builder) {
         super(builder);
+        this.superClass = builder.buildSuperClass();
         this.idFields = builder.buildIdFields();
         this.fields = builder.buildFields();
         this.queries = builder.buildQueries();
@@ -54,6 +56,9 @@ public class ClassMapper extends ValueMapper {
     }
 
     public Object[] getIdValues(Object obj) {
+        if (superClass != null) {
+            return superClass.getIdValues(obj);
+        }
         Object[] values = new Object[idFields.length];
         for (int i = 0; i < idFields.length; ++i) {
             values[i] = idFields[i].getValue(obj);
@@ -62,6 +67,9 @@ public class ClassMapper extends ValueMapper {
     }
 
     public Object[] getIdValuesFromResultSet(ResultSet rs) {
+        if (superClass != null) {
+            return superClass.getIdValuesFromResultSet(rs);
+        }
         Object[] values = new Object[idFields.length];
         for (int i = 0; i < idFields.length; ++i) {
             values[i] = idFields[i].fromResultSet(null, null, rs);
@@ -107,6 +115,9 @@ public class ClassMapper extends ValueMapper {
     }
 
     public void insert(Storage pm, Object obj) {
+        if (superClass != null) {
+            superClass.insert(pm, obj);
+        }
         if (insert == null) {
             throw new JedoException("No inserter for " + type.getName());
         }
@@ -114,18 +125,28 @@ public class ClassMapper extends ValueMapper {
     }
 
     public void afterInsert(Storage pm, Object self) {
+        if (superClass != null) {
+            superClass.afterInsert(pm, self);
+        }
         for (FieldMapper<ValueMapper> prop: fields) {
             prop.afterInsert(pm, self);
         }
     }
 
     public void collectKeys(Storage pm, Object obj, ResultSet rs) {
-        for (FieldMapper<ColumnMapper> prop : idFields) {
-            prop.setFromResultSet(pm, obj, rs);
+        if (superClass != null) {
+            superClass.collectKeys(pm, obj, rs);
+        } else {
+            for (FieldMapper<ColumnMapper> prop : idFields) {
+                prop.setFromResultSet(pm, obj, rs);
+            }
         }
     }
 
     public void update(Storage pm, Object obj) {
+        if (superClass != null) {
+            superClass.update(pm, obj);
+        }
         if (update == null) {
             throw new JedoException(
                     "No updater for " + type.getName());
@@ -137,9 +158,15 @@ public class ClassMapper extends ValueMapper {
         for (FieldMapper<ValueMapper> prop: fields) {
             prop.beforeUpdate(pm, self);
         }
+        if (superClass != null) {
+            superClass.beforeUpdate(pm, self);
+        }
     }
 
     public void afterUpdate(Storage pm, Object self) {
+        if (superClass != null) {
+            superClass.afterUpdate(pm, self);
+        }
         for (FieldMapper<ValueMapper> prop: fields) {
             prop.afterUpdate(pm, self);
         }
@@ -151,11 +178,17 @@ public class ClassMapper extends ValueMapper {
                     "No deleter for " + type.getName());
         }
         pm.delete(this, delete, obj);
+        if (superClass != null) {
+            superClass.delete(pm, obj);
+        }
     }
 
     public void beforeDelete(Storage pm, Object self) {
         for (FieldMapper<ValueMapper> prop: fields) {
             prop.beforeDelete(pm, self);
+        }
+        if (superClass != null) {
+            superClass.beforeDelete(pm, self);
         }
     }
 
@@ -165,6 +198,9 @@ public class ClassMapper extends ValueMapper {
 
     public void setFieldsFromResultSet(Storage pm, Object obj,
             ResultSet rs) {
+        if (superClass != null) {
+            superClass.setFieldsFromResultSet(pm, obj, rs);
+        }
         for (FieldMapper<ColumnMapper> field: idFields) {
             field.setFromResultSet(pm, obj, rs);
         }
@@ -180,6 +216,7 @@ public class ClassMapper extends ValueMapper {
     }
 
     public static class Builder extends ValueMapper.Builder<ClassMapper> {
+        private Class<?> superClass;
         private final Map<Field,ColumnMapper.Builder> idFields
                 = new LinkedHashMap<>();
         private final Map<Field,ValueMapper.Builder> fields
@@ -193,6 +230,10 @@ public class ClassMapper extends ValueMapper {
 
         public Builder(BuildContext context, Class<?> type) {
             super(context, type);
+        }
+
+        public void setSuperClass(Class<?> superClass) {
+            this.superClass = superClass;
         }
 
         public void addIdField(String fieldName, String column) {
@@ -305,6 +346,10 @@ public class ClassMapper extends ValueMapper {
             insert = stmt;
         }
 
+        private ClassMapper buildSuperClass() {
+            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        }
+
         private FieldMapper<ColumnMapper>[] buildIdFields() {
             FieldMapper<ColumnMapper>[] result = new FieldMapper[idFields.size()];
             int i = 0;
@@ -358,6 +403,13 @@ public class ClassMapper extends ValueMapper {
         @Override
         protected ClassMapper create() {
             return new ClassMapper(this);
+        }
+
+        @Override
+        protected void initialize(ClassMapper vm) {
+            context.addForwardClassRef(superClass, (cm)->{
+                vm.superClass = cm;
+            });
         }
 
         private FetchMode fetchMode(String fetchMode, FetchMode def) {
