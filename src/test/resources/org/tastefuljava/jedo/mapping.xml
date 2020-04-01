@@ -4,7 +4,7 @@
     <class name="Named">
         <discriminator>
             <when condition="not-null" column="FID">Folder</when> 
-            <when condition="not-null" column="PID">Folder</when> 
+            <when condition="not-null" column="PID">Picture</when>
         </discriminator>
         <id>
             <field name="id" column="ID"/>
