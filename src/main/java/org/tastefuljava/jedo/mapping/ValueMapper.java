@@ -29,11 +29,9 @@ public abstract class ValueMapper {
     }
 
     public static abstract class Builder<T extends ValueMapper> {
-        protected final BuildContext context;
         protected final Class<?> type;
 
-        protected Builder(BuildContext context, Class<?> type) {
-            this.context = context;
+        protected Builder(Class<?> type) {
             this.type = type;
         }
 
@@ -41,14 +39,14 @@ public abstract class ValueMapper {
             return type;
         }
 
-        public final T build() {
-            T creation = create();
-            initialize(creation);
+        public final T build(BuildContext context) {
+            T creation = create(context);
+            initialize(context, creation);
             return creation;
         }
 
-        protected abstract T create();
-        protected void initialize(T vm) {
+        protected abstract T create(BuildContext context);
+        protected void initialize(BuildContext context, T vm) {
         }
 
         // helper method

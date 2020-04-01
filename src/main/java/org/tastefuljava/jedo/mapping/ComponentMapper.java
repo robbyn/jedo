@@ -15,9 +15,9 @@ public class ComponentMapper extends ValueMapper {
 
     private final FieldMapper<ColumnMapper>[] fields;
 
-    private ComponentMapper(Builder builder) {
+    private ComponentMapper(BuildContext context, Builder builder) {
         super(builder);
-        this.fields = builder.buildFields();
+        this.fields = builder.buildFields(context);
     }
 
     @Override
@@ -74,28 +74,29 @@ public class ComponentMapper extends ValueMapper {
         private final Map<Field,ColumnMapper.Builder> fields
                 = new LinkedHashMap<>();
 
-        public Builder(BuildContext context, Class<?> type) {
-            super(context, type);
+        public Builder(Class<?> type) {
+            super(type);
         }
 
         public void addProp(String name, String column) {
             Field field = getField(name);
             fields.put(field, new ColumnMapper.Builder(
-                    context, field.getType(), column));
+                    field.getType(), column));
         }
 
-        private FieldMapper<ColumnMapper>[] buildFields() {
+        private FieldMapper<ColumnMapper>[] buildFields(BuildContext context) {
             FieldMapper<ColumnMapper>[] result = new FieldMapper[fields.size()];
             int i = 0;
             for (Map.Entry<Field,ColumnMapper.Builder> e: fields.entrySet()) {
-                result[i++] = new FieldMapper<>(e.getKey(), e.getValue().build());
+                result[i++] = new FieldMapper<>(
+                        e.getKey(), e.getValue().build(context));
             }
             return result;
         }
 
         @Override
-        protected ComponentMapper create() {
-            return new ComponentMapper(this);
+        protected ComponentMapper create(BuildContext context) {
+            return new ComponentMapper(context, this);
         }
     }
 }

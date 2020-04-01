@@ -27,17 +27,21 @@ public class ClassMapper extends ValueMapper {
     private final Statement update;
     private final Statement delete;
 
-    private ClassMapper(Builder builder) {
+    private ClassMapper(BuildContext context, Builder builder) {
         super(builder);
-        this.superClass = builder.buildSuperClass();
-        this.idFields = builder.buildIdFields();
-        this.fields = builder.buildFields();
+        this.idFields = builder.buildIdFields(context);
+        this.fields = builder.buildFields(context);
         this.queries = builder.buildQueries();
         this.stmts = builder.buildStatements();
         this.load = builder.buildLoad();
         this.insert = builder.buildInsert();
         this.update = builder.buildUpdate();
         this.delete = builder.buildDelete();
+        if (builder.superClass != null) {
+            context.addForwardClassRef(builder.superClass, (cm)->{
+                ClassMapper.this.superClass = cm;
+            });
+        }
     }
 
     public Class<?> getMappedClass() {
@@ -228,8 +232,8 @@ public class ClassMapper extends ValueMapper {
         private Statement.Builder update;
         private Statement.Builder delete;
 
-        public Builder(BuildContext context, Class<?> type) {
-            super(context, type);
+        public Builder(Class<?> type) {
+            super(type);
         }
 
         public void setSuperClass(Class<?> superClass) {
@@ -239,13 +243,13 @@ public class ClassMapper extends ValueMapper {
         public void addIdField(String fieldName, String column) {
             Field field = getField(fieldName);
             idFields.put(field, new ColumnMapper.Builder(
-                    context, field.getType(), column));
+                    field.getType(), column));
         }
 
         public void addField(String fieldName, String column) {
             Field field = getField(fieldName);
             fields.put(field, new ColumnMapper.Builder(
-                    context, field.getType(), column));
+                    field.getType(), column));
         }
 
         public void addReference(String fieldName, String[] columns,
@@ -253,7 +257,7 @@ public class ClassMapper extends ValueMapper {
             Field field = getField(fieldName);
             FetchMode mode = fetchMode(fetchMode, FetchMode.EAGER);
             ReferenceMapper.Builder ref = new ReferenceMapper.Builder(
-                    context, field, columns, mode);
+                    field, columns, mode);
             fields.put(field, ref);
         }
 
@@ -270,7 +274,7 @@ public class ClassMapper extends ValueMapper {
             }
             FetchMode realFetchMode = fetchMode(fetchMode, FetchMode.LAZY);
             SetMapper.Builder result = new SetMapper.Builder(
-                    context, this, field, realFetchMode, orderFields);
+                    this, field, realFetchMode, orderFields);
             fields.put(field, result);
             return result;
         }
@@ -279,7 +283,7 @@ public class ClassMapper extends ValueMapper {
             Field field = getField(name);
             FetchMode mode = fetchMode(fetchMode, FetchMode.LAZY);
             ListMapper.Builder result = new ListMapper.Builder(
-                    context, this, field, mode);
+                    this, field, mode);
             fields.put(field, result);
             return result;
         }
@@ -288,7 +292,7 @@ public class ClassMapper extends ValueMapper {
             Field field = getField(name);
             FetchMode mode = fetchMode(fetchMode, FetchMode.LAZY);
             MapMapper.Builder result = new MapMapper.Builder(
-                    context, this, field, mode);
+                    this, field, mode);
             fields.put(field, result);
             return result;
         }
@@ -296,7 +300,7 @@ public class ClassMapper extends ValueMapper {
         public ComponentMapper.Builder newComponent(String name) {
             Field field = getField(name);
             ComponentMapper.Builder cm
-                    = new ComponentMapper.Builder(context, field.getType());
+                    = new ComponentMapper.Builder(field.getType());
             fields.put(field, cm);
             return cm;
         }
@@ -346,24 +350,22 @@ public class ClassMapper extends ValueMapper {
             insert = stmt;
         }
 
-        private ClassMapper buildSuperClass() {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-        }
-
-        private FieldMapper<ColumnMapper>[] buildIdFields() {
+        private FieldMapper<ColumnMapper>[] buildIdFields(BuildContext context) {
             FieldMapper<ColumnMapper>[] result = new FieldMapper[idFields.size()];
             int i = 0;
             for (Map.Entry<Field,ColumnMapper.Builder> e: idFields.entrySet()) {
-                result[i++] = new FieldMapper<>(e.getKey(), e.getValue().build());
+                result[i++] = new FieldMapper<>(
+                        e.getKey(), e.getValue().build(context));
             }
             return result;
         }
 
-        private FieldMapper<ValueMapper>[] buildFields() {
+        private FieldMapper<ValueMapper>[] buildFields(BuildContext context) {
             FieldMapper<ValueMapper>[] result = new FieldMapper[fields.size()];
             int i = 0;
             for (Map.Entry<Field,ValueMapper.Builder> e: fields.entrySet()) {
-                result[i++] = new FieldMapper<>(e.getKey(), e.getValue().build());
+                result[i++] = new FieldMapper<>(
+                        e.getKey(), e.getValue().build(context));
             }
             return result;
         }
@@ -401,15 +403,12 @@ public class ClassMapper extends ValueMapper {
         }
 
         @Override
-        protected ClassMapper create() {
-            return new ClassMapper(this);
+        protected ClassMapper create(BuildContext context) {
+            return new ClassMapper(context, this);
         }
 
         @Override
-        protected void initialize(ClassMapper vm) {
-            context.addForwardClassRef(superClass, (cm)->{
-                vm.superClass = cm;
-            });
+        protected void initialize(BuildContext context, ClassMapper vm) {
         }
 
         private FetchMode fetchMode(String fetchMode, FetchMode def) {

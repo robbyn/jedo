@@ -18,11 +18,11 @@ public class MapMapper extends ValueMapper {
     private final Statement put;
     private final Statement removeKey;
 
-    public MapMapper(Builder builder) {
+    public MapMapper(BuildContext context, Builder builder) {
         super(builder);
         this.fetchMode = builder.fetchMode;
-        this.keyMapper = builder.buildKeyMapper();
-        this.elmMapper = builder.buildElmMapper();
+        this.keyMapper = builder.buildKeyMapper(context);
+        this.elmMapper = builder.buildElmMapper(context);
         this.fetch = builder.buildFetch();
         this.clear = builder.buildClear();
         this.put = builder.buildPut();
@@ -128,9 +128,9 @@ public class MapMapper extends ValueMapper {
         private Statement.Builder put;
         private Statement.Builder removeKey;
 
-        public Builder(BuildContext context, ClassMapper.Builder parentClass,
-                Field field, FetchMode fetchMode) {
-            super(context, field.getType());
+        public Builder(ClassMapper.Builder parentClass, Field field,
+                FetchMode fetchMode) {
+            super(field.getType());
             this.parentClass = parentClass;
             this.fetchMode = fetchMode;
             Class<?>[] argTypes = Reflection.getReferencedClasses(field, 2);
@@ -140,12 +140,12 @@ public class MapMapper extends ValueMapper {
 
         public void setKeys(Class<?> clazz, String column) {
             keys = new ColumnMapper.Builder(
-                    context, clazz == null ? keyClass : clazz, column);
+                    clazz == null ? keyClass : clazz, column);
         }
 
         public void setElements(Class<?> clazz, String column) {
             elements = new ColumnMapper.Builder(
-                    context, clazz == null ? elmClass : clazz, column);
+                    clazz == null ? elmClass : clazz, column);
         }
 
         public Statement.Builder newFetchStatement(String... paramNames) {
@@ -184,21 +184,21 @@ public class MapMapper extends ValueMapper {
             return removeKey == null ? null : removeKey.build();
         }
 
-        private ValueMapper buildKeyMapper() {
-            return keys == null ? null : keys.build();
+        private ValueMapper buildKeyMapper(BuildContext context) {
+            return keys == null ? null : keys.build(context);
         }
 
-        private ValueMapper buildElmMapper() {
-            return elements == null ? null : elements.build();
-        }
-
-        @Override
-        protected MapMapper create() {
-            return new MapMapper(this);
+        private ValueMapper buildElmMapper(BuildContext context) {
+            return elements == null ? null : elements.build(context);
         }
 
         @Override
-        protected void initialize(MapMapper mm) {
+        protected MapMapper create(BuildContext context) {
+            return new MapMapper(context, this);
+        }
+
+        @Override
+        protected void initialize(BuildContext context, MapMapper mm) {
             if (keys == null) {
                 context.addForwardClassRef(keyClass, (cm)->{
                     mm.keyMapper = cm;
