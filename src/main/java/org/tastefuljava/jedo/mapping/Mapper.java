@@ -59,7 +59,7 @@ public class Mapper {
             for (ClassMapper cm: map.values()) {
                 context.fixall(cm);
             }
-            context.checkUnresolved();
+            context.complete();
             return new Mapper(map);
         }
     }
