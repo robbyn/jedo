@@ -4,6 +4,7 @@ import org.tastefuljava.jedo.util.Reflection;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -18,6 +19,7 @@ public class ClassMapper extends ValueMapper {
             = Logger.getLogger(ClassMapper.class.getName());
 
     private ClassMapper superClass;
+    private Discriminator discriminator;
     private final FieldMapper<ColumnMapper>[] idFields;
     private final FieldMapper<ValueMapper>[] fields;
     private final Map<String,Statement> queries;
@@ -46,6 +48,28 @@ public class ClassMapper extends ValueMapper {
 
     public Class<?> getMappedClass() {
         return type;
+    }
+
+    public ClassMapper getBaseClass() {
+        ClassMapper cm = this;
+        ClassMapper sup;
+        while ((sup = cm.superClass) != null) {
+            cm = sup;
+        }
+        return cm;
+    }
+
+    public ClassMapper getSuperClass() {
+        return superClass;
+    }
+
+    public ClassMapper resolveClass(ResultSet rs) {
+        try {
+            return discriminator == null ? this : discriminator.resolve(rs, this);
+        } catch (SQLException ex) {
+            LOG.log(Level.SEVERE, null, ex);
+            throw new JedoException(ex.getMessage());
+        }
     }
 
     public Object newInstance() {
@@ -221,6 +245,7 @@ public class ClassMapper extends ValueMapper {
 
     public static class Builder extends ValueMapper.Builder<ClassMapper> {
         private Class<?> superClass;
+        private Discriminator.Builder discriminator;
         private final Map<Field,ColumnMapper.Builder> idFields
                 = new LinkedHashMap<>();
         private final Map<Field,ValueMapper.Builder> fields
@@ -238,6 +263,10 @@ public class ClassMapper extends ValueMapper {
 
         public void setSuperClass(Class<?> superClass) {
             this.superClass = superClass;
+        }
+
+        public void setDiscriminator(Discriminator.Builder disc) {
+            this.discriminator = disc;
         }
 
         public void addIdField(String fieldName, String column) {
@@ -348,6 +377,10 @@ public class ClassMapper extends ValueMapper {
 
         public void setInsert(Statement.Builder stmt) {
             insert = stmt;
+        }
+
+        public Discriminator buildDiscriminator(BuildContext context) {
+            return discriminator == null ? null : discriminator.build(context);
         }
 
         private FieldMapper<ColumnMapper>[] buildIdFields(BuildContext context) {
