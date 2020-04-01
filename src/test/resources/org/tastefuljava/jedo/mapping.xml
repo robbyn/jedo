@@ -24,6 +24,13 @@
             INSERT INTO named(NAME)
             VALUES(${name})
         </insert>
+        <update>
+            UPDATE named SET NAME=${name}
+            WHERE ID=${id}
+        </update>
+        <delete>
+            DELETE FROM named WHERE ID=${id}
+        </delete>
     </class>
     <class name="Folder">
         <inherits class="Named"/>
@@ -166,7 +173,7 @@
                 ${gpsData.altitude})
         </insert>
         <update>
-            UPDATE pictures SET FOLDER_ID=${folder.id},NAME=${name},
+            UPDATE pictures SET FOLDER_ID=${folder.id},
                 TIMESTAMP=${timestamp:TIMESTAMP},WIDTH=${width},
                 HEIGHT=${height},LATITUDE=${gpsData.latitude},
                 LONGITUDE=${gpsData.longitude},

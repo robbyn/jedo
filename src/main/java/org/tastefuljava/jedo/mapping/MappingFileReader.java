@@ -207,6 +207,7 @@ public class MappingFileReader {
                         boolean keys = "true".equals(attrs.getValue(
                                         "get-generated-keys"));
                         stmtBuilder = classBuilder.newStatement(paramNames, keys);
+                        buf.setLength(0);
                         switch (qName) {
                             case "query":
                                 classBuilder.addQuery(name, stmtBuilder);
@@ -219,16 +220,20 @@ public class MappingFileReader {
                     }
                     case "load":
                         stmtBuilder = classBuilder.newLoadStatement();
+                        buf.setLength(0);
                         break;
                     case "insert":
                         stmtBuilder = classBuilder.newInsertStatement(
                                 "true".equals(attrs.getValue("get-generated-keys")));
+                        buf.setLength(0);
                         break;
                     case "update":
                         stmtBuilder = classBuilder.newUpdateStatement();
+                        buf.setLength(0);
                         break;
                     case "delete":
                         stmtBuilder = classBuilder.newDeleteStatement();
+                        buf.setLength(0);
                         break;
                     case "fetch":
                         if (collectionBuilder != null) {
@@ -238,6 +243,7 @@ public class MappingFileReader {
                             stmtBuilder = mapBuilder.newFetchStatement(
                                     attrs.getValue("parent"));
                         }
+                        buf.setLength(0);
                         break;
                     case "clear":
                         if (collectionBuilder != null) {
@@ -247,37 +253,45 @@ public class MappingFileReader {
                             stmtBuilder = mapBuilder.newClearStatement(
                                     attrs.getValue("parent"));
                         }
+                        buf.setLength(0);
                         break;
                     case "add":
                         stmtBuilder = collectionBuilder.newAddStatement(
                                 attrs.getValue("parent"), attrs.getValue("element"));
+                        buf.setLength(0);
                         break;
                     case "remove":
                         stmtBuilder = collectionBuilder.newRemove(
                                 attrs.getValue("parent"), attrs.getValue("element"));
+                        buf.setLength(0);
                         break;
                     case "set-at":
                         stmtBuilder = listBuilder.newSetAt(attrs.getValue("parent"),
                                 attrs.getValue("element"), attrs.getValue("index"));
+                        buf.setLength(0);
                         break;
                     case "add-at":
                         stmtBuilder = listBuilder.newAddAtStatement(
                                 attrs.getValue("parent"), attrs.getValue("element"),
                                 attrs.getValue("index"));
+                        buf.setLength(0);
                         break;
                     case "remove-at":
                         stmtBuilder = listBuilder.newRemoveAt(
                                 attrs.getValue("parent"),
                                 attrs.getValue("index"));
+                        buf.setLength(0);
                         break;
                     case "put":
                         stmtBuilder = mapBuilder.newPutStatement(
                                 attrs.getValue("parent"), attrs.getValue("key"),
                                 attrs.getValue("element"));
+                        buf.setLength(0);
                         break;
                     case "remove-key":
                         stmtBuilder = mapBuilder.newRemoveKeyStatement(
                                 attrs.getValue("parent"), attrs.getValue("key"));
+                        buf.setLength(0);
                         break;
                 }
             } catch (Throwable e) {
@@ -329,8 +343,12 @@ public class MappingFileReader {
                 case "clear":
                 case "add":
                 case "remove":
+                case "set-at":
+                case "add-at":
+                case "remove-at":
                 case "put":
                 case "remove-key":
+                    stmtBuilder.setSql(buf.toString());
                     stmtBuilder = null;
                     break;
             }
@@ -339,11 +357,7 @@ public class MappingFileReader {
         @Override
         public void characters(char[] ch, int start, int length)
                 throws SAXException {
-            if (stmtBuilder != null) {
-                stmtBuilder.addChars(ch, start, length);
-            } else {
-                buf.append(ch, start, length);
-            }
+            buf.append(ch, start, length);
         }
     }
 }

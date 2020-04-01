@@ -24,7 +24,7 @@ public class ClassMapper extends ValueMapper {
     private final FieldMapper<ValueMapper>[] fields;
     private final Map<String,Statement> queries;
     private final Map<String,Statement> stmts;
-    private final Statement load;
+    private Statement load;
     private final Statement insert;
     private final Statement update;
     private final Statement delete;
@@ -35,7 +35,6 @@ public class ClassMapper extends ValueMapper {
         this.fields = builder.buildFields(context);
         this.queries = builder.buildQueries();
         this.stmts = builder.buildStatements();
-        this.load = builder.buildLoad();
         this.insert = builder.buildInsert();
         this.update = builder.buildUpdate();
         this.delete = builder.buildDelete();
@@ -44,6 +43,9 @@ public class ClassMapper extends ValueMapper {
                 ClassMapper.this.superClass = cm;
             });
         }
+        context.addFinalizer(()->{
+            load = builder.buildLoad(getIdFieldNames());
+        });
     }
 
     public Class<?> getMappedClass() {
@@ -243,6 +245,18 @@ public class ClassMapper extends ValueMapper {
         return pm.loadFromResultSet(this, rs);
     }
 
+    private String[] getIdFieldNames() {
+        if (superClass != null) {
+            return superClass.getIdFieldNames();
+        }
+        String[] result = new String[idFields.length];
+        int i = 0;
+        for (FieldMapper<ColumnMapper> fm: idFields) {
+            result[i++] = fm.getFieldName();
+        }
+        return result;
+    }
+
     public static class Builder extends ValueMapper.Builder<ClassMapper> {
         private Class<?> superClass;
         private Discriminator.Builder discriminator;
@@ -419,8 +433,12 @@ public class ClassMapper extends ValueMapper {
             return result;
         }
 
-        public Statement buildLoad() {
-            return load == null ? null : load.build();
+        public Statement buildLoad(String[] fieldNames) {
+            if (load == null) {
+                return null;
+            }
+            load.setParamNames(fieldNames);
+            return load.build();
         }
 
         public Statement buildInsert() {
