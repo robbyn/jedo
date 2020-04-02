@@ -1,15 +1,53 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapping PUBLIC '-//tastefuljava.org//Jedo Mapping File 1.0//EN' 'jedo.dtd'>
 <mapping package="org.tastefuljava.jedo.testdb">
-    <class name="Folder">
+    <class name="Named">
+        <discriminator>
+            <when condition="not-null" column="FID">Folder</when> 
+            <when condition="not-null" column="PID">Picture</when>
+        </discriminator>
         <id>
             <field name="id" column="ID"/>
         </id>
-        <reference name="parent" column="PARENT_ID" fetch-mode="lazy"/>
         <field name="name" column="NAME"/>
-        <set name="subfolders" fetch-mode="lazy" order="name">
+        <load>
+            SELECT named.ID ID, named.NAME NAME, folders.ID FID, 
+                folders.PARENT_ID PARENT_ID, pictures.ID PID,
+                pictures.FOLDER_ID FOLDER_ID,TIMESTAMP,WIDTH,HEIGHT,LATITUDE,
+                LONGITUDE,ALTITUDE
+            FROM named
+                LEFT OUTER JOIN folders ON (folders.ID=named.ID)
+                LEFT OUTER JOIN pictures ON (pictures.ID=named.ID)
+            WHERE name.ID=${id}
+        </load>
+        <query name="all">
+            SELECT named.ID ID, named.NAME NAME, folders.ID FID, 
+                folders.PARENT_ID PARENT_ID, pictures.ID PID,
+                pictures.FOLDER_ID FOLDER_ID,TIMESTAMP,WIDTH,HEIGHT,LATITUDE,
+                LONGITUDE,ALTITUDE
+            FROM named
+                LEFT OUTER JOIN folders ON (folders.ID=named.ID)
+                LEFT OUTER JOIN pictures ON (pictures.ID=named.ID)
+        </query>
+        <insert get-generated-keys="true">
+            INSERT INTO named(NAME)
+            VALUES(${name})
+        </insert>
+        <update>
+            UPDATE named SET NAME=${name}
+            WHERE ID=${id}
+        </update>
+        <delete>
+            DELETE FROM named WHERE ID=${id}
+        </delete>
+    </class>
+    <class name="Folder">
+        <inherits class="Named"/>
+        <reference name="parent" column="PARENT_ID" fetch-mode="lazy"/>
+        <set name="subfolders" fetch-mode="lazy">
             <fetch>
-                SELECT * FROM folders
+                SELECT named.ID ID, named.NAME NAME, folders.PARENT_ID PARENT_ID
+                FROM folders JOIN named ON (folders.ID=named.ID)
                 WHERE PARENT_ID=${id}
             </fetch>
             <add parent="parent" element="child">
@@ -27,9 +65,12 @@
                 WHERE FOLDER_ID=${id}
             </clear>
         </set>
-        <set name="pictures" fetch-mode="lazy" order="name">
+        <set name="pictures" fetch-mode="lazy">
             <fetch parent="folder">
-                SELECT * FROM pictures
+                SELECT named.ID ID, named.NAME NAME, pictures.ID PID,FOLDER_ID,
+                    TIMESTAMP,WIDTH,HEIGHT,LATITUDE,LONGITUDE,ALTITUDE
+                FROM pictures
+                    JOIN named ON (pictures.ID=named.ID)
                 WHERE FOLDER_ID=${id}
             </fetch>
             <add parent="folder" element="picture">
@@ -48,30 +89,31 @@
         </set>
 
         <load>
-            SELECT * FROM folders
-            WHERE ID=${id}
+            SELECT named.ID ID, named.NAME NAME, folders.PARENT_ID PARENT_ID
+            FROM folders JOIN named ON (folders.ID=named.ID)
+            WHERE folders.ID=${id}
         </load>
         <query name="rootFolder" parameters="name">
-            SELECT * FROM folders
+            SELECT named.ID ID, named.NAME NAME, folders.PARENT_ID PARENT_ID
+            FROM folders JOIN named ON (folders.ID=named.ID)
             WHERE PARENT_ID IS NULL
                 AND NAME=${name}
         </query>
         <query name="subfolder" parameters="parent,name">
-            SELECT * FROM folders
+            SELECT named.ID ID, named.NAME NAME, folders.PARENT_ID PARENT_ID
+            FROM folders JOIN named ON (folders.ID=named.ID)
             WHERE PARENT_ID=${parent.id}
                 AND NAME=${name}
         </query>
-        <insert get-generated-keys="true">
-            INSERT INTO folders(PARENT_ID,NAME) VALUES(${parent.id},${name})
+        <insert>
+            INSERT INTO folders(ID,PARENT_ID)
+            VALUES(${id},${parent.id})
         </insert>
     </class>
 
     <class name="Picture">
-        <id>
-            <field name="id" column="ID"/>
-        </id>
+        <inherits class="Named"/>
         <reference name="folder" column="FOLDER_ID"/>
-        <field name="name" column="NAME"/>
         <field name="timestamp" column="TIMESTAMP"/>
         <field name="width" column="WIDTH"/>
         <field name="height" column="HEIGHT"/>
@@ -118,23 +160,29 @@
         </map>
 
         <load>
-            SELECT * FROM pictures
-            WHERE ID=${id}
+            SELECT named.ID ID, named.NAME NAME, pictures.ID PID,FOLDER_ID,
+                TIMESTAMP,WIDTH,HEIGHT,LATITUDE,LONGITUDE,ALTITUDE
+            FROM pictures
+                JOIN named ON (pictures.ID=named.ID)
+            WHERE pictures.ID=${id}
         </load>
         <query name="byName" parameters="folder,name">
-            SELECT * FROM pictures
+            SELECT named.ID ID, named.NAME NAME, pictures.ID PID,FOLDER_ID,
+                TIMESTAMP,WIDTH,HEIGHT,LATITUDE,LONGITUDE,ALTITUDE
+            FROM pictures
+                JOIN named ON (pictures.ID=named.ID)
             WHERE FOLDER_ID=${folder.id}
                 AND NAME=${name}
         </query>
-        <insert get-generated-keys="true">
-            INSERT INTO pictures(FOLDER_ID,NAME,TIMESTAMP,WIDTH,HEIGHT,LATITUDE,
+        <insert>
+            INSERT INTO pictures(ID,FOLDER_ID,TIMESTAMP,WIDTH,HEIGHT,LATITUDE,
                 LONGITUDE,ALTITUDE)
-            VALUES(${folder.id},${name},${timestamp:TIMESTAMP},${width},
+            VALUES(${id},${folder.id},${timestamp:TIMESTAMP},${width},
                 ${height},${gpsData.latitude},${gpsData.longitude},
                 ${gpsData.altitude})
         </insert>
         <update>
-            UPDATE pictures SET FOLDER_ID=${folder.id},NAME=${name},
+            UPDATE pictures SET FOLDER_ID=${folder.id},
                 TIMESTAMP=${timestamp:TIMESTAMP},WIDTH=${width},
                 HEIGHT=${height},LATITUDE=${gpsData.latitude},
                 LONGITUDE=${gpsData.longitude},

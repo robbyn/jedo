@@ -19,11 +19,11 @@ public class Statement {
     private final Parameter[] params;
     private final String[] generatedKeys;
 
-    private Statement(Builder builder) {
-        this.sql = builder.buf.toString();
-        this.params = builder.params.toArray(
-                new Parameter[builder.params.size()]);
-        this.generatedKeys = builder.generatedKeys;
+    private Statement(Builder builder, String[] generatedKeys) {
+        SqlParser parser = builder.createParser();
+        this.sql = parser.parse(builder.sql);
+        this.params = parser.getParameters();
+        this.generatedKeys = generatedKeys;
     }
 
     public boolean hasGeneratedKeys() {
@@ -56,15 +56,49 @@ public class Statement {
     }
 
     public static class Builder {
-        private final Scope scope;
-        private String[] generatedKeys;
-        private final List<Parameter> params = new ArrayList<>();
-        private final StringBuilder buf = new StringBuilder();
-        private final StringBuilder expr = new StringBuilder();
-
-        private int st = 1;
+        private final Class<?> clazz;
+        private boolean useGeneratedKeys;
+        private String sql;
+        private String[] paramNames;
 
         public Builder(Class<?> clazz, String[] paramNames) {
+            this.clazz = clazz;
+            this.paramNames = paramNames;
+        }
+
+        public boolean getUseGeneratedKeys() {
+            return useGeneratedKeys;
+        }
+
+        public void setUseGeneratedKeys(boolean newValue) {
+            useGeneratedKeys = newValue;
+        }
+
+        public void setSql(String sql) {
+            this.sql = sql;
+        }
+
+        public void setParamNames(String[] paramNames) {
+            this.paramNames = paramNames;
+        }
+
+        private SqlParser createParser() {
+            return new SqlParser(clazz, paramNames);
+        }
+
+        public Statement build(String[] keys) {
+            return new Statement(this, keys);
+        }
+    }
+
+    private static class SqlParser {
+        private final Scope scope;
+        private final StringBuilder buf = new StringBuilder();
+        private final StringBuilder expr = new StringBuilder();
+        private final List<Parameter> params = new ArrayList<>();
+        private int st = 1;
+
+        public SqlParser(Class<?> clazz, String[] paramNames) {
             Scope local = null;
             if (clazz != null) {
                 local = new Scope.FieldScope(clazz, Expression.THIS, local);
@@ -75,20 +109,15 @@ public class Statement {
             this.scope = local;
         }
 
-        public boolean hasGeneratedKeys() {
-            return generatedKeys != null;
-        }
-
-        public void setGeneratedKeys(String[] keyNames) {
-            generatedKeys = keyNames;
-        }
-
-        public void addChars(char[] chars, int start, int length) {
-            int end = start+length;
-            for (int i = start; i < end; ++i) {
-                char c = chars[i];
+        public String parse(String sql) {
+            for (char c: sql.toCharArray()) {
                 processChar(c);
             }
+            return buf.toString();
+        }
+
+        public Parameter[] getParameters() {
+            return params.toArray(new Parameter[params.size()]);
         }
 
         private void processChar(char c) {
@@ -174,13 +203,6 @@ public class Statement {
                     }
                     break;
             }
-        }
-
-        public Statement build() {
-            if (buf.length() > 0 && st == 1) {
-                buf.setLength(buf.length()-1);
-            }
-            return new Statement(this);
         }
     }
 }

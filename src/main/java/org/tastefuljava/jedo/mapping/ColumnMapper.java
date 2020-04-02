@@ -18,6 +18,10 @@ public class ColumnMapper extends ValueMapper {
         this.column = builder.column;
     }
 
+    public String getColumn() {
+        return column;
+    }
+
     @Override
     public Object fromResultSet(Storage pm, Object obj, ResultSet rs,
             ValueAccessor fm) {
@@ -41,8 +45,8 @@ public class ColumnMapper extends ValueMapper {
     public static class Builder extends ValueMapper.Builder<ColumnMapper> {
         private final String column;
 
-        public Builder(BuildContext context, Class<?> type, String column) {
-            super(context, type);
+        public Builder(Class<?> type, String column) {
+            super(type);
             this.column = column;
         }
 
@@ -51,7 +55,7 @@ public class ColumnMapper extends ValueMapper {
         }
 
         @Override
-        protected ColumnMapper create() {
+        protected ColumnMapper create(BuildContext context) {
             return new ColumnMapper(this);
         }
     }

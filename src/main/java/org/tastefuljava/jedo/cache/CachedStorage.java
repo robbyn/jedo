@@ -174,8 +174,8 @@ public class CachedStorage implements Storage {
 
     @Override
     public Object loadFromResultSet(ClassMapper cm, ResultSet rs) {
-        ObjectId oid = makeObjectId(
-                cm.getMappedClass(), cm.getIdValuesFromResultSet(rs));
+        cm = cm.resolveClass(rs);
+        ObjectId oid = makeObjectId(cm, cm.getIdValuesFromResultSet(rs));
         Object obj;
         if (oid != null) {
             obj = cache.get(oid);
@@ -193,7 +193,7 @@ public class CachedStorage implements Storage {
 
     @Override
     public Object loadFromId(ClassMapper cm, Object[] values) {
-        ObjectId oid = makeObjectId(cm.getMappedClass(), values);
+        ObjectId oid = makeObjectId(cm, values);
         Object obj;
         if (oid != null) {
             obj = cache.get(oid);
@@ -230,13 +230,14 @@ public class CachedStorage implements Storage {
     }
 
     private static ObjectId getObjectId(ClassMapper cm, Object obj) {
-        return makeObjectId(cm.getMappedClass(), cm.getIdValues(obj));
+        return makeObjectId(cm, cm.getIdValues(obj));
     }
 
-    private static ObjectId makeObjectId(Class<?> clazz, Object[] values) {
+    private static ObjectId makeObjectId(ClassMapper cm, Object[] values) {
+        cm = cm.getBaseClass();
         for (Object value: values) {
             if (value != null) {
-                return new ObjectId(clazz, values);
+                return new ObjectId(cm.getMappedClass(), values);
             }
         }
         return null; // all values are null

@@ -38,6 +38,14 @@ public class FieldMapper<V extends ValueMapper> implements ValueAccessor {
         }
     }
 
+    public String getFieldName() {
+        return field.getName();
+    }
+
+    public V getValueMapper() {
+        return vm;
+    }
+
     Object fromResultSet(Storage pm, Object obj, ResultSet rs) {
         return vm.fromResultSet(pm, obj, rs, this);
     }

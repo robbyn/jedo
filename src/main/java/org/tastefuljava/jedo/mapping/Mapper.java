@@ -20,7 +20,6 @@ public class Mapper {
     public static class Builder {
         private final Map<Class<?>,ClassMapper.Builder> classMappers
                 = new HashMap<>();
-        private final BuildContext context = new BuildContext();
         private String[] packagePath = {"java.lang"};
 
         public Builder() {
@@ -44,22 +43,23 @@ public class Mapper {
         public ClassMapper.Builder newClass(Class<?> clazz) {
             ClassMapper.Builder builder = classMappers.get(clazz);
             if (builder == null) {
-                builder = new ClassMapper.Builder(context, clazz);
+                builder = new ClassMapper.Builder(clazz);
                 classMappers.put(builder.getType(), builder);
             }
             return builder;
         }
 
         public Mapper build() {
+            BuildContext context = new BuildContext();
             Map<Class<?>,ClassMapper> map = new HashMap<>();
             for (ClassMapper.Builder cmb: classMappers.values()) {
-                ClassMapper mapper = cmb.build();
+                ClassMapper mapper = cmb.build(context);
                 map.put(cmb.getType(), mapper);
             }
             for (ClassMapper cm: map.values()) {
                 context.fixall(cm);
             }
-            context.checkUnresolved();
+            context.complete();
             return new Mapper(map);
         }
     }

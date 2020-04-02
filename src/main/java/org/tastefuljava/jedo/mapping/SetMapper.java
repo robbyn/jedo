@@ -11,8 +11,8 @@ import org.tastefuljava.jedo.rel.JedoSortedSet;
 public class SetMapper extends CollectionMapper {
     private final Field[] orderFields;
 
-    public SetMapper(Builder builder) {
-        super(builder);
+    public SetMapper(BuildContext context, Builder builder) {
+        super(context, builder);
         this.orderFields = builder.orderFields;
     }
 
@@ -45,15 +45,15 @@ public class SetMapper extends CollectionMapper {
     public static class Builder extends CollectionMapper.Builder {
         private final Field[] orderFields;
 
-        public Builder(BuildContext context, ClassMapper.Builder parentClass,
-                Field field, FetchMode fetchMode, Field[] orderFields) {
-            super(context, parentClass, field, fetchMode);
+        public Builder(ClassMapper.Builder parentClass, Field field,
+                FetchMode fetchMode, Field[] orderFields) {
+            super(parentClass, field, fetchMode);
             this.orderFields = orderFields;
         }
 
         @Override
-        protected CollectionMapper create() {
-            return new SetMapper(this);
+        protected CollectionMapper create(BuildContext context) {
+            return new SetMapper(context, this);
         }
     }
 }

@@ -12,17 +12,23 @@ public abstract class CollectionMapper extends ValueMapper {
     protected ValueMapper elmMapper;
     private final Statement fetch;
     private final Statement clear;
-    private final Statement add;
+    private Statement add;
     private final Statement remove;
 
-    protected CollectionMapper(Builder builder) {
+    protected CollectionMapper(BuildContext context, Builder builder) {
         super(builder);
-        this.elmMapper = builder.buildElmMapper();
+        this.elmMapper = builder.buildElmMapper(context);
         this.fetchMode = builder.fetchMode;
         this.fetch = builder.buildFetch();
-        this.add = builder.buildAdd();
         this.clear = builder.buildClear();
         this.remove = builder.buildRemove();
+        context.addFinalizer(()->{
+            String[] keys = null;
+            if (elmMapper instanceof ClassMapper) {
+                keys = ((ClassMapper)elmMapper).getIdColumns();
+            }
+            add = builder.buildAdd(keys);
+        });
     }
 
     @Override
@@ -113,9 +119,9 @@ public abstract class CollectionMapper extends ValueMapper {
         private Statement.Builder add;
         private Statement.Builder remove;
 
-        public Builder(BuildContext context, ClassMapper.Builder parentClass,
-                Field field, FetchMode fetchMode) {
-            super(context, field.getType());
+        public Builder(ClassMapper.Builder parentClass, Field field,
+                FetchMode fetchMode) {
+            super(field.getType());
             this.parentClass = parentClass;
             elmClass = Reflection.getReferencedClass(field);
             this.fetchMode = fetchMode;
@@ -123,7 +129,7 @@ public abstract class CollectionMapper extends ValueMapper {
 
         public void setElements(Class<?> clazz, String column) {
             elements = new ColumnMapper.Builder(
-                    context, clazz == null ? elmClass : clazz, column);
+                    clazz == null ? elmClass : clazz, column);
         }
 
         public Statement.Builder newFetchStatement(String... paramNames) {
@@ -144,28 +150,28 @@ public abstract class CollectionMapper extends ValueMapper {
             return remove = new Statement.Builder(elmClass, paramNames);
         }
 
-        private ValueMapper buildElmMapper() {
-            return elements == null ? null : elements.build();
+        private ValueMapper buildElmMapper(BuildContext context) {
+            return elements == null ? null : elements.build(context);
         }
 
         private Statement buildFetch() {
-            return fetch == null ? null : fetch.build();
+            return fetch == null ? null : fetch.build(null);
         }
 
-        private Statement buildAdd() {
-            return add == null || add.hasGeneratedKeys() ? null : add.build();
+        private Statement buildAdd(String[] generatedKeys) {
+            return add == null ? null : add.build(generatedKeys);
         }
 
         private Statement buildClear() {
-            return clear == null ? null : clear.build();
+            return clear == null ? null : clear.build(null);
         }
 
         private Statement buildRemove() {
-            return remove == null ? null : remove.build();
+            return remove == null ? null : remove.build(null);
         }
  
         @Override
-        protected void initialize(CollectionMapper colm) {
+        protected void initialize(BuildContext context, CollectionMapper colm) {
             if (elements == null) {
                 context.addForwardClassRef(elmClass, (cm)->{
                     colm.elmMapper = cm;

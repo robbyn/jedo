@@ -12,8 +12,8 @@ public class ListMapper extends CollectionMapper {
     private final Statement addAt;
     private final Statement removeAt;
 
-    private ListMapper(Builder builder) {
-        super(builder);
+    private ListMapper(BuildContext context, Builder builder) {
+        super(context, builder);
         this.setAt = builder.buildSetAt();
         this.addAt = builder.buildAddAt();
         this.removeAt = builder.buildRemoveAt();
@@ -67,9 +67,8 @@ public class ListMapper extends CollectionMapper {
         private Statement.Builder addAt;
         private Statement.Builder removeAt;
 
-        public Builder(BuildContext context, ClassMapper.Builder parentClass,
-                Field field, FetchMode fetchMode) {
-            super(context, parentClass, field, fetchMode);
+        public Builder(ClassMapper.Builder parentClass, Field field, FetchMode fetchMode) {
+            super(parentClass, field, fetchMode);
         }
 
         public Statement.Builder newSetAt(String... paramNames) {
@@ -85,20 +84,20 @@ public class ListMapper extends CollectionMapper {
         }
 
         private Statement buildSetAt() {
-            return setAt == null ? null : setAt.build();
+            return setAt == null ? null : setAt.build(null);
         }
 
         private Statement buildAddAt() {
-            return addAt == null ? null : addAt.build();
+            return addAt == null ? null : addAt.build(null);
         }
 
         private Statement buildRemoveAt() {
-            return removeAt == null ? null : removeAt.build();
+            return removeAt == null ? null : removeAt.build(null);
         }
 
         @Override
-        protected ListMapper create() {
-            return new ListMapper(this);
+        protected ListMapper create(BuildContext context) {
+            return new ListMapper(context, this);
         }
     }
 }
