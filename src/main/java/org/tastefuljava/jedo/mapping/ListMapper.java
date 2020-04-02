@@ -84,15 +84,15 @@ public class ListMapper extends CollectionMapper {
         }
 
         private Statement buildSetAt() {
-            return setAt == null ? null : setAt.build();
+            return setAt == null ? null : setAt.build(null);
         }
 
         private Statement buildAddAt() {
-            return addAt == null ? null : addAt.build();
+            return addAt == null ? null : addAt.build(null);
         }
 
         private Statement buildRemoveAt() {
-            return removeAt == null ? null : removeAt.build();
+            return removeAt == null ? null : removeAt.build(null);
         }
 
         @Override

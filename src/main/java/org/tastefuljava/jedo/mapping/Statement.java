@@ -19,11 +19,11 @@ public class Statement {
     private final Parameter[] params;
     private final String[] generatedKeys;
 
-    private Statement(Builder builder) {
+    private Statement(Builder builder, String[] generatedKeys) {
         SqlParser parser = builder.createParser();
         this.sql = parser.parse(builder.sql);
         this.params = parser.getParameters();
-        this.generatedKeys = builder.generatedKeys;
+        this.generatedKeys = generatedKeys;
     }
 
     public boolean hasGeneratedKeys() {
@@ -57,7 +57,7 @@ public class Statement {
 
     public static class Builder {
         private final Class<?> clazz;
-        private String[] generatedKeys;
+        private boolean useGeneratedKeys;
         private String sql;
         private String[] paramNames;
 
@@ -66,12 +66,12 @@ public class Statement {
             this.paramNames = paramNames;
         }
 
-        public boolean hasGeneratedKeys() {
-            return generatedKeys != null;
+        public boolean getUseGeneratedKeys() {
+            return useGeneratedKeys;
         }
 
-        public void setGeneratedKeys(String[] keyNames) {
-            generatedKeys = keyNames;
+        public void setUseGeneratedKeys(boolean newValue) {
+            useGeneratedKeys = newValue;
         }
 
         public void setSql(String sql) {
@@ -86,8 +86,8 @@ public class Statement {
             return new SqlParser(clazz, paramNames);
         }
 
-        public Statement build() {
-            return new Statement(this);
+        public Statement build(String[] keys) {
+            return new Statement(this, keys);
         }
     }
 

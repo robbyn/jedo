@@ -18,6 +18,10 @@ public class ColumnMapper extends ValueMapper {
         this.column = builder.column;
     }
 
+    public String getColumn() {
+        return column;
+    }
+
     @Override
     public Object fromResultSet(Storage pm, Object obj, ResultSet rs,
             ValueAccessor fm) {

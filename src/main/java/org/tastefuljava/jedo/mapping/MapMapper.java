@@ -169,19 +169,19 @@ public class MapMapper extends ValueMapper {
         }
 
         private Statement buildFetch() {
-            return fetch == null ? null : fetch.build();
+            return fetch == null ? null : fetch.build(null);
         }
 
         private Statement buildClear() {
-            return clear == null ? null : clear.build();
+            return clear == null ? null : clear.build(null);
         }
 
         private Statement buildPut() {
-            return put == null ? null : put.build();
+            return put == null ? null : put.build(null);
         }
 
         private Statement buildRemoveKey() {
-            return removeKey == null ? null : removeKey.build();
+            return removeKey == null ? null : removeKey.build(null);
         }
 
         private ValueMapper buildKeyMapper(BuildContext context) {

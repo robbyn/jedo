@@ -12,7 +12,7 @@ public abstract class CollectionMapper extends ValueMapper {
     protected ValueMapper elmMapper;
     private final Statement fetch;
     private final Statement clear;
-    private final Statement add;
+    private Statement add;
     private final Statement remove;
 
     protected CollectionMapper(BuildContext context, Builder builder) {
@@ -20,9 +20,15 @@ public abstract class CollectionMapper extends ValueMapper {
         this.elmMapper = builder.buildElmMapper(context);
         this.fetchMode = builder.fetchMode;
         this.fetch = builder.buildFetch();
-        this.add = builder.buildAdd();
         this.clear = builder.buildClear();
         this.remove = builder.buildRemove();
+        context.addFinalizer(()->{
+            String[] keys = null;
+            if (elmMapper instanceof ClassMapper) {
+                keys = ((ClassMapper)elmMapper).getIdColumns();
+            }
+            add = builder.buildAdd(keys);
+        });
     }
 
     @Override
@@ -149,19 +155,19 @@ public abstract class CollectionMapper extends ValueMapper {
         }
 
         private Statement buildFetch() {
-            return fetch == null ? null : fetch.build();
+            return fetch == null ? null : fetch.build(null);
         }
 
-        private Statement buildAdd() {
-            return add == null || add.hasGeneratedKeys() ? null : add.build();
+        private Statement buildAdd(String[] generatedKeys) {
+            return add == null ? null : add.build(generatedKeys);
         }
 
         private Statement buildClear() {
-            return clear == null ? null : clear.build();
+            return clear == null ? null : clear.build(null);
         }
 
         private Statement buildRemove() {
-            return remove == null ? null : remove.build();
+            return remove == null ? null : remove.build(null);
         }
  
         @Override

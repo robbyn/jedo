@@ -25,7 +25,7 @@ public class ClassMapper extends ValueMapper {
     private final Map<String,Statement> queries;
     private final Map<String,Statement> stmts;
     private Statement load;
-    private final Statement insert;
+    private Statement insert;
     private final Statement update;
     private final Statement delete;
 
@@ -35,7 +35,6 @@ public class ClassMapper extends ValueMapper {
         this.fields = builder.buildFields(context);
         this.queries = builder.buildQueries();
         this.stmts = builder.buildStatements();
-        this.insert = builder.buildInsert();
         this.update = builder.buildUpdate();
         this.delete = builder.buildDelete();
         if (builder.superClass != null) {
@@ -45,6 +44,7 @@ public class ClassMapper extends ValueMapper {
         }
         context.addFinalizer(()->{
             load = builder.buildLoad(getIdFieldNames());
+            insert = builder.buildInsert(getIdColumns());
         });
     }
 
@@ -245,7 +245,7 @@ public class ClassMapper extends ValueMapper {
         return pm.loadFromResultSet(this, rs);
     }
 
-    private String[] getIdFieldNames() {
+    public String[] getIdFieldNames() {
         if (superClass != null) {
             return superClass.getIdFieldNames();
         }
@@ -253,6 +253,18 @@ public class ClassMapper extends ValueMapper {
         int i = 0;
         for (FieldMapper<ColumnMapper> fm: idFields) {
             result[i++] = fm.getFieldName();
+        }
+        return result;
+    }
+
+    public String[] getIdColumns() {
+        if (superClass != null) {
+            return superClass.getIdColumns();
+        }
+        String[] result = new String[idFields.length];
+        int i = 0;
+        for (FieldMapper<ColumnMapper> fm: idFields) {
+            result[i++] = fm.getValueMapper().getColumn();
         }
         return result;
     }
@@ -359,9 +371,7 @@ public class ClassMapper extends ValueMapper {
         public Statement.Builder newStatement(String[] paramNames,
                 boolean generatedKeys) {
             Statement.Builder stmt = new Statement.Builder(type, paramNames);
-            if (generatedKeys) {
-                stmt.setGeneratedKeys(getIdColumns());
-            }
+            stmt.setUseGeneratedKeys(generatedKeys);
             return stmt;
         }
 
@@ -420,7 +430,7 @@ public class ClassMapper extends ValueMapper {
         private Map<String,Statement> buildQueries() {
             Map<String,Statement> result = new HashMap<>();
             for (Map.Entry<String,Statement.Builder> e: queries.entrySet()) {
-                result.put(e.getKey(), e.getValue().build());
+                result.put(e.getKey(), e.getValue().build(null));
             }
             return result;
         }
@@ -428,7 +438,7 @@ public class ClassMapper extends ValueMapper {
         private Map<String,Statement> buildStatements() {
             Map<String,Statement> result = new HashMap<>();
             for (Map.Entry<String,Statement.Builder> e: stmts.entrySet()) {
-                result.put(e.getKey(), e.getValue().build());
+                result.put(e.getKey(), e.getValue().build(null));
             }
             return result;
         }
@@ -438,19 +448,23 @@ public class ClassMapper extends ValueMapper {
                 return null;
             }
             load.setParamNames(fieldNames);
-            return load.build();
+            return load.build(null);
         }
 
-        public Statement buildInsert() {
-            return insert == null ? null : insert.build();
+        public Statement buildInsert(String[] columns) {
+            if (insert == null) {
+                return null;
+            }
+            return insert.getUseGeneratedKeys()
+                    ? insert.build(columns) : insert.build(null);
         }
 
         public Statement buildUpdate() {
-            return update == null ? null : update.build();
+            return update == null ? null : update.build(null);
         }
 
         public Statement buildDelete() {
-            return delete == null ? null : delete.build();
+            return delete == null ? null : delete.build(null);
         }
 
         @Override
