@@ -376,7 +376,7 @@ public class ClassMapper extends ValueMapper {
         }
 
         public Statement.Builder newLoadStatement() {
-            return load = newStatement(getIdFieldNames());
+            return load = newStatement(null);
         }
 
         public Statement.Builder newInsertStatement(boolean generatedKeys) {
@@ -485,24 +485,6 @@ public class ClassMapper extends ValueMapper {
                 fm = def;
             }
             return fm;
-        }
-
-        private String[] getIdFieldNames() {
-            String[] result = new String[idFields.size()];
-            int i = 0;
-            for (Map.Entry<Field,ColumnMapper.Builder> e: idFields.entrySet()) {
-                result[i++] = e.getKey().getName();
-            }
-            return result;
-        }
-
-        public String[] getIdColumns() {
-            String[] result = new String[idFields.size()];
-            int i = 0;
-            for (Map.Entry<Field,ColumnMapper.Builder> e: idFields.entrySet()) {
-                result[i++] = e.getValue().getColumn();
-            }
-            return result;
         }
     }
 }
