@@ -67,7 +67,11 @@ public class ClassMapper extends ValueMapper {
 
     public ClassMapper resolveClass(ResultSet rs) {
         try {
-            return discriminator == null ? this : discriminator.resolve(rs, this);
+            if (discriminator == null) {
+                return null;
+            }
+            ClassMapper cm = discriminator.resolve(rs);
+            return cm == null ? this : cm.resolveClass(rs);
         } catch (SQLException ex) {
             LOG.log(Level.SEVERE, null, ex);
             throw new JedoException(ex.getMessage());

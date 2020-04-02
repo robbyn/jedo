@@ -16,7 +16,7 @@ public class Discriminator {
         });
     }
 
-    public ClassMapper resolve(ResultSet rs, ClassMapper defaultCm)
+    public ClassMapper resolve(ResultSet rs)
             throws SQLException {
         for (When when: whens) {
             ClassMapper cm = when.ifTrue(rs);
@@ -24,7 +24,7 @@ public class Discriminator {
                 return cm;
             }
         }
-        return otherwise != null ? otherwise : defaultCm;
+        return otherwise;
     }
 
     public static class Builder {
