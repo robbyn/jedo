@@ -18,7 +18,7 @@
             FROM named
                 LEFT OUTER JOIN folders ON (folders.ID=named.ID)
                 LEFT OUTER JOIN pictures ON (pictures.ID=named.ID)
-            WHERE name.ID=${id}
+            WHERE named.ID=${id}
         </load>
         <query name="all">
             SELECT named.ID ID, named.NAME NAME, folders.ID FID, 

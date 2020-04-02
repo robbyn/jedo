@@ -42,5 +42,10 @@ public class InheritanceTest extends JedoTestBase {
         assertTrue(table.get("sub1") instanceof Folder);
         assertTrue(table.get("sub2") instanceof Folder);
         assertTrue(table.get("thePic") instanceof Picture);
+        session.commit();
+        assertTrue(session.load(Named.class, table.get("root").getId()) instanceof Folder);
+        assertTrue(session.load(Named.class, table.get("sub1").getId()) instanceof Folder);
+        assertTrue(session.load(Named.class, table.get("sub2").getId()) instanceof Folder);
+        assertTrue(session.load(Named.class, table.get("thePic").getId()) instanceof Picture);
     }
 }
