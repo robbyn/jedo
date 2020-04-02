@@ -77,7 +77,6 @@ public class Reflection {
             try {
                 f = c.getDeclaredField(name);
             } catch (NoSuchFieldException | SecurityException ex) {
-                LOG.log(Level.SEVERE, null, ex);
                 f = null;
             }
             if (f != null) {

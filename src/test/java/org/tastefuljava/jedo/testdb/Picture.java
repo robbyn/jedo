@@ -3,20 +3,13 @@ package org.tastefuljava.jedo.testdb;
 import java.awt.Dimension;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
-public class Picture {
-    public static Comparator<Picture> BY_NAME
-            = (a,b)->{
-                return a.name.compareTo(b.name);
-            };
-    private int id;
+public class Picture extends Named {
     private Folder folder;
-    private String name;
     private LocalDateTime timestamp = LocalDateTime.now();
     private int width;
     private int height;
@@ -24,24 +17,12 @@ public class Picture {
     private final List<String> tags = new ArrayList<>();
     private final SortedMap<String,String> descriptions = new TreeMap<>();
 
-    public int getId() {
-        return id;
-    }
-
     public Folder getFolder() {
         return folder;
     }
 
     public void setFolder(Folder folder) {
         this.folder = folder;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
     }
 
     public LocalDateTime getTimestamp() {

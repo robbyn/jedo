@@ -58,9 +58,8 @@ public class ReferenceMapper extends ValueMapper {
         private final FetchMode fetchMode;
         private final Class<?> refClass;
 
-        public Builder(BuildContext context, Field field, String[] columns,
-                FetchMode fetchMode) {
-            super(context, field.getType());
+        public Builder(Field field, String[] columns, FetchMode fetchMode) {
+            super(field.getType());
             refClass = type == Ref.class
                     ? Reflection.getReferencedClass(field) : type;
             this.columns = columns;
@@ -68,12 +67,12 @@ public class ReferenceMapper extends ValueMapper {
         }
 
         @Override
-        protected ReferenceMapper create() {
+        protected ReferenceMapper create(BuildContext context) {
             return new ReferenceMapper(this);
         }
 
         @Override
-        protected void initialize(ReferenceMapper rm) {
+        protected void initialize(BuildContext context, ReferenceMapper rm) {
             context.addForwardClassRef(refClass, (cm)->{
                 rm.targetClass = cm;
             });
