@@ -68,7 +68,7 @@ public class ClassMapper extends ValueMapper {
     public ClassMapper resolveClass(ResultSet rs) {
         try {
             if (discriminator == null) {
-                return null;
+                return this;
             }
             ClassMapper cm = discriminator.resolve(rs);
             return cm == null ? this : cm.resolveClass(rs);
