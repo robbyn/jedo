@@ -10,7 +10,7 @@
             <field name="id" column="ID"/>
         </id>
         <field name="name" column="NAME"/>
-        <load>
+        <load><![CDATA[
             SELECT named.ID ID, named.NAME NAME, folders.ID FID, 
                 folders.PARENT_ID PARENT_ID, pictures.ID PID,
                 pictures.FOLDER_ID FOLDER_ID,TIMESTAMP,WIDTH,HEIGHT,LATITUDE,
@@ -19,8 +19,8 @@
                 LEFT OUTER JOIN folders ON (folders.ID=named.ID)
                 LEFT OUTER JOIN pictures ON (pictures.ID=named.ID)
             WHERE named.ID=${id}
-        </load>
-        <query name="all">
+        ]]></load>
+        <query name="all"><![CDATA[
             SELECT named.ID ID, named.NAME NAME, folders.ID FID, 
                 folders.PARENT_ID PARENT_ID, pictures.ID PID,
                 pictures.FOLDER_ID FOLDER_ID,TIMESTAMP,WIDTH,HEIGHT,LATITUDE,
@@ -28,87 +28,87 @@
             FROM named
                 LEFT OUTER JOIN folders ON (folders.ID=named.ID)
                 LEFT OUTER JOIN pictures ON (pictures.ID=named.ID)
-        </query>
-        <insert get-generated-keys="true">
+        ]]></query>
+        <insert get-generated-keys="true"><![CDATA[
             INSERT INTO named(NAME)
             VALUES(${name})
-        </insert>
-        <update>
+        ]]></insert>
+        <update><![CDATA[
             UPDATE named SET NAME=${name}
             WHERE ID=${id}
-        </update>
-        <delete>
+        ]]></update>
+        <delete><![CDATA[
             DELETE FROM named WHERE ID=${id}
-        </delete>
+        ]]></delete>
     </class>
     <class name="Folder">
         <inherits class="Named"/>
         <reference name="parent" column="PARENT_ID" fetch-mode="lazy"/>
         <set name="subfolders" fetch-mode="lazy">
-            <fetch>
+            <fetch><![CDATA[
                 SELECT named.ID ID, named.NAME NAME, folders.PARENT_ID PARENT_ID
                 FROM folders JOIN named ON (folders.ID=named.ID)
                 WHERE PARENT_ID=${id}
-            </fetch>
-            <add parent="parent" element="child">
+            ]]></fetch>
+            <add parent="parent" element="child"><![CDATA[
                 UPDATE folders
                 SET PARENT_ID=${parent.id}
                 WHERE ID=${id}
-            </add>
-            <remove parent="parent" element="child">
+            ]]></add>
+            <remove parent="parent" element="child"><![CDATA[
                 UPDATE folders
                 SET PARENT_ID=NULL
                 WHERE PARENT_ID=${parent.id} AND ID=${id}
-            </remove>
-            <clear parent="parent">
+            ]]></remove>
+            <clear parent="parent"><![CDATA[
                 DELETE FROM folders
                 WHERE FOLDER_ID=${id}
-            </clear>
+            ]]></clear>
         </set>
         <set name="pictures" fetch-mode="lazy">
-            <fetch parent="folder">
+            <fetch parent="folder"><![CDATA[
                 SELECT named.ID ID, named.NAME NAME, pictures.ID PID,FOLDER_ID,
                     TIMESTAMP,WIDTH,HEIGHT,LATITUDE,LONGITUDE,ALTITUDE
                 FROM pictures
                     JOIN named ON (pictures.ID=named.ID)
                 WHERE FOLDER_ID=${id}
-            </fetch>
-            <add parent="folder" element="picture">
+            ]]></fetch>
+            <add parent="folder" element="picture"><![CDATA[
                 UPDATE pictures
                 SET FOLDER_ID=${folder.id}
                 WHERE ID=${id}
-            </add>
-            <remove parent="folder" element="picture">
+            ]]></add>
+            <remove parent="folder" element="picture"><![CDATA[
                 DELETE FROM pictures
                 WHERE FOLDER_ID=${folder.id} AND ID=${id}
-            </remove>
-            <clear parent="folder">
+            ]]></remove>
+            <clear parent="folder"><![CDATA[
                 DELETE FROM pictures
                 WHERE FOLDER_ID=${id}
-            </clear>
+            ]]></clear>
         </set>
 
-        <load>
+        <load><![CDATA[
             SELECT named.ID ID, named.NAME NAME, folders.PARENT_ID PARENT_ID
             FROM folders JOIN named ON (folders.ID=named.ID)
             WHERE folders.ID=${id}
-        </load>
-        <query name="rootFolder" parameters="name">
+        ]]></load>
+        <query name="rootFolder" parameters="name"><![CDATA[
             SELECT named.ID ID, named.NAME NAME, folders.PARENT_ID PARENT_ID
             FROM folders JOIN named ON (folders.ID=named.ID)
             WHERE PARENT_ID IS NULL
                 AND NAME=${name}
-        </query>
-        <query name="subfolder" parameters="parent,name">
+        ]]></query>
+        <query name="subfolder" parameters="parent,name"><![CDATA[
             SELECT named.ID ID, named.NAME NAME, folders.PARENT_ID PARENT_ID
             FROM folders JOIN named ON (folders.ID=named.ID)
             WHERE PARENT_ID=${parent.id}
                 AND NAME=${name}
-        </query>
-        <insert>
+        ]]></query>
+        <insert><![CDATA[
             INSERT INTO folders(ID,PARENT_ID)
             VALUES(${id},${parent.id})
-        </insert>
+        ]]></insert>
     </class>
 
     <class name="Picture">
@@ -124,73 +124,73 @@
         </component>
         <list name="tags" fetch-mode="eager">
             <element column="NAME"/>
-            <fetch>
+            <fetch><![CDATA[
                 SELECT * FROM picture_tags
                 WHERE PICTURE_ID=${id}
                 ORDER BY PICTURE_ID,INDEX
-            </fetch>
-            <add-at parent="picture" element="tag" index="index">
+            ]]></fetch>
+            <add-at parent="picture" element="tag" index="index"><![CDATA[
                 INSERT INTO picture_tags(PICTURE_ID,INDEX,NAME)
                 VALUES(${picture.id},${index},${tag})
-            </add-at>
-            <clear parent="picture">
+            ]]></add-at>
+            <clear parent="picture"><![CDATA[
                 DELETE FROM picture_tags
                 WHERE PICTURE_ID=${id}
-            </clear>
+            ]]></clear>
         </list>
         <map name="descriptions" fetch-mode="lazy">
             <key column="LANGUAGE"/>
             <element column="DESCRIPTION"/>
-            <fetch>
+            <fetch><![CDATA[
                 SELECT * FROM picture_descriptions
                 WHERE PICTURE_ID=${id}
-            </fetch>
-            <put parent="picture" key="language" element="description">
+            ]]></fetch>
+            <put parent="picture" key="language" element="description"><![CDATA[
                 INSERT INTO picture_descriptions(PICTURE_ID,LANGUAGE,DESCRIPTION)
                 VALUES(${picture.id},${language},${description})
-            </put>
-            <remove-key parent="picture" key="language">
+            ]]></put>
+            <remove-key parent="picture" key="language"><![CDATA[
                 DELETE FROM picture_tags
                 WHERE PICTURE_ID=${id} AND LANGUAGE=${language}
-            </remove-key>
-            <clear parent="picture_descriptions">
+            ]]></remove-key>
+            <clear parent="picture_descriptions"><![CDATA[
                 DELETE FROM picture_tags
                 WHERE PICTURE_ID=${id}
-            </clear>
+            ]]></clear>
         </map>
 
-        <load>
+        <load><![CDATA[
             SELECT named.ID ID, named.NAME NAME, pictures.ID PID,FOLDER_ID,
                 TIMESTAMP,WIDTH,HEIGHT,LATITUDE,LONGITUDE,ALTITUDE
             FROM pictures
                 JOIN named ON (pictures.ID=named.ID)
             WHERE pictures.ID=${id}
-        </load>
-        <query name="byName" parameters="folder,name">
+        ]]></load>
+        <query name="byName" parameters="folder,name"><![CDATA[
             SELECT named.ID ID, named.NAME NAME, pictures.ID PID,FOLDER_ID,
                 TIMESTAMP,WIDTH,HEIGHT,LATITUDE,LONGITUDE,ALTITUDE
             FROM pictures
                 JOIN named ON (pictures.ID=named.ID)
             WHERE FOLDER_ID=${folder.id}
                 AND NAME=${name}
-        </query>
-        <insert>
+        ]]></query>
+        <insert><![CDATA[
             INSERT INTO pictures(ID,FOLDER_ID,TIMESTAMP,WIDTH,HEIGHT,LATITUDE,
                 LONGITUDE,ALTITUDE)
             VALUES(${id},${folder.id},${timestamp:TIMESTAMP},${width},
                 ${height},${gpsData.latitude},${gpsData.longitude},
                 ${gpsData.altitude})
-        </insert>
-        <update>
+        ]]></insert>
+        <update><![CDATA[
             UPDATE pictures SET FOLDER_ID=${folder.id},
                 TIMESTAMP=${timestamp:TIMESTAMP},WIDTH=${width},
                 HEIGHT=${height},LATITUDE=${gpsData.latitude},
                 LONGITUDE=${gpsData.longitude},
                 ALTITUDE=${gpsData.altitude}
             WHERE ID=${id}
-        </update>
-        <delete>
+        ]]></update>
+        <delete><![CDATA[
             DELETE FROM pictures WHERE ID=${id}
-        </delete>
+        ]]></delete>
     </class>
 </mapping>
