@@ -31,6 +31,7 @@ public class ClassMapper extends ValueMapper {
 
     private ClassMapper(BuildContext context, Builder builder) {
         super(builder);
+        this.discriminator = builder.buildDiscriminator(context);
         this.idFields = builder.buildIdFields(context);
         this.fields = builder.buildFields(context);
         this.queries = builder.buildQueries();

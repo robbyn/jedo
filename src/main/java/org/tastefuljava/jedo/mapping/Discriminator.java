@@ -11,9 +11,11 @@ public class Discriminator {
 
     private Discriminator(BuildContext context, Builder builder) {
         whens = builder.buildWhens(context);
-        context.addForwardClassRef(builder.otherwise, (cm)->{
-            Discriminator.this.otherwise = cm;
-        });
+        if (builder.otherwise != null) {
+            context.addForwardClassRef(builder.otherwise, (cm)->{
+                Discriminator.this.otherwise = cm;
+            });
+        }
     }
 
     public ClassMapper resolve(ResultSet rs)

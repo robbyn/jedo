@@ -13,13 +13,22 @@
         <load>
             SELECT named.ID ID, named.NAME NAME, folders.ID FID, 
                 folders.PARENT_ID PARENT_ID, pictures.ID PID,
-                pictures.FOLDER_ID FOLDER_ID, ,TIMESTAMP,WIDTH,HEIGHT,LATITUDE,
+                pictures.FOLDER_ID FOLDER_ID,TIMESTAMP,WIDTH,HEIGHT,LATITUDE,
                 LONGITUDE,ALTITUDE
             FROM named
                 LEFT OUTER JOIN folders ON (folders.ID=named.ID)
                 LEFT OUTER JOIN pictures ON (pictures.ID=named.ID)
             WHERE name.ID=${id}
         </load>
+        <query name="all">
+            SELECT named.ID ID, named.NAME NAME, folders.ID FID, 
+                folders.PARENT_ID PARENT_ID, pictures.ID PID,
+                pictures.FOLDER_ID FOLDER_ID,TIMESTAMP,WIDTH,HEIGHT,LATITUDE,
+                LONGITUDE,ALTITUDE
+            FROM named
+                LEFT OUTER JOIN folders ON (folders.ID=named.ID)
+                LEFT OUTER JOIN pictures ON (pictures.ID=named.ID)
+        </query>
         <insert get-generated-keys="true">
             INSERT INTO named(NAME)
             VALUES(${name})

@@ -126,8 +126,11 @@ public class MappingFileReader {
                         classBuilder.setDiscriminator(discBuilder);
                         break;
                     case "when":
-                        whenBuilder = new When.Builder(attrs.getValue("condition"),
-                                attrs.getValue("column"), attrs.getValue("value"));
+                        whenBuilder = new When.Builder(
+                                attrs.getValue("condition"),
+                                attrs.getValue("column"),
+                                attrs.getValue("value"));
+                        discBuilder.addWhen(whenBuilder);
                         buf.setLength(0);
                         break;
                     case "otherwise":

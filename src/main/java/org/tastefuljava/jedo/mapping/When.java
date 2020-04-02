@@ -2,9 +2,7 @@ package org.tastefuljava.jedo.mapping;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.tastefuljava.jedo.JedoException;
 import org.tastefuljava.jedo.util.Util;
 
 public class When {
