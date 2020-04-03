@@ -5,6 +5,8 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 import org.junit.After;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import org.junit.Before;
 import org.junit.Test;
@@ -47,5 +49,9 @@ public class InheritanceTest extends JedoTestBase {
         assertTrue(session.load(Named.class, table.get("sub1").getId()) instanceof Folder);
         assertTrue(session.load(Named.class, table.get("sub2").getId()) instanceof Folder);
         assertTrue(session.load(Named.class, table.get("thePic").getId()) instanceof Picture);
+        pic = session.load(Picture.class, table.get("thePic").getId());
+        assertNotNull(pic);
+        assertEquals("Ma magnifique image", pic.getDescription("fr"));
+        assertEquals("My beautiful picture", pic.getDescription("en"));
     }
 }
