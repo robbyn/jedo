@@ -13,6 +13,7 @@ import javax.xml.parsers.SAXParserFactory;
 import org.tastefuljava.jedo.JedoException;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
+import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 import org.xml.sax.helpers.DefaultHandler;
@@ -61,6 +62,7 @@ public class MappingFileReader {
         private static final String DTD_PUBLIC_ID
                 = "-//tastefuljava.org//Jedo Mapping File 1.0//EN";
 
+        private Locator locator;
         private ClassMapper.Builder classBuilder;
         private CollectionMapper.Builder collectionBuilder;
         private ListMapper.Builder listBuilder;
@@ -101,6 +103,21 @@ public class MappingFileReader {
         @Override
         public void warning(SAXParseException e) throws SAXException {
             LOG.log(Level.WARNING, e.getMessage(), e);
+        }
+
+        @Override
+        public void setDocumentLocator(Locator locator) {
+            this.locator = locator;
+        }
+
+        private String locationString() {
+            if (locator == null) {
+                return "";
+            }
+            StringBuilder buf = new StringBuilder();
+            return "[systemId: " + locator.getSystemId()
+                    + ", line: " + locator.getLineNumber()
+                    + ", column: " + locator.getColumnNumber() + "] ";
         }
 
         @Override
@@ -298,7 +315,7 @@ public class MappingFileReader {
                         break;
                 }
             } catch (Throwable e) {
-                throw new SAXException(e.getMessage());
+                throw new SAXException(locationString() + e.getMessage());
             }
         }
 
