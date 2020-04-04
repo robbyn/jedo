@@ -87,7 +87,7 @@ public class Statement {
         }
 
         public Statement build(String[] keys) {
-            return new Statement(this, keys);
+            return new Statement(this, useGeneratedKeys ? keys : null);
         }
     }
 
