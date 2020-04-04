@@ -83,14 +83,14 @@ public class SessionImpl implements AutoCloseable, Session {
     }
 
     @Override
-    public void invoke(Class<?> clazz, String name, Object... parms) {
-        invokeA(clazz, name, parms);
+    public int invoke(Class<?> clazz, String name, Object... parms) {
+        return invokeA(clazz, name, parms);
     }
 
     @Override
-    public void invokeA(Class<?> clazz, String name, Object[] parms) {
+    public int invokeA(Class<?> clazz, String name, Object[] parms) {
         ClassMapper cm = classMapper(clazz);
-        cm.invoke(pm, name, parms);
+        return cm.invoke(pm, name, parms);
     }
 
     @Override

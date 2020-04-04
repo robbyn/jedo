@@ -18,8 +18,8 @@ public interface Session extends AutoCloseable {
     void apply(Object obj, String name, Object... parms);
     void applyA(Object obj, String name, Object[] parms);
 
-    void invoke(Class<?> clazz, String name, Object... parms);
-    void invokeA(Class<?> clazz, String name, Object[] parms);
+    int invoke(Class<?> clazz, String name, Object... parms);
+    int invokeA(Class<?> clazz, String name, Object[] parms);
 
     <T> List<T> query(Class<T> clazz, String name, Object... parms);
     <T> List<T> queryA(Class<T> clazz, String name, Object[] parms);

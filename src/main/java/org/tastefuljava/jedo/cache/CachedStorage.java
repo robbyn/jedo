@@ -126,9 +126,9 @@ public class CachedStorage implements Storage {
     }
 
     @Override
-    public void execute(Statement stmt, Object self, Object[] parms) {
+    public int execute(Statement stmt, Object self, Object[] parms) {
         try (final PreparedStatement pstmt = stmt.prepare(cnt, self, parms)) {
-            pstmt.executeUpdate();
+            return pstmt.executeUpdate();
         } catch (SQLException ex) {
             LOG.log(Level.SEVERE, null, ex);
             throw new JedoException(ex.getMessage());

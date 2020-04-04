@@ -139,14 +139,14 @@ public class ClassMapper extends ValueMapper {
         return result;
     }
 
-    public void invoke(Storage pm, String name,
+    public int invoke(Storage pm, String name,
             Object[] parms) {
         Statement stmt = stmts.get(name);
         if (stmt == null) {
             throw new JedoException(
                     "No statement " + name + " for " + type.getName());
         }
-        pm.execute(stmt, null, parms);
+        return pm.execute(stmt, null, parms);
     }
 
     public void insert(Storage pm, Object obj) {
