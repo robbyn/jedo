@@ -48,7 +48,7 @@ public class ListMapper extends CollectionMapper {
     void beforeDelete(Storage pm, Object self, ValueAccessor fm) {
         JedoList<?> list = (JedoList<?>)fm.getValue(self);
         pm.dispose(list);
-        list.clear();
+        super.beforeDelete(pm, self, fm);
     }
 
     @Override

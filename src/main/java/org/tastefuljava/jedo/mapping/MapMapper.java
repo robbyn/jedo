@@ -116,6 +116,14 @@ public class MapMapper extends ValueMapper {
         }
     }
 
+    @Override
+    void beforeDelete(Storage pm, Object self, ValueAccessor fm) {
+        Map<?,?> map = (Map<?,?>)fm.getValue(self);
+        if (map != null) {
+            map.clear();
+        }
+    }
+
     public static class Builder extends ValueMapper.Builder<MapMapper> {
         private final FetchMode fetchMode;
         private final ClassMapper.Builder parentClass;

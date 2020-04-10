@@ -65,6 +65,14 @@ public abstract class CollectionMapper extends ValueMapper {
         }
     }
 
+    @Override
+    void beforeDelete(Storage pm, Object self, ValueAccessor fm) {
+        Collection<?> col = (Collection<?>)fm.getValue(self);
+        if (col != null) {
+            col.clear();
+        }
+    }
+
     private JedoCollection<Object> createCollection(Storage pm,
             Object parent, Collection<?> model, boolean empty) {
         JedoCollection<Object> col = newCollection(pm, parent, model);
