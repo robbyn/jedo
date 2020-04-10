@@ -1,8 +1,9 @@
 package org.tastefuljava.jedo;
 
+import java.io.Closeable;
 import java.util.List;
 
-public interface Session extends AutoCloseable {
+public interface Session extends Closeable {
     @Override
     void close();
     void commit();
