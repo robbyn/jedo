@@ -5,6 +5,7 @@
 <!ELEMENT class (inherits?,discriminator?,id?,(field|component|reference|set|list|map)*,
         load?,query*,insert?,update?,delete?,statement*)>
 <!ATTLIST class name CDATA #REQUIRED>
+<!ATTLIST class table CDATA #IMPLIED>
 
 <!ELEMENT inherits EMPTY>
 <!ATTLIST inherits
