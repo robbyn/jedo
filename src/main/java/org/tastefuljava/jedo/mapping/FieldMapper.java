@@ -5,6 +5,7 @@ import java.sql.ResultSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.tastefuljava.jedo.JedoException;
+import org.tastefuljava.jedo.query.RecordBuilder;
 
 public class FieldMapper<V extends ValueMapper> implements ValueAccessor {
     private static final Logger LOG
@@ -66,5 +67,13 @@ public class FieldMapper<V extends ValueMapper> implements ValueAccessor {
     }
 
     void afterUpdate(Storage pm, Object self) {
+    }
+
+    void addColumns(RecordBuilder rec) {
+        vm.addColumns(rec);
+    }
+
+    void addJoins(RecordBuilder rec) {
+        vm.addJoins(rec);
     }
 }

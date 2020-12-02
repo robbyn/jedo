@@ -6,6 +6,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.tastefuljava.jedo.JedoException;
 import org.tastefuljava.jedo.conversion.Conversion;
+import org.tastefuljava.jedo.query.RecordBuilder;
 
 public class ColumnMapper extends ValueMapper {
     private static final Logger LOG
@@ -36,6 +37,11 @@ public class ColumnMapper extends ValueMapper {
             throw new JedoException(
                     "Could not get column " + column + " from ResultSet");
         }
+    }
+
+    @Override
+    void addColumns(RecordBuilder rec) {
+        rec.addColumn(column);
     }
 
     public final Object convert(Object value) {

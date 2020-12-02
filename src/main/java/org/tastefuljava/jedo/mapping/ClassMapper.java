@@ -13,6 +13,9 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.tastefuljava.jedo.JedoException;
+import org.tastefuljava.jedo.query.JoinBuilder;
+import org.tastefuljava.jedo.query.QueryBuilder;
+import org.tastefuljava.jedo.query.RecordBuilder;
 
 public class ClassMapper extends ValueMapper {
     private static final Logger LOG
@@ -20,7 +23,7 @@ public class ClassMapper extends ValueMapper {
 
     private final String tableName;
     private ClassMapper superClass;
-    private Discriminator discriminator;
+    private final Discriminator discriminator;
     private final FieldMapper<ColumnMapper>[] idFields;
     private final FieldMapper<ValueMapper>[] fields;
     private final Map<String,Statement> queries;
@@ -32,7 +35,7 @@ public class ClassMapper extends ValueMapper {
 
     private ClassMapper(BuildContext context, Builder builder) {
         super(builder);
-        this.tableName = builder.tableName;
+        this.tableName = builder.buildTableName();
         this.discriminator = builder.buildDiscriminator(context);
         this.idFields = builder.buildIdFields(context);
         this.fields = builder.buildFields(context);
@@ -49,6 +52,10 @@ public class ClassMapper extends ValueMapper {
             load = builder.buildLoad(getIdFieldNames());
             insert = builder.buildInsert(getIdColumns());
         });
+    }
+
+    public String getTableName() {
+        return tableName;
     }
 
     public Class<?> getMappedClass() {
@@ -237,13 +244,20 @@ public class ClassMapper extends ValueMapper {
             ResultSet rs) {
         if (superClass != null) {
             superClass.setFieldsFromResultSet(pm, obj, rs);
-        }
-        for (FieldMapper<ColumnMapper> field: idFields) {
-            field.setFromResultSet(pm, obj, rs);
+        } else {
+            for (FieldMapper<ColumnMapper> field: idFields) {
+                field.setFromResultSet(pm, obj, rs);
+            }
         }
         for (FieldMapper<ValueMapper> field: fields) {
             field.setFromResultSet(pm, obj, rs);
         }
+    }
+
+    public QueryBuilder newQuery() {
+        QueryBuilder qry = new QueryBuilder();
+        buildQuery(qry.newRecord(tableName));
+        return qry;
     }
 
     @Override
@@ -276,6 +290,26 @@ public class ClassMapper extends ValueMapper {
         return result;
     }
 
+    void buildQuery(RecordBuilder rec) {
+        if (superClass != null) {
+            JoinBuilder join = rec.newJoin(true, superClass.tableName);
+            for (String col: getIdColumns()) {
+                join.joinColumns(col, col);
+            }
+            superClass.buildQuery(join);
+        } else {
+            for (FieldMapper<ColumnMapper> fm: idFields) {
+                fm.addColumns(rec);
+            }
+        }
+        for (FieldMapper<ValueMapper> fm: fields) {
+            fm.addColumns(rec);
+        }
+        for (FieldMapper<ValueMapper> fm: fields) {
+            fm.addJoins(rec);
+        }
+    }
+
     public static class Builder extends ValueMapper.Builder<ClassMapper> {
         private final String tableName;
         private Class<?> superClass;
@@ -297,7 +331,7 @@ public class ClassMapper extends ValueMapper {
         }
 
         public String buildTableName() {
-            return tableName != null ? tableName : type.getName();
+            return tableName != null ? tableName : type.getSimpleName();
         }
 
         public void setSuperClass(Class<?> superClass) {

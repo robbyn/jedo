@@ -4,6 +4,7 @@ import java.lang.reflect.Field;
 import java.sql.ResultSet;
 import java.util.logging.Logger;
 import org.tastefuljava.jedo.JedoException;
+import org.tastefuljava.jedo.query.RecordBuilder;
 import org.tastefuljava.jedo.util.Reflection;
 
 public abstract class ValueMapper {
@@ -26,6 +27,10 @@ public abstract class ValueMapper {
     void afterInsert(Storage pm, Object self, ValueAccessor fm) {
     }
     void beforeDelete(Storage pm, Object self, ValueAccessor fm) {
+    }
+    void addColumns(RecordBuilder rec) {
+    }
+    void addJoins(RecordBuilder rec) {
     }
 
     public static abstract class Builder<T extends ValueMapper> {

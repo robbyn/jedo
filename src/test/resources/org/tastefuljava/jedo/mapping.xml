@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapping PUBLIC '-//tastefuljava.org//Jedo Mapping File 1.0//EN' 'jedo.dtd'>
 <mapping package="org.tastefuljava.jedo.testdb">
-    <class name="Named">
+    <class name="Named" table="named">
         <discriminator>
             <when condition="not-null" column="FID">Folder</when> 
             <when condition="not-null" column="PID">Picture</when>
@@ -41,7 +41,8 @@
             DELETE FROM named WHERE ID=${id}
         ]]></delete>
     </class>
-    <class name="Folder">
+
+    <class name="Folder" table="folders">
         <inherits class="Named"/>
         <reference name="parent" column="PARENT_ID" fetch-mode="lazy"/>
         <set name="subfolders" fetch-mode="lazy">
@@ -111,7 +112,7 @@
         ]]></insert>
     </class>
 
-    <class name="Picture">
+    <class name="Picture" table="pictures">
         <inherits class="Named"/>
         <reference name="folder" column="FOLDER_ID"/>
         <field name="timestamp" column="TIMESTAMP"/>
