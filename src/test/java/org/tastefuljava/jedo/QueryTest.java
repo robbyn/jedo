@@ -2,6 +2,7 @@ package org.tastefuljava.jedo;
 
 import java.io.IOException;
 import java.net.URL;
+import static org.junit.Assert.*;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -30,14 +31,27 @@ public class QueryTest {
     }
 
     @Test
-    public void testQuery() {
-        testClassQuery(Folder.class);
-        testClassQuery(Picture.class);
+    public void testFolderQuery() {
+        testClassQuery(Folder.class,
+                "SELECT R1.ID,R1.NAME,R0.PARENT_ID\n" +
+                "FROM folders AS R0\n" +
+                "JOIN named AS R1 ON R0.ID=R1.ID");
     }
 
-    private void testClassQuery(Class<?> clazz) {
+    @Test
+    public void testPictureQuery() {
+        testClassQuery(Picture.class,
+                "SELECT R1.ID,R1.NAME,R0.TIMESTAMP,R0.WIDTH,R0.HEIGHT,R3.ID,R3.NAME,R2.PARENT_ID\n" +
+                "FROM pictures AS R0\n" +
+                "JOIN named AS R1 ON R0.ID=R1.ID\n" +
+                "LEFT OUTER JOIN folders AS R2 ON R0.FOLDER_ID=R2.ID\n" +
+                "JOIN named AS R3 ON R2.ID=R3.ID");
+    }
+
+    private void testClassQuery(Class<?> clazz, String expected) {
         ClassMapper cm = mapper.getClassMapper(clazz);
         String qry = cm.newQuery().toString();
         System.out.println(qry);
+        assertEquals(expected, qry);
     }
 }

@@ -12,6 +12,7 @@ public class QueryBuilder {
 
     public QueryBuilder() {
         selectPart.append("SELECT ");
+        tablePart.append("\nFROM ");
     }
 
     public RecordBuilder newRecord(String tableName) {
@@ -39,10 +40,7 @@ public class QueryBuilder {
     }
 
     void addJoin(boolean required, int index, String tableName) {
-        if (!required) {
-            tablePart.append(" LEFT OUTER");
-        }
-        tablePart.append(" JOIN ");
+        tablePart.append(required ? "\nJOIN " : "\nLEFT OUTER JOIN ");
         addTable(index, tableName);
         joinColumnCount = 0;
     }
@@ -77,7 +75,6 @@ public class QueryBuilder {
     public void appendTo(StringBuilder buf) {
         buf
                 .append(selectPart.toString())
-                .append(" FROM ")
                 .append(tablePart.toString());
     }
 
