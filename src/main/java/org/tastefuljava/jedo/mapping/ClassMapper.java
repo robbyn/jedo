@@ -44,9 +44,7 @@ public class ClassMapper extends ValueMapper {
         this.update = builder.buildUpdate();
         this.delete = builder.buildDelete();
         if (builder.superClass != null) {
-            context.addForwardClassRef(builder.superClass, (cm)->{
-                ClassMapper.this.superClass = cm;
-            });
+            context.addForwardClassRef(builder.superClass, this::setSuperClass);
         }
         context.addFinalizer(()->{
             load = builder.buildLoad(getIdFieldNames());
@@ -267,9 +265,6 @@ public class ClassMapper extends ValueMapper {
     }
 
     public String[] getIdFieldNames() {
-        if (superClass != null) {
-            return superClass.getIdFieldNames();
-        }
         String[] result = new String[idFields.length];
         int i = 0;
         for (FieldMapper<ColumnMapper> fm: idFields) {
@@ -279,9 +274,6 @@ public class ClassMapper extends ValueMapper {
     }
 
     public String[] getIdColumns() {
-        if (superClass != null) {
-            return superClass.getIdColumns();
-        }
         String[] result = new String[idFields.length];
         int i = 0;
         for (FieldMapper<ColumnMapper> fm: idFields) {
@@ -293,8 +285,9 @@ public class ClassMapper extends ValueMapper {
     void buildQuery(RecordBuilder rec) {
         if (superClass != null) {
             JoinBuilder join = rec.newJoin(true, superClass.tableName);
-            for (String col: getIdColumns()) {
-                join.joinColumns(col, col);
+            for (int i = 0; i < idFields.length; ++i) {
+                join.joinColumns(idFields[i].getValueMapper().getColumn(),
+                        superClass.idFields[i].getValueMapper().getColumn());
             }
             superClass.buildQuery(join);
         } else {
@@ -308,6 +301,27 @@ public class ClassMapper extends ValueMapper {
         for (FieldMapper<ValueMapper> fm: fields) {
             fm.addJoins(rec);
         }
+    }
+
+    private boolean idFieldsCompatible(FieldMapper<ColumnMapper>[] idFields) {
+        if (idFields.length != this.idFields.length) {
+            return false;
+        }
+        for (int i = 0; i < idFields.length; ++i) {
+            if (!idFields[i].getField().equals(this.idFields[i].getField())) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private void setSuperClass(ClassMapper cm) {
+        if (!cm.idFieldsCompatible(idFields)) {
+            throw new JedoException("ID fields of class " + this.type.getName()
+                    + " are not compatible with those of class "
+                    + cm.type.getName());
+        }
+        this.superClass = cm;
     }
 
     public static class Builder extends ValueMapper.Builder<ClassMapper> {
