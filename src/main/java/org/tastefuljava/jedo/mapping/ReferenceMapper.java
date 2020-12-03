@@ -72,7 +72,7 @@ public class ReferenceMapper extends ValueMapper {
                 throw new IllegalStateException(
                         "Different number of columns in reference field and "
                                 + "target class");
-    }
+            }
             JoinBuilder join = rec.newJoin(false, targetClass.getTableName());
             for (int i = 0; i < cols.length; ++i) {
                 join.joinColumns(columns[i], cols[i]);

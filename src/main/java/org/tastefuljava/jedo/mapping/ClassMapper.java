@@ -349,8 +349,6 @@ public class ClassMapper extends ValueMapper {
     }
 
     private void addSubclass(ClassMapper cm) {
-        System.out.println(
-                cm.type.getSimpleName() + " -> " + type.getSimpleName());
         subclasses.add(cm);
     }
 
