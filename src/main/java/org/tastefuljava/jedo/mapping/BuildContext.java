@@ -2,6 +2,7 @@ package org.tastefuljava.jedo.mapping;
 
 import java.util.ArrayList;
 import java.util.IdentityHashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
@@ -9,7 +10,7 @@ import org.tastefuljava.jedo.JedoException;
 
 public class BuildContext {
     private final Map<Class<?>, List<Consumer<ClassMapper>>> forwards
-            = new IdentityHashMap<>();
+            = new LinkedHashMap<>();
     private final List<Runnable> finalizers = new ArrayList<>();
 
     public void addForwardClassRef(Class<?> clazz, Consumer<ClassMapper> fixer) {

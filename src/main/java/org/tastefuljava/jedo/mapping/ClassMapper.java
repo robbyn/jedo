@@ -23,6 +23,7 @@ public class ClassMapper extends ValueMapper {
 
     private final String tableName;
     private ClassMapper superClass;
+    private final List<ClassMapper> subclasses = new ArrayList<>();
     private final Discriminator discriminator;
     private final FieldMapper<ColumnMapper>[] idFields;
     private final FieldMapper<ValueMapper>[] fields;
@@ -254,7 +255,7 @@ public class ClassMapper extends ValueMapper {
 
     public QueryBuilder newQuery() {
         QueryBuilder qry = new QueryBuilder();
-        buildQuery(qry.newRecord(tableName));
+        buildQuery(qry.newRecord(tableName), true);
         return qry;
     }
 
@@ -282,25 +283,44 @@ public class ClassMapper extends ValueMapper {
         return result;
     }
 
-    void buildQuery(RecordBuilder rec) {
+    void buildQuery(RecordBuilder rec, boolean withSubclasses) {
         if (superClass != null) {
             JoinBuilder join = rec.newJoin(true, superClass.tableName);
             for (int i = 0; i < idFields.length; ++i) {
                 join.joinColumns(idFields[i].getValueMapper().getColumn(),
                         superClass.idFields[i].getValueMapper().getColumn());
             }
-            superClass.buildQuery(join);
+            superClass.buildQuery(join, false);
         } else {
             for (FieldMapper<ColumnMapper> fm: idFields) {
                 fm.addColumns(rec);
             }
         }
+        buildQueryFields(rec, withSubclasses);
+    }
+
+    private void buildQueryFields(RecordBuilder rec, boolean withSubclasses) {
         for (FieldMapper<ValueMapper> fm: fields) {
             fm.addColumns(rec);
         }
-        for (FieldMapper<ValueMapper> fm: fields) {
-            fm.addJoins(rec);
+        if (withSubclasses) {
+            for (ClassMapper cm: subclasses) {
+                cm.buildQueryAsSubclass(rec);
+            }
         }
+    }
+
+    private void buildQueryAsSubclass(RecordBuilder rec) {
+        JoinBuilder join = rec.newJoin(false, tableName);
+        for (int i = 0; i < idFields.length; ++i) {
+            join.joinColumns(
+                    superClass.idFields[i].getValueMapper().getColumn(),
+                    idFields[i].getValueMapper().getColumn());
+        }
+        for (FieldMapper<ColumnMapper> fm: idFields) {
+            fm.addColumns(join);
+        }
+        buildQueryFields(join, true);
     }
 
     private boolean idFieldsCompatible(FieldMapper<ColumnMapper>[] idFields) {
@@ -322,6 +342,13 @@ public class ClassMapper extends ValueMapper {
                     + cm.type.getName());
         }
         this.superClass = cm;
+        cm.addSubclass(this);
+    }
+
+    private void addSubclass(ClassMapper cm) {
+        System.out.println(
+                cm.type.getSimpleName() + " -> " + type.getSimpleName());
+        subclasses.add(cm);
     }
 
     public static class Builder extends ValueMapper.Builder<ClassMapper> {
