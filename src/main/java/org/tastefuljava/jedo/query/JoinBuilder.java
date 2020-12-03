@@ -2,13 +2,11 @@ package org.tastefuljava.jedo.query;
 
 public class JoinBuilder extends RecordBuilder {
     final RecordBuilder left;
-    final boolean required;
 
     JoinBuilder(
-            RecordBuilder left, boolean required, int index, int firstColumn) {
-        super(left.query, index, firstColumn);
+            RecordBuilder left, boolean notNull, int index, int firstColumn) {
+        super(left.query, index, firstColumn, notNull && left.notNull);
         this.left = left;
-        this.required = required;
     }
 
     public void joinColumns(String left, String right) {

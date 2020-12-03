@@ -8,6 +8,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.tastefuljava.jedo.JedoException;
 import org.tastefuljava.jedo.Ref;
+import org.tastefuljava.jedo.query.JoinBuilder;
 import org.tastefuljava.jedo.query.RecordBuilder;
 import org.tastefuljava.jedo.util.Reflection;
 
@@ -56,13 +57,28 @@ public class ReferenceMapper extends ValueMapper {
 
     @Override
     void addColumns(RecordBuilder rec) {
-        for (String col: columns) {
-            rec.addColumn(col);
+        if (fetchMode == FetchMode.LAZY) {
+            for (String col: columns) {
+                rec.addColumn(col);
+            }
         }
     }
 
     @Override
     void addJoins(RecordBuilder rec) {
+        if (fetchMode == FetchMode.EAGER) {
+            String[] cols = targetClass.getIdColumns();
+            if (cols.length != columns.length) {
+                throw new IllegalStateException(
+                        "Different number of columns in reference field and "
+                                + "target class");
+    }
+            JoinBuilder join = rec.newJoin(false, targetClass.getTableName());
+            for (int i = 0; i < cols.length; ++i) {
+                join.joinColumns(columns[i], cols[i]);
+            }
+            targetClass.buildQuery(join, true);
+        }
     }
 
     public static class Builder extends ValueMapper.Builder<ReferenceMapper> {

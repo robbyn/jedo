@@ -17,18 +17,18 @@ public class QueryBuilder {
 
     public RecordBuilder newRecord(String tableName) {
         int index = records.size();
-        addTable(index, tableName);
-        RecordBuilder rec = new RecordBuilder(this, index, columnCount);
+        RecordBuilder rec = new RecordBuilder(this, index, columnCount, true);
         records.add(rec);
+        addTable(index, tableName);
         return rec;
     }
 
     JoinBuilder newJoin(
             RecordBuilder left, boolean required, String tableName)  {
         int index = records.size();
-        addJoin(required, index, tableName);
         JoinBuilder rec = new JoinBuilder(left, required, index, columnCount);
         records.add(rec);
+        addJoin(rec.notNull, index, tableName);
         return rec;
     }
 
@@ -39,8 +39,8 @@ public class QueryBuilder {
                 .append(index);
     }
 
-    void addJoin(boolean required, int index, String tableName) {
-        tablePart.append(required ? "\nJOIN " : "\nLEFT OUTER JOIN ");
+    void addJoin(boolean notNull, int index, String tableName) {
+        tablePart.append(notNull ? "\nJOIN " : "\nLEFT OUTER JOIN ");
         addTable(index, tableName);
         joinColumnCount = 0;
     }

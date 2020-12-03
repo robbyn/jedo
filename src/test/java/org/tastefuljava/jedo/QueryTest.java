@@ -42,18 +42,22 @@ public class QueryTest {
     @Test
     public void testPictureQuery() {
         testClassQuery(Picture.class,
-                "SELECT R1.ID,R1.NAME,R0.FOLDER_ID,R0.TIMESTAMP,R0.WIDTH,R0.HEIGHT\n" +
+                "SELECT R1.ID,R1.NAME,R0.TIMESTAMP,R0.WIDTH,R0.HEIGHT,R3.ID,R3.NAME,R2.PARENT_ID\n" +
                 "FROM pictures AS R0\n" +
-                "JOIN named AS R1 ON R0.PID=R1.ID");
+                "JOIN named AS R1 ON R0.PID=R1.ID\n" +
+                "LEFT OUTER JOIN folders AS R2 ON R0.FOLDER_ID=R2.FID\n" +
+                "LEFT OUTER JOIN named AS R3 ON R2.FID=R3.ID");
     }
 
     @Test
     public void testNamedQuery() {
         testClassQuery(Named.class,
-                "SELECT R0.ID,R0.NAME,R1.FID,R1.PARENT_ID,R2.PID,R2.FOLDER_ID,R2.TIMESTAMP,R2.WIDTH,R2.HEIGHT\n" +
+                "SELECT R0.ID,R0.NAME,R1.FID,R1.PARENT_ID,R2.PID,R2.TIMESTAMP,R2.WIDTH,R2.HEIGHT,R4.ID,R4.NAME,R3.PARENT_ID\n" +
                 "FROM named AS R0\n" +
                 "LEFT OUTER JOIN folders AS R1 ON R0.ID=R1.FID\n" +
-                "LEFT OUTER JOIN pictures AS R2 ON R0.ID=R2.PID");
+                "LEFT OUTER JOIN pictures AS R2 ON R0.ID=R2.PID\n" +
+                "LEFT OUTER JOIN folders AS R3 ON R2.FOLDER_ID=R3.FID\n" +
+                "LEFT OUTER JOIN named AS R4 ON R3.FID=R4.ID");
     }
 
     private void testClassQuery(Class<?> clazz, String expected) {

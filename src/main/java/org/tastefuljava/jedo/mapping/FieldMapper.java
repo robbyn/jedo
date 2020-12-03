@@ -76,4 +76,8 @@ public class FieldMapper<V extends ValueMapper> implements ValueAccessor {
     void addColumns(RecordBuilder rec) {
         vm.addColumns(rec);
     }
+
+    void addJoins(RecordBuilder rec) {
+        vm.addJoins(rec);
+    }
 }

@@ -303,6 +303,9 @@ public class ClassMapper extends ValueMapper {
         for (FieldMapper<ValueMapper> fm: fields) {
             fm.addColumns(rec);
         }
+        for (FieldMapper<ValueMapper> fm: fields) {
+            fm.addJoins(rec);
+        }
         if (withSubclasses) {
             for (ClassMapper cm: subclasses) {
                 cm.buildQueryAsSubclass(rec);
