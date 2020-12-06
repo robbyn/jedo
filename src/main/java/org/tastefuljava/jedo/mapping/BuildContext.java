@@ -8,46 +8,27 @@ import java.util.function.Consumer;
 import org.tastefuljava.jedo.JedoException;
 
 public class BuildContext {
-    private final Map<Class<?>, List<Consumer<ClassMapper>>> forwards
-            = new LinkedHashMap<>();
+    private final List<Consumer<Mapper>> forwards = new ArrayList<>();
     private final List<Runnable> finalizers = new ArrayList<>();
 
-    public void addForwardClassRef(Class<?> clazz, Consumer<ClassMapper> fixer) {
-        List<Consumer<ClassMapper>> fixers = forwards.get(clazz);
-        if (fixers == null) {
-            fixers = new ArrayList<>();
-            forwards.put(clazz, fixers);
-        }
-        fixers.add(fixer);
+    public void addForward(Consumer<Mapper> fixer) {
+        forwards.add(fixer);
     }
 
     public void addFinalizer(Runnable r) {
         finalizers.add(r);
     }
 
-    public void fixall(ClassMapper cm) {
-        List<Consumer<ClassMapper>> fixers = forwards.remove(cm.getType());
-        if (fixers != null) {
-            for (Consumer<ClassMapper> fixer: fixers) {
-                fixer.accept(cm);
-            }
+    public void fixall(Mapper mapper) {
+        for (Consumer<Mapper> fixer: forwards) {
+            fixer.accept(mapper);
         }
+        forwards.clear();
     }
 
     public void complete() {
         if (!forwards.isEmpty()) {
-            StringBuilder buf = new StringBuilder(
-                    "Unresolved forward class references: ");
-            boolean first = true;
-            for (Class<?> c: forwards.keySet()) {
-                if (first) {
-                    first = false;
-                } else {
-                    buf.append(", ");
-                }
-                buf.append(c.getName());
-            }
-            throw new JedoException(buf.toString());
+            throw new JedoException(forwards.size() + " unresolved forwards");
         }
         for (Runnable r: finalizers) {
             r.run();

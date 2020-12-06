@@ -181,8 +181,8 @@ public abstract class CollectionMapper extends ValueMapper {
         @Override
         protected void initialize(BuildContext context, CollectionMapper colm) {
             if (elements == null) {
-                context.addForwardClassRef(elmClass, (cm)->{
-                    colm.elmMapper = cm;
+                context.addForward((mapper)->{
+                    colm.elmMapper = mapper.getClassMapper(elmClass);
                 });
             }
         }

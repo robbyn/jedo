@@ -1,7 +1,6 @@
 package org.tastefuljava.jedo.mapping;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -51,17 +50,22 @@ public class Mapper {
         }
 
         public Mapper build() {
+            for (ClassMapper.Builder cmb: classMappers.values()) {
+                Class<?> superClass = cmb.getSuperClass();
+                if (superClass != null) {
+                    classMappers.get(superClass).addSubclass(cmb.getType());
+                }
+            }
             BuildContext context = new BuildContext();
             Map<Class<?>,ClassMapper> map = new LinkedHashMap<>();
             for (ClassMapper.Builder cmb: classMappers.values()) {
                 ClassMapper mapper = cmb.build(context);
                 map.put(cmb.getType(), mapper);
             }
-            for (ClassMapper cm: map.values()) {
-                context.fixall(cm);
-            }
+            Mapper mapper = new Mapper(map);
+            context.fixall(mapper);
             context.complete();
-            return new Mapper(map);
+            return mapper;
         }
     }
 }

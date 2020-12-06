@@ -101,8 +101,8 @@ public class ReferenceMapper extends ValueMapper {
 
         @Override
         protected void initialize(BuildContext context, ReferenceMapper rm) {
-            context.addForwardClassRef(refClass, (cm)->{
-                rm.targetClass = cm;
+            context.addForward((mapper)->{
+                rm.targetClass = mapper.getClassMapper(refClass);
             });
         }
     }

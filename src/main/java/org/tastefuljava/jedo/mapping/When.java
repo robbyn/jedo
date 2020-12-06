@@ -51,8 +51,8 @@ public class When {
         cond = builder.cond;
         column = builder.column;
         value = builder.value;
-        context.addForwardClassRef(builder.clazz, (cm)->{
-            When.this.cm = cm;
+        context.addForward((mapper)->{
+            When.this.cm = mapper.getClassMapper(builder.clazz);
         });
     }
 

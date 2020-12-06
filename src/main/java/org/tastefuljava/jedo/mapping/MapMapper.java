@@ -208,13 +208,13 @@ public class MapMapper extends ValueMapper {
         @Override
         protected void initialize(BuildContext context, MapMapper mm) {
             if (keys == null) {
-                context.addForwardClassRef(keyClass, (cm)->{
-                    mm.keyMapper = cm;
+                context.addForward((mapper)->{
+                    mm.keyMapper = mapper.getClassMapper(keyClass);
                 });
             }
             if (elements == null) {
-                context.addForwardClassRef(elmClass, (cm)->{
-                    mm.elmMapper = cm;
+                context.addForward((mapper)->{
+                    mm.elmMapper = mapper.getClassMapper(elmClass);
                 });
             }
         }

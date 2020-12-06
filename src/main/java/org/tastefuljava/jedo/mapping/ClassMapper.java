@@ -23,7 +23,7 @@ public class ClassMapper extends ValueMapper {
 
     private final String tableName;
     private ClassMapper superClass;
-    private final List<ClassMapper> subclasses = new ArrayList<>();
+    private ClassMapper[] subclasses;
     private final Discriminator discriminator;
     private final FieldMapper<ColumnMapper>[] idFields;
     private final FieldMapper<ValueMapper>[] fields;
@@ -44,9 +44,19 @@ public class ClassMapper extends ValueMapper {
         this.stmts = builder.buildStatements();
         this.update = builder.buildUpdate();
         this.delete = builder.buildDelete();
-        if (builder.superClass != null) {
-            context.addForwardClassRef(builder.superClass, this::setSuperClass);
-        }
+        context.addForward((mapper)->{
+            if (builder.superClass != null) {
+                ClassMapper cm = mapper.getClassMapper(builder.superClass);
+                if (!cm.idFieldsCompatible(idFields)) {
+                     throw new JedoException("ID fields of class "
+                             + type.getName()
+                             + " are not compatible with those of class "
+                             + cm.type.getName());
+                }
+                superClass = cm;
+            }
+            subclasses = builder.buildSubclasses(mapper);
+        });
         context.addFinalizer(()->{
             load = builder.buildLoad(getIdFieldNames());
             insert = builder.buildInsert(getIdColumns());
@@ -338,23 +348,10 @@ public class ClassMapper extends ValueMapper {
         return true;
     }
 
-    private void setSuperClass(ClassMapper cm) {
-        if (!cm.idFieldsCompatible(idFields)) {
-            throw new JedoException("ID fields of class " + this.type.getName()
-                    + " are not compatible with those of class "
-                    + cm.type.getName());
-        }
-        this.superClass = cm;
-        cm.addSubclass(this);
-    }
-
-    private void addSubclass(ClassMapper cm) {
-        subclasses.add(cm);
-    }
-
     public static class Builder extends ValueMapper.Builder<ClassMapper> {
         private final String tableName;
         private Class<?> superClass;
+        private final List<Class<?>> subclasses = new ArrayList<>();
         private Discriminator.Builder discriminator;
         private final Map<Field,ColumnMapper.Builder> idFields
                 = new LinkedHashMap<>();
@@ -494,6 +491,22 @@ public class ClassMapper extends ValueMapper {
 
         public Discriminator buildDiscriminator(BuildContext context) {
             return discriminator == null ? null : discriminator.build(context);
+        }
+
+        Class<?> getSuperClass() {
+            return superClass;
+        }
+
+        void addSubclass(Class<?> subclass) {
+            subclasses.add(subclass);
+        }
+
+        private ClassMapper[] buildSubclasses(Mapper mapper) {
+            ClassMapper[] result = new ClassMapper[subclasses.size()];
+            for (int i = 0; i < result.length; ++i) {
+                result[i] = mapper.getClassMapper(subclasses.get(i));
+            }
+            return result;
         }
 
         private FieldMapper<ColumnMapper>[] buildIdFields(BuildContext context) {
