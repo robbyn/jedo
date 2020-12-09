@@ -40,10 +40,11 @@ public class Mapper {
             return Reflection.loadClass(className, packagePath);
         }
 
-        public ClassMapper.Builder newClass(Class<?> clazz, String tableName) {
+        public ClassMapper.Builder newClass(
+                Class<?> clazz, String name, String tableName) {
             ClassMapper.Builder builder = classMappers.get(clazz);
             if (builder == null) {
-                builder = new ClassMapper.Builder(clazz, tableName);
+                builder = new ClassMapper.Builder(clazz, name, tableName);
                 classMappers.put(builder.getType(), builder);
             }
             return builder;

@@ -18,6 +18,7 @@ public class ClassMapper extends ValueMapper {
     private static final Logger LOG
             = Logger.getLogger(ClassMapper.class.getName());
 
+    private final String name;
     private final String tableName;
     private ClassMapper superClass;
     private ClassMapper[] subclasses;
@@ -35,6 +36,7 @@ public class ClassMapper extends ValueMapper {
 
     private ClassMapper(BuildContext context, Builder builder) {
         super(builder);
+        this.name = builder.buildName();
         this.tableName = builder.buildTableName();
         this.discriminator = builder.buildDiscriminator(context);
         this.idFields = builder.buildIdFields(context);
@@ -326,6 +328,7 @@ public class ClassMapper extends ValueMapper {
     }
 
     public static class Builder extends ValueMapper.Builder<ClassMapper> {
+        private final String name;
         private final String tableName;
         private Class<?> superClass;
         private final List<Class<?>> subclasses = new ArrayList<>();
@@ -342,9 +345,14 @@ public class ClassMapper extends ValueMapper {
         private Statement.Builder update;
         private Statement.Builder delete;
 
-        public Builder(Class<?> type, String tableName) {
+        public Builder(Class<?> type, String name, String tableName) {
             super(type);
+            this.name = tableName;
             this.tableName = tableName;
+        }
+
+        private String buildName() {
+            return name != null ? name : type.getSimpleName();
         }
 
         public String buildTableName() {

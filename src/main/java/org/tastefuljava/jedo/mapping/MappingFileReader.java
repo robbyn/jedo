@@ -130,9 +130,10 @@ public class MappingFileReader {
                         break;
                     case "class": {
                         String className = attrs.getValue("name");
+                        String alias = attrs.getValue("alias");
                         String tableName = attrs.getValue("table");
                         classBuilder = builder.newClass(
-                                builder.findClass(className), tableName);
+                                builder.findClass(className), alias, tableName);
                         break;
                     }
                     case "inherits": {
