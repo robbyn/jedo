@@ -10,12 +10,10 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.tastefuljava.jedo.JedoException;
-import org.tastefuljava.jedo.query.JoinBuilder;
-import org.tastefuljava.jedo.query.QueryBuilder;
-import org.tastefuljava.jedo.query.RecordBuilder;
 
 public class ClassMapper extends ValueMapper {
     private static final Logger LOG
@@ -26,7 +24,7 @@ public class ClassMapper extends ValueMapper {
     private ClassMapper[] subclasses;
     private final Discriminator discriminator;
     private final FieldMapper<ColumnMapper>[] idFields;
-    private final FieldMapper<ValueMapper>[] fields;
+    private final FieldMapper<? extends ValueMapper>[] fields;
     private final Map<String,Statement> queries;
     private final Map<String,Statement> stmts;
     private Statement load;
@@ -63,6 +61,11 @@ public class ClassMapper extends ValueMapper {
         });
     }
 
+    @Override
+    public <T> T accept(ValueMapperVisitor<T> vtor) {
+        return vtor.visitClassMapper(this);
+    }
+
     public String getTableName() {
         return tableName;
     }
@@ -82,6 +85,19 @@ public class ClassMapper extends ValueMapper {
 
     public ClassMapper getSuperClass() {
         return superClass;
+    }
+
+    public void forEachIdField(Consumer<FieldMapper<ColumnMapper>> cons) {
+        for (FieldMapper<ColumnMapper> field: idFields) {
+            cons.accept(field);
+        }
+    }
+
+    public void forEachNonIdField(
+            Consumer<FieldMapper<? extends ValueMapper>> cons) {
+        for (FieldMapper<? extends ValueMapper> field: fields) {
+            cons.accept(field);
+        }
     }
 
     public ClassMapper resolveClass(ResultSet rs) {
@@ -181,8 +197,8 @@ public class ClassMapper extends ValueMapper {
         if (superClass != null) {
             superClass.afterInsert(pm, self);
         }
-        for (FieldMapper<ValueMapper> prop: fields) {
-            prop.afterInsert(pm, self);
+        for (FieldMapper<? extends ValueMapper> field: fields) {
+            field.afterInsert(pm, self);
         }
     }
 
@@ -208,8 +224,8 @@ public class ClassMapper extends ValueMapper {
     }
 
     public void beforeUpdate(Storage pm, Object self) {
-        for (FieldMapper<ValueMapper> prop: fields) {
-            prop.beforeUpdate(pm, self);
+        for (FieldMapper<? extends ValueMapper> field: fields) {
+            field.beforeUpdate(pm, self);
         }
         if (superClass != null) {
             superClass.beforeUpdate(pm, self);
@@ -220,8 +236,8 @@ public class ClassMapper extends ValueMapper {
         if (superClass != null) {
             superClass.afterUpdate(pm, self);
         }
-        for (FieldMapper<ValueMapper> prop: fields) {
-            prop.afterUpdate(pm, self);
+        for (FieldMapper<? extends ValueMapper> field: fields) {
+            field.afterUpdate(pm, self);
         }
     }
 
@@ -237,8 +253,8 @@ public class ClassMapper extends ValueMapper {
     }
 
     public void beforeDelete(Storage pm, Object self) {
-        for (FieldMapper<ValueMapper> prop: fields) {
-            prop.beforeDelete(pm, self);
+        for (FieldMapper<? extends ValueMapper> field: fields) {
+            field.beforeDelete(pm, self);
         }
         if (superClass != null) {
             superClass.beforeDelete(pm, self);
@@ -258,15 +274,9 @@ public class ClassMapper extends ValueMapper {
                 field.setFromResultSet(pm, obj, rs);
             }
         }
-        for (FieldMapper<ValueMapper> field: fields) {
+        for (FieldMapper<? extends ValueMapper> field: fields) {
             field.setFromResultSet(pm, obj, rs);
         }
-    }
-
-    public QueryBuilder newQuery() {
-        QueryBuilder qry = new QueryBuilder();
-        buildQuery(qry.newRecord(tableName), true);
-        return qry;
     }
 
     @Override
@@ -293,49 +303,6 @@ public class ClassMapper extends ValueMapper {
         return result;
     }
 
-    void buildQuery(RecordBuilder rec, boolean withSubclasses) {
-        if (superClass != null) {
-            JoinBuilder join = rec.newJoin(true, superClass.tableName);
-            for (int i = 0; i < idFields.length; ++i) {
-                join.joinColumns(idFields[i].getValueMapper().getColumn(),
-                        superClass.idFields[i].getValueMapper().getColumn());
-            }
-            superClass.buildQuery(join, false);
-        } else {
-            for (FieldMapper<ColumnMapper> fm: idFields) {
-                fm.addColumns(rec);
-            }
-        }
-        buildQueryFields(rec, withSubclasses);
-    }
-
-    private void buildQueryFields(RecordBuilder rec, boolean withSubclasses) {
-        for (FieldMapper<ValueMapper> fm: fields) {
-            fm.addColumns(rec);
-        }
-        for (FieldMapper<ValueMapper> fm: fields) {
-            fm.addJoins(rec);
-        }
-        if (withSubclasses) {
-            for (ClassMapper cm: subclasses) {
-                cm.buildQueryAsSubclass(rec);
-            }
-        }
-    }
-
-    private void buildQueryAsSubclass(RecordBuilder rec) {
-        JoinBuilder join = rec.newJoin(false, tableName);
-        for (int i = 0; i < idFields.length; ++i) {
-            join.joinColumns(
-                    superClass.idFields[i].getValueMapper().getColumn(),
-                    idFields[i].getValueMapper().getColumn());
-        }
-        for (FieldMapper<ColumnMapper> fm: idFields) {
-            fm.addColumns(join);
-        }
-        buildQueryFields(join, true);
-    }
-
     private boolean idFieldsCompatible(FieldMapper<ColumnMapper>[] idFields) {
         if (idFields.length != this.idFields.length) {
             return false;
@@ -353,9 +320,10 @@ public class ClassMapper extends ValueMapper {
         private Class<?> superClass;
         private final List<Class<?>> subclasses = new ArrayList<>();
         private Discriminator.Builder discriminator;
-        private final Map<Field,ColumnMapper.Builder> idFields
+        private final Map<Field,FieldMapper.Builder<ColumnMapper>> idFields
                 = new LinkedHashMap<>();
-        private final Map<Field,ValueMapper.Builder> fields
+        private final Map<
+                Field,FieldMapper.Builder<? extends ValueMapper>> fields
                 = new LinkedHashMap<>();
         private final Map<String,Statement.Builder> queries = new HashMap<>();
         private final Map<String,Statement.Builder> stmts = new HashMap<>();
@@ -383,23 +351,28 @@ public class ClassMapper extends ValueMapper {
 
         public void addIdField(String fieldName, String column) {
             Field field = getField(fieldName);
-            idFields.put(field, new ColumnMapper.Builder(
-                    field.getType(), column));
+            ColumnMapper.Builder vm = new ColumnMapper.Builder(
+                    field.getType(), column);
+            idFields.put(field, new FieldMapper.Builder<>(
+                    field, vm, false));
         }
 
         public void addField(String fieldName, String column) {
             Field field = getField(fieldName);
-            fields.put(field, new ColumnMapper.Builder(
-                    field.getType(), column));
+            ColumnMapper.Builder vm = new ColumnMapper.Builder(
+                    field.getType(), column);
+            fields.put(field, new FieldMapper.Builder<>(
+                    field, vm, false));
         }
 
         public void addReference(String fieldName, String[] columns,
-                String fetchMode) {
+                String fetchMode, boolean nullable) {
             Field field = getField(fieldName);
             FetchMode mode = fetchMode(fetchMode, FetchMode.EAGER);
             ReferenceMapper.Builder ref = new ReferenceMapper.Builder(
                     field, columns, mode);
-            fields.put(field, ref);
+            fields.put(field, new FieldMapper.Builder<>(
+                    field, ref, nullable));
         }
 
         public SetMapper.Builder newSet(String name, String fetchMode,
@@ -416,7 +389,7 @@ public class ClassMapper extends ValueMapper {
             FetchMode realFetchMode = fetchMode(fetchMode, FetchMode.LAZY);
             SetMapper.Builder result = new SetMapper.Builder(
                     this, field, realFetchMode, orderFields);
-            fields.put(field, result);
+            fields.put(field, new FieldMapper.Builder<>(field, result, false));
             return result;
         }
 
@@ -425,7 +398,7 @@ public class ClassMapper extends ValueMapper {
             FetchMode mode = fetchMode(fetchMode, FetchMode.LAZY);
             ListMapper.Builder result = new ListMapper.Builder(
                     this, field, mode);
-            fields.put(field, result);
+            fields.put(field, new FieldMapper.Builder<>(field, result, false));
             return result;
         }
 
@@ -434,15 +407,16 @@ public class ClassMapper extends ValueMapper {
             FetchMode mode = fetchMode(fetchMode, FetchMode.LAZY);
             MapMapper.Builder result = new MapMapper.Builder(
                     this, field, mode);
-            fields.put(field, result);
+            fields.put(field, new FieldMapper.Builder<>(field, result, false));
             return result;
         }
 
-        public ComponentMapper.Builder newComponent(String name) {
+        public ComponentMapper.Builder newComponent(
+                String name, boolean nullable) {
             Field field = getField(name);
             ComponentMapper.Builder cm
                     = new ComponentMapper.Builder(field.getType());
-            fields.put(field, cm);
+            fields.put(field, new FieldMapper.Builder<>(field, cm, nullable));
             return cm;
         }
 
@@ -512,19 +486,21 @@ public class ClassMapper extends ValueMapper {
         private FieldMapper<ColumnMapper>[] buildIdFields(BuildContext context) {
             FieldMapper<ColumnMapper>[] result = new FieldMapper[idFields.size()];
             int i = 0;
-            for (Map.Entry<Field,ColumnMapper.Builder> e: idFields.entrySet()) {
-                result[i++] = new FieldMapper<>(
-                        e.getKey(), e.getValue().build(context));
+            for (Map.Entry<Field,FieldMapper.Builder<ColumnMapper>> e
+                    : idFields.entrySet()) {
+                result[i++] = e.getValue().build(context);
             }
             return result;
         }
 
-        private FieldMapper<ValueMapper>[] buildFields(BuildContext context) {
-            FieldMapper<ValueMapper>[] result = new FieldMapper[fields.size()];
+        private FieldMapper<? extends ValueMapper>[] buildFields(
+                BuildContext context) {
+            FieldMapper<? extends ValueMapper>[] result
+                    = new FieldMapper[fields.size()];
             int i = 0;
-            for (Map.Entry<Field,ValueMapper.Builder> e: fields.entrySet()) {
-                result[i++] = new FieldMapper<>(
-                        e.getKey(), e.getValue().build(context));
+            for (Map.Entry<Field,FieldMapper.Builder<? extends ValueMapper>> e
+                    : fields.entrySet()) {
+                result[i++] = e.getValue().build(context);
             }
             return result;
         }

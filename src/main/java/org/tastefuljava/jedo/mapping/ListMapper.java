@@ -19,6 +19,11 @@ public class ListMapper extends CollectionMapper {
         this.removeAt = builder.buildRemoveAt();
     }
 
+    @Override
+    public <T> T accept(ValueMapperVisitor<T> vtor) {
+        return vtor.visitListMapper(this);
+    }
+
     public boolean setAt(Storage pm, Object parent, Object o, int index) {
         if (setAt == null) {
             return false;

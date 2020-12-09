@@ -21,6 +21,11 @@ public class ComponentMapper extends ValueMapper {
     }
 
     @Override
+    public <T> T accept(ValueMapperVisitor<T> vtor) {
+        return vtor.visitComponentMapper(this);
+    }
+
+    @Override
     public Object fromResultSet(Storage pm, Object obj, ResultSet rs,
             ValueAccessor fm) {
         try {
@@ -71,25 +76,26 @@ public class ComponentMapper extends ValueMapper {
     }
 
     public static class Builder extends ValueMapper.Builder<ComponentMapper> {
-        private final Map<Field,ColumnMapper.Builder> fields
-                = new LinkedHashMap<>();
+        private final Map<Field,FieldMapper.Builder<ColumnMapper>>
+                fields = new LinkedHashMap<>();
 
         public Builder(Class<?> type) {
             super(type);
         }
 
-        public void addProp(String name, String column) {
+        public void addProp(String name, String column, boolean nullable) {
             Field field = getField(name);
-            fields.put(field, new ColumnMapper.Builder(
-                    field.getType(), column));
+            ColumnMapper.Builder vm = new ColumnMapper.Builder(
+                    field.getType(), column);
+            fields.put(field, new FieldMapper.Builder<>(field, vm, nullable));
         }
 
         private FieldMapper<ColumnMapper>[] buildFields(BuildContext context) {
             FieldMapper<ColumnMapper>[] result = new FieldMapper[fields.size()];
             int i = 0;
-            for (Map.Entry<Field,ColumnMapper.Builder> e: fields.entrySet()) {
-                result[i++] = new FieldMapper<>(
-                        e.getKey(), e.getValue().build(context));
+            for (Map.Entry<Field,FieldMapper.Builder<ColumnMapper>> e
+                    : fields.entrySet()) {
+                result[i++] = e.getValue().build(context);
             }
             return result;
         }

@@ -162,10 +162,12 @@ public class MappingFileReader {
                             String name = attrs.getValue("name");
                             String column = attrs.getValue("column");
                             String type = attrs.getValue("type");
+                            boolean nullable = "true".equals(
+                                    attrs.getValue("nullable"));
                             if (inId) {
                                 classBuilder.addIdField(name, column);
                             } else if (compBuilder != null) {
-                                compBuilder.addProp(name, column);
+                                compBuilder.addProp(name, column, nullable);
                             } else {
                                 classBuilder.addField(name, column);
                             }
@@ -175,8 +177,10 @@ public class MappingFileReader {
                             String name = attrs.getValue("name");
                             String column = attrs.getValue("column");
                             String fetchMode = attrs.getValue("fetch-mode");
+                            boolean nullable = "true".equals(
+                                    attrs.getValue("nullable"));
                             classBuilder.addReference(name, column.split("[,]"),
-                                    fetchMode);
+                                    fetchMode, nullable);
                         }
                         break;
                     case "set":
@@ -216,10 +220,13 @@ public class MappingFileReader {
                         }
                         break;
                     }
-                    case "component":
+                    case "component": {
+                        boolean nullable = "true".equals(
+                                attrs.getValue("nullable"));
                         compBuilder = classBuilder.newComponent(
-                                attrs.getValue("name"));
+                                attrs.getValue("name"), nullable);
                         break;
+                    }
                     case "query":
                     case "statement": {
                         String name = attrs.getValue("name");

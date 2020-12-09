@@ -17,6 +17,11 @@ public class SetMapper extends CollectionMapper {
     }
 
     @Override
+    public <T> T accept(ValueMapperVisitor<T> vtor) {
+        return vtor.visitSetMapper(this);
+    }
+
+    @Override
     protected JedoCollection<Object> newCollection(Storage pm, Object parent,
             Collection<?> model) {
         if (type.isAssignableFrom(JedoSet.class)) {

@@ -30,6 +30,11 @@ public class MapMapper extends ValueMapper {
     }
 
     @Override
+    public <T> T accept(ValueMapperVisitor<T> vtor) {
+        return vtor.visitMapMapper(this);
+    }
+
+    @Override
     public Object fromResultSet(Storage pm, Object obj, ResultSet rs,
             ValueAccessor fm) {
         Map<?,?> model = (Map<?,?>)fm.getValue(obj);

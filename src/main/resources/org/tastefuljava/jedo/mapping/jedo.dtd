@@ -18,15 +18,20 @@
 <!ATTLIST field
     name CDATA #REQUIRED
     column CDATA #IMPLIED
+    nullable (true|false) #IMPLIED
 >
 
 <!ELEMENT component (field+)>
-<!ATTLIST component name CDATA #REQUIRED>
+<!ATTLIST component
+    name CDATA #REQUIRED
+    nullable (true|false) #IMPLIED
+>
 
 <!ELEMENT reference EMPTY>
 <!ATTLIST reference
     name CDATA #REQUIRED
     column CDATA #REQUIRED
+    nullable (true|false) #IMPLIED
     fetch-mode (eager|lazy) #IMPLIED
 >
 

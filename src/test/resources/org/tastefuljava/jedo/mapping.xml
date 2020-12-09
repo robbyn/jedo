@@ -9,7 +9,7 @@
         <id>
             <field name="id" column="ID"/>
         </id>
-        <field name="name" column="NAME"/>
+        <field name="name" column="NAME" nullable="false"/>
         <load><![CDATA[
             SELECT named.ID ID, named.NAME NAME, folders.FID FID, 
                 folders.PARENT_ID PARENT_ID, pictures.PID PID,

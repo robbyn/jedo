@@ -5,7 +5,6 @@ import java.sql.ResultSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.tastefuljava.jedo.JedoException;
-import org.tastefuljava.jedo.query.RecordBuilder;
 
 public class FieldMapper<V extends ValueMapper> implements ValueAccessor {
     private static final Logger LOG
@@ -13,10 +12,12 @@ public class FieldMapper<V extends ValueMapper> implements ValueAccessor {
     
     private final Field field;
     private final V vm;
+    private final boolean nullable;
 
-    public FieldMapper(Field field, V vm) {
+    public FieldMapper(Field field, V vm, boolean nullable) {
         this.field = field;
         this.vm = vm;
+        this.nullable = nullable;
     }
 
     @Override
@@ -39,16 +40,20 @@ public class FieldMapper<V extends ValueMapper> implements ValueAccessor {
         }
     }
 
-    public String getFieldName() {
-        return field.getName();
+    Field getField() {
+        return field;
     }
 
     public V getValueMapper() {
         return vm;
     }
 
-    Field getField() {
-        return field;
+    public boolean isNullable() {
+        return nullable;
+    }
+
+    public String getFieldName() {
+        return field.getName();
     }
 
     Object fromResultSet(Storage pm, Object obj, ResultSet rs) {
@@ -73,11 +78,19 @@ public class FieldMapper<V extends ValueMapper> implements ValueAccessor {
     void afterUpdate(Storage pm, Object self) {
     }
 
-    void addColumns(RecordBuilder rec) {
-        vm.addColumns(rec);
-    }
+    public static class Builder<V extends ValueMapper> {
+        private final Field field;
+        private final V.Builder vm;
+        private final boolean nullable;
 
-    void addJoins(RecordBuilder rec) {
-        vm.addJoins(rec);
+        public Builder(Field field, V.Builder vm, boolean nullable) {
+            this.field = field;
+            this.vm = vm;
+            this.nullable = nullable;
+        }
+
+        public FieldMapper<V> build(BuildContext context) {
+            return new FieldMapper(field, vm.build(context), nullable);
+        }
     }
 }
