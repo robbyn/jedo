@@ -351,7 +351,7 @@ public class ClassMapper extends ValueMapper {
 
         public Builder(Class<?> type, String name, String tableName) {
             super(type);
-            this.name = tableName;
+            this.name = name;
             this.tableName = tableName;
         }
 

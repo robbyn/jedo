@@ -325,6 +325,7 @@ public class MappingFileReader {
                         break;
                 }
             } catch (Throwable e) {
+                LOG.log(Level.SEVERE, locationString() + e.getMessage(), e);
                 throw new SAXException(locationString() + e.getMessage());
             }
         }
