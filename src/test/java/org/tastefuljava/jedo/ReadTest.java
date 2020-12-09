@@ -3,12 +3,12 @@ package org.tastefuljava.jedo;
 import org.tastefuljava.jedo.testdb.JedoTestBase;
 import java.io.IOException;
 import java.sql.SQLException;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.BeforeAll;
 import org.tastefuljava.jedo.testdb.Folder;
 
 public class ReadTest extends JedoTestBase {
@@ -16,34 +16,34 @@ public class ReadTest extends JedoTestBase {
     public ReadTest() {
     }
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() {
     }
 
-    @AfterClass
+    @AfterAll
     public static void tearDownClass() {
     }
 
-    @Before
+    @BeforeEach
     public void setUp()
             throws IOException, ClassNotFoundException, SQLException {
         super.initialize();
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws SQLException, IOException {
         super.terminate();
     }
 
     @Test
     public void testInit() {
-        assertNotNull("Session is null", session);
+        assertNotNull(session, "Session is null");
     }
 
     @Test
     public void testRoot() {
         Folder root = session.queryOne(Folder.class, "rootFolder", "root");
-        assertNotNull("Root is null", root);
-        assertEquals("Wrong folder name", "root", root.getName());
+        assertNotNull(root);
+        assertEquals("root", root.getName());
     }
 }

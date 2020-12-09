@@ -2,21 +2,21 @@ package org.tastefuljava.jedo;
 
 import java.io.IOException;
 import java.sql.SQLException;
-import org.junit.After;
-import static org.junit.Assert.*;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.tastefuljava.jedo.testdb.Folder;
 import org.tastefuljava.jedo.testdb.JedoTestBase;
 
 public class InsertTest extends JedoTestBase {
-    @Before
+    @BeforeEach
     public void setUp()
             throws IOException, ClassNotFoundException, SQLException {
         super.initialize();
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws SQLException, IOException {
         super.terminate();
     }

@@ -3,22 +3,22 @@ package org.tastefuljava.jedo;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Set;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.tastefuljava.jedo.testdb.Folder;
 import org.tastefuljava.jedo.testdb.JedoTestBase;
 import org.tastefuljava.jedo.testdb.Picture;
 
 public class MapTest extends JedoTestBase {
-    @Before
+    @BeforeEach
     public void setUp()
             throws IOException, ClassNotFoundException, SQLException {
         super.initialize();
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws SQLException, IOException {
         super.terminate();
     }

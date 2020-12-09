@@ -2,21 +2,21 @@ package org.tastefuljava.jedo;
 
 import java.io.IOException;
 import java.sql.SQLException;
-import org.junit.After;
-import static org.junit.Assert.*;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.tastefuljava.jedo.testdb.Folder;
 import org.tastefuljava.jedo.testdb.JedoTestBase;
 
 public class CollectionTest extends JedoTestBase {
-    @Before
+    @BeforeEach
     public void setUp()
             throws IOException, ClassNotFoundException, SQLException {
         super.initialize();
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws SQLException, IOException {
         super.terminate();
     }
@@ -24,12 +24,12 @@ public class CollectionTest extends JedoTestBase {
     @Test
     public void testSubfolders() {
         Folder folder =  getFolder("root");
-        assertNotNull("Subfolders collection is null", folder.getSubfolders());
-        assertEquals("Wrong number of subfolders", 2,
-                folder.getSubfolders().size());
+        assertNotNull(folder.getSubfolders(), "Subfolders collection is null");
+        assertEquals(2, folder.getSubfolders().size(),
+                "Wrong number of subfolders");
         for (Folder sub: folder.getSubfolders()) {
-            assertSame("Wrong folder instance",
-                    sub, getFolder("root/" + sub.getName()));
+            assertSame(sub, getFolder("root/" + sub.getName()),
+                    "Wrong folder instance");
         }
         Folder sub1 = getFolder("root/sub1");
         assertTrue(folder.getSubfolders().remove(sub1));
@@ -37,10 +37,10 @@ public class CollectionTest extends JedoTestBase {
         Folder sub2 = getFolder("root/sub2");
         assertTrue(folder.getSubfolders().remove(sub2));
         assertTrue(folder.getSubfolders().isEmpty());
-        assertSame("Folder not rooted", sub1, getFolder("sub1"));
-        assertSame("Folder not rooted", sub2, getFolder("sub2"));
+        assertSame(sub1, getFolder("sub1"), "Folder not rooted");
+        assertSame(sub2, getFolder("sub2"), "Folder not rooted");
         assertTrue(sub1.getSubfolders().add(sub2));
-        assertSame("Folder not rooted", sub2, getFolder("sub1/sub2"));
+        assertSame(sub2, getFolder("sub1/sub2"), "Folder not rooted");
         session.commit();
     }
 }

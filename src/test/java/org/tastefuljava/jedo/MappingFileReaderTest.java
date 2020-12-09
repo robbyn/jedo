@@ -1,10 +1,10 @@
 package org.tastefuljava.jedo;
 
 import java.net.URL;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.tastefuljava.jedo.mapping.Mapper;
 import org.tastefuljava.jedo.mapping.MappingFileReader;
 
@@ -13,11 +13,11 @@ public class MappingFileReaderTest {
     public MappingFileReaderTest() {
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
     }
 
@@ -27,6 +27,6 @@ public class MappingFileReaderTest {
         URL url = getClass().getResource("mapping.xml");
         reader.load(url);
         Mapper mapper = reader.getMapper();
-        Assert.assertNotNull(mapper);
+        assertNotNull(mapper);
     }
 }

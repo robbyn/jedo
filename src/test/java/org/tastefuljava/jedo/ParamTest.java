@@ -3,19 +3,19 @@ package org.tastefuljava.jedo;
 import java.sql.Timestamp;
 import java.sql.Types;
 import java.time.Instant;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.tastefuljava.jedo.expression.Parameter;
 import org.tastefuljava.jedo.expression.Scope;
 
 public class ParamTest {
-    @Before
+    @BeforeEach
     public void setUp() {
     }
     
-    @After
+    @AfterEach
     public void tearDown() {
     }
 
