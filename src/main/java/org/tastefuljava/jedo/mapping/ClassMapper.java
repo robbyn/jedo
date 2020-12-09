@@ -87,17 +87,12 @@ public class ClassMapper extends ValueMapper {
         return superClass;
     }
 
-    public void forEachIdField(Consumer<FieldMapper<ColumnMapper>> cons) {
-        for (FieldMapper<ColumnMapper> field: idFields) {
-            cons.accept(field);
-        }
+    public FieldMapper<ColumnMapper>[] getIdFields() {
+        return idFields.clone();
     }
 
-    public void forEachNonIdField(
-            Consumer<FieldMapper<? extends ValueMapper>> cons) {
-        for (FieldMapper<? extends ValueMapper> field: fields) {
-            cons.accept(field);
-        }
+    public FieldMapper<? extends ValueMapper>[] getEachNonIdFields() {
+        return fields.clone();
     }
 
     public ClassMapper resolveClass(ResultSet rs) {

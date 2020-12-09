@@ -20,6 +20,10 @@ public class ComponentMapper extends ValueMapper {
         this.fields = builder.buildFields(context);
     }
 
+    public FieldMapper<ColumnMapper>[] getFields() {
+        return fields.clone();
+    }
+
     @Override
     public <T> T accept(ValueMapperVisitor<T> vtor) {
         return vtor.visitComponentMapper(this);
