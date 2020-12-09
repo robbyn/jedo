@@ -3,6 +3,7 @@ package org.tastefuljava.jedo.mapping;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.sql.ResultSet;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.logging.Level;
@@ -14,14 +15,23 @@ public class ComponentMapper extends ValueMapper {
             = Logger.getLogger(ComponentMapper.class.getName());
 
     private final FieldMapper<ColumnMapper>[] fields;
+    private final Map<String,FieldMapper<ColumnMapper>> fieldMap
+            = new HashMap<>();
 
     private ComponentMapper(BuildContext context, Builder builder) {
         super(builder);
         this.fields = builder.buildFields(context);
+        for (FieldMapper<ColumnMapper> fm: fields) {
+            fieldMap.put(fm.getFieldName(), fm);
+        }
     }
 
     public FieldMapper<ColumnMapper>[] getFields() {
         return fields.clone();
+    }
+
+    public FieldMapper<? extends ValueMapper> getField(String name) {
+        return fieldMap.get(name);
     }
 
     @Override

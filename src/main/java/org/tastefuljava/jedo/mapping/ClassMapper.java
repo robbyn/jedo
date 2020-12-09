@@ -10,7 +10,6 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.tastefuljava.jedo.JedoException;
@@ -25,6 +24,8 @@ public class ClassMapper extends ValueMapper {
     private final Discriminator discriminator;
     private final FieldMapper<ColumnMapper>[] idFields;
     private final FieldMapper<? extends ValueMapper>[] fields;
+    private final Map<String,FieldMapper<? extends ValueMapper>> fieldMap
+            = new HashMap<>();
     private final Map<String,Statement> queries;
     private final Map<String,Statement> stmts;
     private Statement load;
@@ -59,6 +60,12 @@ public class ClassMapper extends ValueMapper {
             load = builder.buildLoad(getIdFieldNames());
             insert = builder.buildInsert(getIdColumns());
         });
+        for (FieldMapper<ColumnMapper> fm: idFields) {
+            fieldMap.put(fm.getFieldName(), fm);
+        }
+        for (FieldMapper<? extends ValueMapper> fm: fields) {
+            fieldMap.put(fm.getFieldName(), fm);
+        }
     }
 
     @Override
@@ -87,12 +94,20 @@ public class ClassMapper extends ValueMapper {
         return superClass;
     }
 
+    public ClassMapper[] getSubclasses() {
+        return subclasses.clone();
+    }
+
     public FieldMapper<ColumnMapper>[] getIdFields() {
         return idFields.clone();
     }
 
-    public FieldMapper<? extends ValueMapper>[] getEachNonIdFields() {
+    public FieldMapper<? extends ValueMapper>[] getNonIdFields() {
         return fields.clone();
+    }
+
+    public FieldMapper<? extends ValueMapper> getMapper(String name) {
+        return fieldMap.get(name);
     }
 
     public ClassMapper resolveClass(ResultSet rs) {
