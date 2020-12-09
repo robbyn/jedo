@@ -75,6 +75,10 @@ public class ClassMapper extends ValueMapper {
         return vtor.visitClassMapper(this);
     }
 
+    public String getName() {
+        return name;
+    }
+
     public String getTableName() {
         return tableName;
     }

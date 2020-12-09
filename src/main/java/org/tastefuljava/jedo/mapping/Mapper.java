@@ -1,6 +1,7 @@
 package org.tastefuljava.jedo.mapping;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -8,9 +9,13 @@ import org.tastefuljava.jedo.util.Reflection;
 
 public class Mapper {
     private final Map<Class<?>,ClassMapper> classMappers;
+    private final Map<String,ClassMapper> classMappersByName = new HashMap<>();
 
     private Mapper(Map<Class<?>,ClassMapper> classMappers) {
         this.classMappers = classMappers;
+        for (ClassMapper cm: classMappers.values()) {
+            classMappersByName.put(cm.getName(), cm);
+        }
     }
 
     public ClassMapper getClassMapper(Class<?> clazz) {
