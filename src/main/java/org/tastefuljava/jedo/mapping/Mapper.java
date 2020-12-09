@@ -22,6 +22,10 @@ public class Mapper {
         return classMappers.get(clazz);
     }
 
+    public ClassMapper getClassMapper(String name) {
+        return classMappersByName.get(name);
+    }
+
     public static class Builder {
         private final Map<Class<?>,ClassMapper.Builder> classMappers
                 = new LinkedHashMap<>();
