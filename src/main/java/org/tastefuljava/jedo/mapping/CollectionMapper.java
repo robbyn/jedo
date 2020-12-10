@@ -22,6 +22,11 @@ public abstract class CollectionMapper extends ValueMapper {
         this.fetch = builder.buildFetch();
         this.clear = builder.buildClear();
         this.remove = builder.buildRemove();
+        if (elmMapper == null) {
+            context.addForward((mapper)->{
+                elmMapper = builder.buildElmMapper(mapper);
+            });
+        }
         context.addFinalizer(()->{
             String[] keys = null;
             if (elmMapper instanceof ClassMapper) {
@@ -162,6 +167,10 @@ public abstract class CollectionMapper extends ValueMapper {
             return elements == null ? null : elements.build(context);
         }
 
+        private ValueMapper buildElmMapper(Mapper mapper) {
+            return mapper.getClassMapper(elmClass);
+        }
+
         private Statement buildFetch() {
             return fetch == null ? null : fetch.build(null);
         }
@@ -180,11 +189,6 @@ public abstract class CollectionMapper extends ValueMapper {
  
         @Override
         protected void initialize(BuildContext context, CollectionMapper colm) {
-            if (elements == null) {
-                context.addForward((mapper)->{
-                    colm.elmMapper = mapper.getClassMapper(elmClass);
-                });
-            }
         }
     }
 }

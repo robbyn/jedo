@@ -572,10 +572,6 @@ public class ClassMapper extends ValueMapper {
             return new ClassMapper(context, this);
         }
 
-        @Override
-        protected void initialize(BuildContext context, ClassMapper vm) {
-        }
-
         private FetchMode fetchMode(String fetchMode, FetchMode def) {
             FetchMode fm = null;
             if (fetchMode !=  null) {

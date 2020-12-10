@@ -18,10 +18,13 @@ public class ReferenceMapper extends ValueMapper {
     private final String[] columns;
     private final FetchMode fetchMode;
 
-    private ReferenceMapper(Builder builder) {
+    private ReferenceMapper(BuildContext context, Builder builder) {
         super(builder);
         this.columns = builder.columns;
         this.fetchMode = builder.fetchMode;
+        context.addForward((mapper)->{
+            targetClass = builder.buildTargetClass(mapper);
+        });
     }
 
     @Override
@@ -61,26 +64,23 @@ public class ReferenceMapper extends ValueMapper {
     public static class Builder extends ValueMapper.Builder<ReferenceMapper> {
         private final String[] columns;
         private final FetchMode fetchMode;
-        private final Class<?> refClass;
+        private final Class<?> targetClass;
 
         public Builder(Field field, String[] columns, FetchMode fetchMode) {
             super(field.getType());
-            refClass = type == Ref.class
+            targetClass = type == Ref.class
                     ? Reflection.getReferencedClass(field) : type;
             this.columns = columns;
             this.fetchMode = type == Ref.class ? fetchMode : FetchMode.EAGER;
         }
 
-        @Override
-        protected ReferenceMapper create(BuildContext context) {
-            return new ReferenceMapper(this);
+        private ClassMapper buildTargetClass(Mapper mapper) {
+            return mapper.getClassMapper(targetClass);
         }
 
         @Override
-        protected void initialize(BuildContext context, ReferenceMapper rm) {
-            context.addForward((mapper)->{
-                rm.targetClass = mapper.getClassMapper(refClass);
-            });
+        protected ReferenceMapper create(BuildContext context) {
+            return new ReferenceMapper(context, this);
         }
     }
 }

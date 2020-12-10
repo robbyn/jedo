@@ -27,6 +27,16 @@ public class MapMapper extends ValueMapper {
         this.clear = builder.buildClear();
         this.put = builder.buildPut();
         this.removeKey = builder.buildRemoveKey();
+        if (keyMapper == null) {
+            context.addForward((mapper)->{
+                keyMapper = builder.buildKeyMapper(mapper);
+            });
+        }
+        if (elmMapper == null) {
+            context.addForward((mapper)->{
+                elmMapper = builder.buildElmMapper(mapper);
+            });
+        }
     }
 
     @Override
@@ -201,27 +211,21 @@ public class MapMapper extends ValueMapper {
             return keys == null ? null : keys.build(context);
         }
 
+        private ValueMapper buildElmMapper(Mapper mapper) {
+            return mapper.getClassMapper(keyClass);
+        }
+
         private ValueMapper buildElmMapper(BuildContext context) {
             return elements == null ? null : elements.build(context);
+        }
+
+        private ValueMapper buildKeyMapper(Mapper mapper) {
+            return mapper.getClassMapper(elmClass);
         }
 
         @Override
         protected MapMapper create(BuildContext context) {
             return new MapMapper(context, this);
-        }
-
-        @Override
-        protected void initialize(BuildContext context, MapMapper mm) {
-            if (keys == null) {
-                context.addForward((mapper)->{
-                    mm.keyMapper = mapper.getClassMapper(keyClass);
-                });
-            }
-            if (elements == null) {
-                context.addForward((mapper)->{
-                    mm.elmMapper = mapper.getClassMapper(elmClass);
-                });
-            }
         }
     }
 }
