@@ -40,15 +40,7 @@ public abstract class ValueMapper {
             return type;
         }
 
-        public final T build(BuildContext context) {
-            T creation = create(context);
-            initialize(context, creation);
-            return creation;
-        }
-
-        protected abstract T create(BuildContext context);
-        protected void initialize(BuildContext context, T vm) {
-        }
+        abstract T create(BuildContext context);
 
         // helper method
         protected Field getField(String name) throws JedoException {

@@ -69,7 +69,7 @@ public class Mapper {
             BuildContext context = new BuildContext();
             Map<Class<?>,ClassMapper> map = new LinkedHashMap<>();
             for (ClassMapper.Builder cmb: classMappers.values()) {
-                ClassMapper mapper = cmb.build(context);
+                ClassMapper mapper = cmb.create(context);
                 map.put(cmb.getType(), mapper);
             }
             Mapper mapper = new Mapper(map);

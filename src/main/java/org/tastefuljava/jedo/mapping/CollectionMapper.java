@@ -164,7 +164,7 @@ public abstract class CollectionMapper extends ValueMapper {
         }
 
         private ValueMapper buildElmMapper(BuildContext context) {
-            return elements == null ? null : elements.build(context);
+            return elements == null ? null : elements.create(context);
         }
 
         private ValueMapper buildElmMapper(Mapper mapper) {
@@ -185,10 +185,6 @@ public abstract class CollectionMapper extends ValueMapper {
 
         private Statement buildRemove() {
             return remove == null ? null : remove.build(null);
-        }
- 
-        @Override
-        protected void initialize(BuildContext context, CollectionMapper colm) {
         }
     }
 }

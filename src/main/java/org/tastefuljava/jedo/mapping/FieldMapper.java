@@ -90,7 +90,7 @@ public class FieldMapper<V extends ValueMapper> implements ValueAccessor {
         }
 
         public FieldMapper<V> build(BuildContext context) {
-            return new FieldMapper(field, vm.build(context), nullable);
+            return new FieldMapper(field, vm.create(context), nullable);
         }
     }
 }

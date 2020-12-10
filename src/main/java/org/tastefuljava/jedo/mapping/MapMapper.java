@@ -208,7 +208,7 @@ public class MapMapper extends ValueMapper {
         }
 
         private ValueMapper buildKeyMapper(BuildContext context) {
-            return keys == null ? null : keys.build(context);
+            return keys == null ? null : keys.create(context);
         }
 
         private ValueMapper buildElmMapper(Mapper mapper) {
@@ -216,7 +216,7 @@ public class MapMapper extends ValueMapper {
         }
 
         private ValueMapper buildElmMapper(BuildContext context) {
-            return elements == null ? null : elements.build(context);
+            return elements == null ? null : elements.create(context);
         }
 
         private ValueMapper buildKeyMapper(Mapper mapper) {
