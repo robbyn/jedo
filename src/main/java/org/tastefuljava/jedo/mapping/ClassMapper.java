@@ -112,7 +112,7 @@ public class ClassMapper extends ValueMapper {
         return fields.clone();
     }
 
-    public FieldMapper<? extends ValueMapper> getMapper(String name) {
+    public FieldMapper<? extends ValueMapper> getField(String name) {
         return fieldMap.get(name);
     }
 
