@@ -27,6 +27,18 @@ public class ReferenceMapper extends ValueMapper {
         });
     }
 
+    public ClassMapper getTargetClass() {
+        return targetClass;
+    }
+
+    public String[] getColumns() {
+        return columns;
+    }
+
+    public FetchMode getFetchMode() {
+        return fetchMode;
+    }
+
     @Override
     public <T> T accept(ValueMapperVisitor<T> vtor) {
         return vtor.visitReferenceMapper(this);
