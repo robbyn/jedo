@@ -72,7 +72,8 @@ public class ListMapper extends CollectionMapper {
         private Statement.Builder addAt;
         private Statement.Builder removeAt;
 
-        public Builder(ClassMapper.Builder parentClass, Field field, FetchMode fetchMode) {
+        public Builder(ClassMapper.Builder parentClass, Field field,
+                FetchMode fetchMode) {
             super(parentClass, field, fetchMode);
         }
 

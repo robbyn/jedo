@@ -9,7 +9,8 @@ import org.tastefuljava.jedo.mapping.Flushable;
 import org.tastefuljava.jedo.mapping.ListMapper;
 import org.tastefuljava.jedo.mapping.Storage;
 
-public class JedoList<T> extends JedoCollection<T> implements List<T>, Flushable {
+public class JedoList<T> extends JedoCollection<T>
+        implements List<T>, Flushable {
     private boolean dirty;
     private final ListMapper mapper;
 
