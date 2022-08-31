@@ -13,7 +13,7 @@ public class ColumnMapper extends ValueMapper {
 
     private final String column;
 
-    private ColumnMapper(BuildContext context, Builder builder) {
+    private ColumnMapper(Builder builder) {
         super(builder);
         this.column = builder.column;
     }
@@ -61,7 +61,7 @@ public class ColumnMapper extends ValueMapper {
 
         @Override
         protected ColumnMapper create(BuildContext context) {
-            return new ColumnMapper(context, this);
+            return new ColumnMapper(this);
         }
     }
 }
