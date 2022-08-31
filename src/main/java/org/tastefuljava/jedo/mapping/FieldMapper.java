@@ -26,7 +26,8 @@ public class FieldMapper<V extends ValueMapper> implements ValueAccessor {
             return field.get(object);
         } catch (IllegalArgumentException | IllegalAccessException ex) {
             LOG.log(Level.SEVERE, null, ex);
-            throw new JedoException("Could not get field value " + field.getName());
+            throw new JedoException(
+                    "Could not get field value " + field.getName());
         }
     }
 
@@ -36,7 +37,8 @@ public class FieldMapper<V extends ValueMapper> implements ValueAccessor {
             field.set(obj, value);
         } catch (IllegalArgumentException | IllegalAccessException ex) {
             LOG.log(Level.SEVERE, null, ex);
-            throw new JedoException("Could not set field value " + field.getName());
+            throw new JedoException(
+                    "Could not set field value " + field.getName());
         }
     }
 
