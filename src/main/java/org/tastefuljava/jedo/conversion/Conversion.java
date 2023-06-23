@@ -1,5 +1,6 @@
 package org.tastefuljava.jedo.conversion;
 
+import java.math.BigDecimal;
 import java.sql.Clob;
 import java.sql.SQLException;
 import java.sql.Time;
@@ -179,6 +180,8 @@ public class Conversion {
                 -> value == null ? null : value.intValue());
         register(Integer.class, Long.class, (Integer value)
                 -> value == null ? null : value.longValue());
+        register(BigDecimal.class, Double.class, (BigDecimal value)
+                -> value == null ? null : value.doubleValue());
         register(Integer.class, Float.class, (Integer value)
                 -> value == null ? null : value.floatValue());
         register(Long.class, Double.class, (Long value)
