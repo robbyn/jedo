@@ -21,14 +21,14 @@ public class DriverManagerSessionFactory extends SessionFactoryImpl {
     }
 
     @Override
-    protected Connection getConnection() {
+    protected Connection getConnection() throws SQLException {
         try {
             Class.forName(props.getProperty("driver"));
             String url = props.getProperty("url");
             Connection cnt = DriverManager.getConnection(url, props);
             cnt.setAutoCommit(false);
             return cnt;
-        } catch (ClassNotFoundException | SQLException ex) {
+        } catch (ClassNotFoundException ex) {
             LOG.log(Level.SEVERE, null, ex);
             throw new JedoException(ex.getMessage(), ex);
         }

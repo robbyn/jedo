@@ -23,13 +23,12 @@ public class JndiSessionFactory extends SessionFactoryImpl {
     }
 
     @Override
-    protected Connection getConnection() {
+    protected Connection getConnection() throws SQLException {
         try {
             Context context = new InitialContext();
             DataSource ds = (DataSource)context.lookup(jndiName);
             return ds.getConnection();
-        } catch (NamingException | SQLException ex) {
-            LOG.log(Level.SEVERE, null, ex);
+        } catch (NamingException ex) {
             throw new JedoException(ex.getMessage());
         }
     }
