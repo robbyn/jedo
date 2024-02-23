@@ -1,0 +1,324 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified">
+  <xs:element name="mapping">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" maxOccurs="unbounded" ref="class"/>
+      </xs:sequence>
+      <xs:attribute name="package"/>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="class">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" ref="inherits"/>
+        <xs:element minOccurs="0" ref="discriminator"/>
+        <xs:element minOccurs="0" ref="id"/>
+        <xs:choice minOccurs="0" maxOccurs="unbounded">
+          <xs:element ref="field"/>
+          <xs:element ref="component"/>
+          <xs:element ref="reference"/>
+          <xs:element ref="set"/>
+          <xs:element ref="list"/>
+          <xs:element ref="map"/>
+        </xs:choice>
+        <xs:element minOccurs="0" ref="load"/>
+        <xs:element minOccurs="0" maxOccurs="unbounded" ref="query"/>
+        <xs:element minOccurs="0" ref="insert"/>
+        <xs:element minOccurs="0" ref="update"/>
+        <xs:element minOccurs="0" ref="delete"/>
+        <xs:element minOccurs="0" maxOccurs="unbounded" ref="statement"/>
+      </xs:sequence>
+      <xs:attribute name="name" use="required"/>
+      <xs:attribute name="alias"/>
+      <xs:attribute name="table"/>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="inherits">
+    <xs:complexType>
+      <xs:attribute name="class" use="required"/>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="id">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element maxOccurs="unbounded" ref="field"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="field">
+    <xs:complexType>
+      <xs:attribute name="name" use="required"/>
+      <xs:attribute name="column"/>
+      <xs:attribute name="nullable">
+        <xs:simpleType>
+          <xs:restriction base="xs:token">
+            <xs:enumeration value="true"/>
+            <xs:enumeration value="false"/>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:attribute>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="component">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element maxOccurs="unbounded" ref="field"/>
+      </xs:sequence>
+      <xs:attribute name="name" use="required"/>
+      <xs:attribute name="nullable">
+        <xs:simpleType>
+          <xs:restriction base="xs:token">
+            <xs:enumeration value="true"/>
+            <xs:enumeration value="false"/>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:attribute>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="reference">
+    <xs:complexType>
+      <xs:attribute name="name" use="required"/>
+      <xs:attribute name="column" use="required"/>
+      <xs:attribute name="nullable">
+        <xs:simpleType>
+          <xs:restriction base="xs:token">
+            <xs:enumeration value="true"/>
+            <xs:enumeration value="false"/>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:attribute>
+      <xs:attribute name="fetch-mode">
+        <xs:simpleType>
+          <xs:restriction base="xs:token">
+            <xs:enumeration value="eager"/>
+            <xs:enumeration value="lazy"/>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:attribute>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="set">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" ref="element"/>
+        <xs:choice minOccurs="0" maxOccurs="unbounded">
+          <xs:element ref="fetch"/>
+          <xs:element ref="clear"/>
+          <xs:element ref="add"/>
+          <xs:element ref="remove"/>
+        </xs:choice>
+      </xs:sequence>
+      <xs:attribute name="name" use="required"/>
+      <xs:attribute name="fetch-mode">
+        <xs:simpleType>
+          <xs:restriction base="xs:token">
+            <xs:enumeration value="eager"/>
+            <xs:enumeration value="lazy"/>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:attribute>
+      <xs:attribute name="order"/>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="list">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" ref="element"/>
+        <xs:choice minOccurs="0" maxOccurs="unbounded">
+          <xs:element ref="fetch"/>
+          <xs:element ref="clear"/>
+          <xs:element ref="add"/>
+          <xs:element ref="remove"/>
+          <xs:element ref="set-at"/>
+          <xs:element ref="add-at"/>
+          <xs:element ref="remove-at"/>
+        </xs:choice>
+      </xs:sequence>
+      <xs:attribute name="name" use="required"/>
+      <xs:attribute name="fetch-mode">
+        <xs:simpleType>
+          <xs:restriction base="xs:token">
+            <xs:enumeration value="eager"/>
+            <xs:enumeration value="lazy"/>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:attribute>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="map">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="key"/>
+        <xs:element minOccurs="0" ref="element"/>
+        <xs:choice minOccurs="0" maxOccurs="unbounded">
+          <xs:element ref="fetch"/>
+          <xs:element ref="clear"/>
+          <xs:element ref="put"/>
+          <xs:element ref="remove-key"/>
+        </xs:choice>
+      </xs:sequence>
+      <xs:attribute name="name" use="required"/>
+      <xs:attribute name="fetch-mode">
+        <xs:simpleType>
+          <xs:restriction base="xs:token">
+            <xs:enumeration value="eager"/>
+            <xs:enumeration value="lazy"/>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:attribute>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="key">
+    <xs:complexType>
+      <xs:attribute name="type"/>
+      <xs:attribute name="column" use="required"/>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="element">
+    <xs:complexType>
+      <xs:attribute name="type"/>
+      <xs:attribute name="column" use="required"/>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="load" type="xs:string"/>
+
+  <xs:element name="query">
+    <xs:complexType mixed="true">
+      <xs:attribute name="name" use="required"/>
+      <xs:attribute name="parameters"/>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="insert">
+    <xs:complexType mixed="true">
+      <xs:attribute name="get-generated-keys">
+        <xs:simpleType>
+          <xs:restriction base="xs:token">
+            <xs:enumeration value="true"/>
+            <xs:enumeration value="false"/>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:attribute>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="update" type="xs:string"/>
+
+  <xs:element name="delete" type="xs:string"/>
+
+  <xs:element name="statement">
+    <xs:complexType mixed="true">
+      <xs:attribute name="name" use="required"/>
+      <xs:attribute name="parameters"/>
+    </xs:complexType>
+  </xs:element>
+
+  <!-- Collection queries -->
+
+  <xs:element name="fetch">
+    <xs:complexType mixed="true">
+      <xs:attribute name="parent" default="parent"/>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="clear">
+    <xs:complexType mixed="true">
+      <xs:attribute name="parent" default="parent"/>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="add">
+    <xs:complexType mixed="true">
+      <xs:attribute name="parent" default="parent"/>
+      <xs:attribute name="element" default="element"/>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="remove">
+    <xs:complexType mixed="true">
+      <xs:attribute name="parent" default="parent"/>
+      <xs:attribute name="element" default="element"/>
+    </xs:complexType>
+  </xs:element>
+
+  <!-- List queries -->
+  <xs:element name="set-at">
+    <xs:complexType mixed="true">
+      <xs:attribute name="parent" default="parent"/>
+      <xs:attribute name="element" default="element"/>
+      <xs:attribute name="index" default="index"/>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="add-at">
+    <xs:complexType mixed="true">
+      <xs:attribute name="parent" default="parent"/>
+      <xs:attribute name="element" default="element"/>
+      <xs:attribute name="index" default="index"/>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="remove-at">
+    <xs:complexType mixed="true">
+      <xs:attribute name="parent" default="parent"/>
+      <xs:attribute name="index" default="index"/>
+    </xs:complexType>
+  </xs:element>
+
+  <!-- Map queries -->
+  <xs:element name="put">
+    <xs:complexType mixed="true">
+      <xs:attribute name="parent" default="parent"/>
+      <xs:attribute name="element" default="element"/>
+      <xs:attribute name="key" default="key"/>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="remove-key">
+    <xs:complexType mixed="true">
+      <xs:attribute name="parent" default="parent"/>
+      <xs:attribute name="key" default="key"/>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="discriminator">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element maxOccurs="unbounded" ref="when"/>
+        <xs:element minOccurs="0" ref="otherwise"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="when">
+    <xs:complexType mixed="true">
+      <xs:attribute name="condition" use="required">
+        <xs:simpleType>
+          <xs:restriction base="xs:token">
+            <xs:enumeration value="null"/>
+            <xs:enumeration value="not-null"/>
+            <xs:enumeration value="equal"/>
+            <xs:enumeration value="not-equal"/>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:attribute>
+      <xs:attribute name="column" use="required"/>
+      <xs:attribute name="value"/>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="otherwise" type="xs:string"/>
+</xs:schema>

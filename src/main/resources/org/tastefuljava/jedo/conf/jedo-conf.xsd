@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           elementFormDefault="qualified">
+  <xs:element name="configuration">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="data-source"/>
+        <xs:element maxOccurs="unbounded" ref="mapping"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="data-source">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" maxOccurs="unbounded" ref="property"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="property">
+    <xs:complexType>
+      <xs:attribute name="name" use="required"/>
+      <xs:attribute name="value"/>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="mapping">
+    <xs:complexType>
+      <xs:attribute name="resource"/>
+      <xs:attribute name="file"/>
+      <xs:attribute name="url"/>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>
+<!-- one of the attributes is required -->
