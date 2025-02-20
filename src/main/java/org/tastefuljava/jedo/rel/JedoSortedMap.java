@@ -1,7 +1,6 @@
 package org.tastefuljava.jedo.rel;
 
 import java.util.Comparator;
-import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.logging.Logger;
